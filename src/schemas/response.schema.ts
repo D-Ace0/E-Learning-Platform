@@ -1,8 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose from 'mongoose'
 import { Quiz } from './quiz.schema'
 import { User } from './user.schema'
-import { Document } from "mongoose"
+import mongoose, { Document } from 'mongoose'
 
 export type ResponseDocument = Response & Document;
 
@@ -18,13 +17,13 @@ export class Respose{
     @Prop({type: mongoose.Schema.Types.ObjectId, ref: Quiz})
     quiz_id:string
 
-    @Prop()
+    @Prop({unique:true})
     answers:string[]
 
-    @Prop()
+    @Prop({unique:true})
     score:string
 
-    @Prop({default:Date.now})
+    @Prop({unique:true,default:Date.now})
     submitted_at:Date
 
 }

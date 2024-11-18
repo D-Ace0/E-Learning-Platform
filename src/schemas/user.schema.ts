@@ -6,31 +6,31 @@ export type UserDocument = User & Document;
 enum UserRole {
     STUDENT = "student",
     INSTRUCTOR = "instructor",
-    ADMIN = "admin",
+    ADMIN = "admin"
 }
 
 @Schema()
 export class User{
     
-    @Prop({unique:true})
+    @Prop({required:true,unique:true})
     user_id:string
 
-    @Prop()
+    @Prop({required:true})
     name:string
 
-    @Prop()
+    @Prop({required:true})
     email:string
 
-    @Prop()
+    @Prop({required:true})
     password_hash:string
 
-    @Prop({enum:UserRole})
+    @Prop({required:true,enum:UserRole})
     role:string
 
-    @Prop()
+    @Prop({required:true})
     profile_picture_url?:string
 
-    @Prop({default:Date.now})
+    @Prop({required:true,default:Date.now})
     created_at:Date
 }
 

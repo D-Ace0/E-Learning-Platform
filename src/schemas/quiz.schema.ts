@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose from 'mongoose'
 import { Module } from './module.schema'
-import { Document } from "mongoose"
+import mongoose, { Document } from 'mongoose'
 
 export type QuizDocument = Quiz & Document;
 
@@ -14,10 +13,10 @@ export class Quiz{
     @Prop({type: mongoose.Schema.Types.ObjectId, ref: Module})
     module_id:string
 
-    @Prop()
+    @Prop({required:true})
     questions:string[]
 
-    @Prop({default:Date.now})
+    @Prop({required:true,default:Date.now})
     created_at:Date
 
 }

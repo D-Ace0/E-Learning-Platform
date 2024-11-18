@@ -1,38 +1,37 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose'
-import mongoose from 'mongoose'
 import { User } from './user.schema'
-import { Document } from "mongoose"
+import mongoose, { Document } from 'mongoose'
 
 export type CourseDocument = Course & Document;
 
-enum difficulty_levels {
-    Beginner = "beginner",
-    Intermediate = "intermediate",
-    Advanced = "advanced"
+enum difficulty_levels{
+    BEGINNER = "beginner",
+    INTERMEDIATE = "intermediate",
+    ADVANCED = "advanced"
 }
 
 @Schema()
-export class Course {
+export class Course{
 
-    @Prop({unique:true})
+    @Prop({required:true,unique:true})
     course_id: string
 
-    @Prop()
+    @Prop({required:true})
     title:string
 
-    @Prop()
+    @Prop({required:true})
     description:string
 
-    @Prop()
+    @Prop({required:true})
     category:string
 
-    @Prop({enum: difficulty_levels})
+    @Prop({required:true,enum: difficulty_levels})
     difficulty_level:string
 
     @Prop({type:mongoose.Schema.Types.ObjectId, ref: User})
     created_by:string
 
-    @Prop({default:Date.now})
+    @Prop({required:true,default:Date.now})
     created_at:Date
 }
 
