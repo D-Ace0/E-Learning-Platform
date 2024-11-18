@@ -1,65 +1,74 @@
-import { BadRequestException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthPayloadDTO } from './dto/auth.dto';
-import {SignupDTO} from './dto/signup.dto'
+import { SignupDTO } from './dto/signup.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/schemas/user.schema';
 import { Model } from 'mongoose';
-import * as bcrypt from 'bcrypt'; 
+import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private jwtService: JwtService,
+  ) {}
 
-    constructor(@InjectModel(User.name) private userModel: Model<User>, private jwtService: JwtService){}
+  async signup(signUpDataDTO: SignupDTO) {
+    const { email, password, name, role, user_id } = signUpDataDTO;
 
-    async signup(signUpDataDTO: SignupDTO){
+    const emailInUse = await this.userModel.findOne({ email: email });
 
-        const {email, password, name, role, user_id} = signUpDataDTO
+    if (emailInUse) throw new BadRequestException('Email already in use');
 
-        const emailInUse = await this.userModel.findOne({email: email})
+    const password_hash = await bcrypt.hash(password, 10);
 
-        if(emailInUse) throw new BadRequestException("Email already in use")
+    const user_id_InUse = await this.userModel.findOne({ user_id: user_id });
+    if (user_id_InUse)
+      throw new BadRequestException('Userid is already in use.');
 
-        const password_hash = await bcrypt.hash(password, 10)
+    const createdUser = await this.userModel.create({
+      name,
+      email,
+      password_hash,
+      role,
+      user_id,
+    });
 
-        const user_id_InUse = await this.userModel.findOne({user_id: user_id}) 
-        if(user_id_InUse) throw new BadRequestException("Userid is already in use.")
+    const userWithoutPassword = createdUser.toObject();
 
-        const createdUser = await this.userModel.create({
-            name,
-            email,
-            password_hash,
-            role,
-            user_id
-        })
+    // Ensure password_hash is removed from the response
+    const { password_hash: _, ...userWithoutPasswordHash } =
+      userWithoutPassword;
 
-        const userWithoutPassword = createdUser.toObject();
+    return userWithoutPasswordHash;
+  }
 
-        // Ensure password_hash is removed from the response
-        const { password_hash:_, ...userWithoutPasswordHash } = userWithoutPassword;
+  async login({ email, password }: AuthPayloadDTO) {
+    const user = await this.userModel.findOne({ email: email });
 
-        return userWithoutPasswordHash;
-    }
+    if (!user) throw new NotFoundException('User not found');
 
-    async login({email, password}: AuthPayloadDTO) {
-        const user = await this.userModel.findOne({email: email})
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
-        if(!user) throw new NotFoundException("User not found")
+    if (!isValidPassword)
+      throw new UnauthorizedException('Invalid Credentials');
 
-        const isValidPassword = await bcrypt.compare(password, user.password_hash)
+    const token = await this.generateUserToken(user._id, user.role);
+    return token;
+  }
 
-        if(!isValidPassword) throw new UnauthorizedException("Invalid Credentials")
+  async generateUserToken(UserId, role) {
+    const accessToken = await this.jwtService.sign({ UserId, role });
 
-        const token = await this.generateUserToken(user._id, user.role)
-        return token
-    }
-
-    async generateUserToken(UserId, role) {
-        const accessToken = await this.jwtService.sign({UserId, role})
-
-        return {
-            accessToken
-        }
-    }
-
+    return {
+      accessToken,
+    };
+  }
 }

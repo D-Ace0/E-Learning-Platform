@@ -5,16 +5,15 @@ import { SignupDTO } from './dto/signup.dto';
 
 @Controller('auth')
 export class AuthController {
+  constructor(private authService: AuthService) {}
 
-    constructor(private authService: AuthService){}
+  @Post('signup')
+  async signup(@Body() signUpData: SignupDTO) {
+    return this.authService.signup(signUpData);
+  }
 
-    @Post('signup')
-    async signup(@Body() signUpData: SignupDTO){
-        return this.authService.signup(signUpData)
-    }
-
-    @Post('login')
-    login(@Body() authPayloadDTO: AuthPayloadDTO){
-        return this.authService.login(authPayloadDTO)
-    }
+  @Post('login')
+  login(@Body() authPayloadDTO: AuthPayloadDTO) {
+    return this.authService.login(authPayloadDTO);
+  }
 }
