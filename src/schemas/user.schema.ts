@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-
-import { Document } from "mongoose";
+import { Document } from "mongoose"
 
 export type UserDocument = User & Document;
 
@@ -13,7 +12,7 @@ enum UserRole {
 @Schema()
 export class User{
     
-    @Prop({unique: true})
+    @Prop({unique:true})
     user_id:string
 
     @Prop()
@@ -25,14 +24,14 @@ export class User{
     @Prop()
     password_hash:string
 
-    @Prop({ enum: UserRole })
+    @Prop({enum:UserRole})
     role:string
 
     @Prop()
     profile_picture_url?:string
 
-    @Prop({ default:Date.now })
-    created_at: Date
+    @Prop({default:Date.now})
+    created_at:Date
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)
