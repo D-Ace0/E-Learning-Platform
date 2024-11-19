@@ -14,7 +14,7 @@ export class UserInteraction{
   user_id: mongoose.Types.ObjectId;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Course })
-  courseId: mongoose.Types.ObjectId;
+  course_id: mongoose.Types.ObjectId;
   // ask TA about string/ObjectId
   @Prop({ required: true, type: Number })
   score: number;
