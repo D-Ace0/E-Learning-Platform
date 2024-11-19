@@ -6,22 +6,22 @@ export type ModuleDocument = Module & Document
 
 @Schema()
 export class Module {
-  @Prop({ required: true, unique: true })
+  @Prop({ required:true, unique:true })
   module_id: string
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Course })
   course_id: string
 
-  @Prop({ required: true })
+  @Prop({ required:true })
   title: string
 
-  @Prop({ required: true })
+  @Prop({ required:true })
   content: string
 
-  @Prop({ required: true })
+  @Prop({ required:true })
   resources?: string[]
 
-  @Prop({ required: true, default: Date.now })
+  @Prop({ required:true, default:Date.now })
   created_at: Date;
 }
 

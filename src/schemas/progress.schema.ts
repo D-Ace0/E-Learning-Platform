@@ -7,20 +7,20 @@ export type ProgressDocument = Progress & Document
 
 @Schema()
 export class Progress extends Document {
-  @Prop({ required: true, unique: true })
+  @Prop({ required:true, unique:true })
   progressId: string
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User })
+  @Prop({ type:mongoose.Schema.Types.ObjectId, ref:User })
   user_id: string
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Course })
+  @Prop({ type:mongoose.Schema.Types.ObjectId, ref:Course })
   course_id?: string
 
-  @Prop({ required: true, type: Number })
-  completionPercentage: number
+  @Prop({ required:true, type:Number })
+  completionPercentage:number
 
   @Prop({ required: true, type: Date, default: Date.now })
-  lastAccessed: Date
+  lastAccessed:Date
 }
 
 // Generate the schema

@@ -12,26 +12,26 @@ enum difficulty_levels {
 
 @Schema()
 export class Course {
-  @Prop({ required: true, unique: true })
-  course_id: string
+  @Prop({ required:true, unique:true })
+  course_id:string
 
-  @Prop({ required: true })
-  title: string
+  @Prop({ required:true })
+  title:string
 
-  @Prop({ required: true })
-  description: string
+  @Prop({ required:true })
+  description:string
 
-  @Prop({ required: true })
-  category: string
+  @Prop({ required:true })
+  category:string
 
   @Prop({ required: true, enum: difficulty_levels })
-  difficulty_level: string
+  difficulty_level:string
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User })
   created_by: string
 
   @Prop({ required: true, default: Date.now })
-  created_at: Date
+  created_at:Date
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course)

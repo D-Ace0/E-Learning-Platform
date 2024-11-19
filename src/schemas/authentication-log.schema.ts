@@ -10,19 +10,19 @@ export enum AuthenticationStatus {
 
 @Schema()
 export class AuthenticationLog {
-  @Prop({ required: true })
+  @Prop({ required:true })
   log_id: string
 
-  @Prop({ required: true })
+  @Prop({ required:true })
   user_id: string
 
-  @Prop({ required: true })
+  @Prop({ required:true })
   event: string
 
-  @Prop({ default: Date.now })
+  @Prop({ default:Date.now })
   timestamp: Date
 
-  @Prop({ required: true, enum: AuthenticationStatus })
+  @Prop({ required:true, enum:AuthenticationStatus })
   status: AuthenticationStatus
 }
 

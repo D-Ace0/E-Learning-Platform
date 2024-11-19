@@ -6,16 +6,16 @@ export type ConfigurationDocument = Configuration & Document
 
 @Schema()
 export class Configuration {
-  @Prop({ required: true, unique: true })
+  @Prop({ required:true, unique:true })
   config_id: string
 
-  @Prop({ required: true, type: Object })
+  @Prop({ required:true, type:Object })
   settings: Record<string, any>;//double check
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User })
+  @Prop({ type:mongoose.Schema.Types.ObjectId, ref:User })
   updated_by: string
 
-  @Prop({ required: true, default: Date.now })
+  @Prop({ required:true, default:Date.now })
   updated_at: Date
 }
 

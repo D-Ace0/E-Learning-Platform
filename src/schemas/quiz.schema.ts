@@ -6,16 +6,16 @@ export type QuizDocument = Quiz & Document
 
 @Schema()
 export class Quiz {
-  @Prop({ unique: true })
+  @Prop({ required: true, unique:true })
   quiz_id: string
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Module })
   module_id: string
 
-  @Prop({ required: true })
+  @Prop({ required:true })
   questions: string[]
 
-  @Prop({ required: true, default: Date.now })
+  @Prop({ required:true, default: Date.now })
   created_at: Date
 }
 

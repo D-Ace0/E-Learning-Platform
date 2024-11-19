@@ -7,22 +7,22 @@ export type NoteDocument = Note & Document
 
 @Schema()
 export class Note {
-  @Prop({ required: true })
+  @Prop({ required:true })
   module_id: string
 
-  @Prop({ required: true })
+  @Prop({ required:true })
   content: string
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User })
+  @Prop({ type:mongoose.Schema.Types.ObjectId, ref:User })
   user_id: string
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Course })
+  @Prop({ type:mongoose.Schema.Types.ObjectId, ref:Course })
   course_id?: string
 
-  @Prop({ default: Date.now })
+  @Prop({ default:Date.now })
   created_at: Date
 
-  @Prop({ default: Date.now })
+  @Prop({ default:Date.now })
   updated_at: Date
 }
 
