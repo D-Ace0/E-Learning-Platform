@@ -13,11 +13,11 @@ export class Note {
   @Prop({ required: true })
   content: string
 
-  // @Prop({type:mongoose.Schema.Types.ObjectId,ref:User})
-  // user_id:string
+  @Prop({type:mongoose.Schema.Types.ObjectId,ref:User})
+  user_id:string
 
-  // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Course })
-  // course_id?: string
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Course })
+  course_id?: string
 
   @Prop({ default: Date.now })
   created_at: Date
