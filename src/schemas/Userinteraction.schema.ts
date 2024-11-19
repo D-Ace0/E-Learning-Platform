@@ -2,24 +2,28 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Date, Document, Types } from 'mongoose';
 import { User } from './user.schema';
 import { Course } from './course.schema';
+
+export type UserInteractionDocument = UserInteraction & Document;
+
 @Schema()
-export class UserInteraction extends Document {
+export class UserInteraction{
   @Prop({ required: true, type: Number})
-  interactionId: number; // Unique identifier for the interaction
+  interactionId: number;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
-  user_id: mongoose.Types.ObjectId; // Reference to the User schema (user_id will link here)
+  user_id: mongoose.Types.ObjectId;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Course })
-  courseId: mongoose.Types.ObjectId; // Associated course ID
+  courseId: mongoose.Types.ObjectId;
+  // ask TA about string/ObjectId
+  @Prop({ required: true, type: Number })
+  score: number;
 
   @Prop({ required: true, type: Number })
-  score: number; // Score achieved in the module
-
-  @Prop({ required: true, type: Number })
-  timeSpentMinutes!: number; // Time spent on the module
+  timeSpentMinutes!: number;
 
   @Prop({ required: true, type: Date })
-  lastAccessed!: Date; // Last time the module was accessed
+  lastAccessed!: Date;
 }
-export const UserInteractionSchema =
-  SchemaFactory.createForClass(UserInteraction);
+
+export const UserInteractionSchema = SchemaFactory.createForClass(UserInteraction);
