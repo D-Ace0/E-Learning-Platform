@@ -16,10 +16,10 @@ export class Respose {
   @Prop({ type:mongoose.Schema.Types.ObjectId, ref:Quiz })
   quiz_id:string
 
-  @Prop({ unique: true })
+  @Prop({ unique:true })
   answers:string[]
 
-  @Prop({ unique: true })
+  @Prop({ unique:true })
   score:string
 
   @Prop({ unique:true, default:Date.now })
