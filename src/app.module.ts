@@ -10,7 +10,7 @@ import { NotesModule } from './notes/notes.module';
     UsersModule,
     NotesModule,
     MongooseModule.forRoot(
-      'mongodb+srv://AhmedKhadrawy:i6OKYku0wf8xamTL@database.r38ac.mongodb.net/',
+      'mongodb+srv://AhmedKhadrawy:i6OKYku0wf8xamTL@database.r38ac.mongodb.net/E-Learning-Platform',
     ),
   ],
 })

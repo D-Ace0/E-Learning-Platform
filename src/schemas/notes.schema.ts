@@ -1,7 +1,7 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { Document } from 'mongoose';
 import { User } from './user.schema';
 import { Course } from './course.schema';
-import mongoose, { Document } from 'mongoose';
 
 export type NoteDocument = Note & Document;
 
@@ -13,11 +13,11 @@ export class Note {
   @Prop({ required: true })
   content: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User })
-  user_id: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+  user_id: mongoose.Schema.Types.ObjectId;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Course })
-  course_id?: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Course' })
+  course_id?: mongoose.Schema.Types.ObjectId;
 
   @Prop({ default: Date.now })
   created_at: Date;
