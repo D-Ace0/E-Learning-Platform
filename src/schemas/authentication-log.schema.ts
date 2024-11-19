@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document } from 'mongoose';
 
 export type AuthenticationLogDocument = AuthenticationLog & Document;
@@ -11,20 +11,20 @@ export enum AuthenticationStatus {
 @Schema()
 export class AuthenticationLog {
   @Prop({ required: true })
-  log_id: string;
+  log_id: string
 
   @Prop({ required: true })
-  user_id: string;
+  user_id: string
 
   @Prop({ required: true })
-  event: string;
+  event: string
 
   @Prop({ default: Date.now })
-  timestamp: Date;
+  timestamp: Date
 
   @Prop({ required: true, enum: AuthenticationStatus })
-  status: AuthenticationStatus;
+  status: AuthenticationStatus
 }
 
 export const AuthenticationLogSchema =
-  SchemaFactory.createForClass(AuthenticationLog);
+  SchemaFactory.createForClass(AuthenticationLog)
