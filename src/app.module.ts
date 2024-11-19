@@ -11,17 +11,12 @@ dotenv.config();
 const MONGO_URI: string = process.env.MONGO_URI;
 @Module({
   imports: [
-    UsersModule,
     AuthModule,
     UsersModule,
-<<<<<<< Updated upstream
     NotesModule,
     MongooseModule.forRoot(
       MONGO_URI ?? 'mongodb://127.0.0.1:27017/E-Learning-Platform',
     ),
-=======
-    MongooseModule.forRoot('mongodb://127.0.0.1:27017/E-Learning-Platform')
->>>>>>> Stashed changes
   ],
 })
-export class AppModule { }
+export class AppModule {}
