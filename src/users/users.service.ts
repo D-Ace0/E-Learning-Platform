@@ -1,7 +1,7 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from 'src/schemas/user.schema';
+import { User, UserDocument, UserRole } from 'src/schemas/user.schema';
 import { UpdateProfileDto } from './dto/UpdateProfile.dto';
 
 @Injectable()
@@ -9,6 +9,14 @@ export class UsersService {
     constructor (
         @InjectModel(User.name) private userModel: Model<UserDocument>,
     ){}
+
+    async getAllUsers(): Promise<User[]> {
+        return this.userModel.find().exec()
+    }
+    
+    async getAllStudents(): Promise<User[]> {
+        return this.userModel.find({ role: UserRole.STUDENT }).exec()
+    }
 
     async getProfile(userId: string): Promise<User> {
         return this.userModel.findById(userId).exec()
@@ -49,6 +57,11 @@ export class UsersService {
         });
 
         return user.save();
+    }
+
+    // delete user
+    async deleteUser(id: string): Promise<User> {
+        return this.userModel.findByIdAndDelete(id).exec()
     }
 
 
