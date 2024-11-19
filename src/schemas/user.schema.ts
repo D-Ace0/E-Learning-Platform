@@ -3,7 +3,7 @@ import { Document } from 'mongoose'
 
 export type UserDocument = User & Document
 
-enum UserRole {
+export enum UserRole {
   STUDENT = 'student',
   INSTRUCTOR = 'instructor',
   ADMIN = 'admin'
