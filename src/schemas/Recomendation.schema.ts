@@ -1,19 +1,22 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { User } from './user.schema';
-@Schema({ timestamps: true })
+
+export type RecommendationDocument = Recommendation & Document;
+
+@Schema()
 export class Recommendation extends Document {
   @Prop({ required: true, type: String })
-  recommendationId!: string; // Unique identifier for the recommendation
+  recommendation_id: string; // Unique identifier for the recommendation
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
   user_id: mongoose.Types.ObjectId;
 
   @Prop({ required: true, type: [String] })
-  recommendedItems!: string[]; // Array of recommended courses/modules
+  recommendedItems: string[];
 
-  @Prop({ required: true, type: Date })
-  generatedAt!: Date; // Timestamp of recommendation generation
+  @Prop({ required: true, type: Date, default: Date.now })
+  generated_at: Date;
 }
 
 export const RecommendationSchema = SchemaFactory.createForClass(Recommendation);

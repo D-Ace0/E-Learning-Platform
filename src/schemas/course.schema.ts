@@ -30,7 +30,7 @@ export class Course {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User })
   created_by: string;
 
-  @Prop({ required: true, default: Date.now })
+  @Prop({ required: true, type: Date, default: Date.now })
   created_at: Date;
 }
 

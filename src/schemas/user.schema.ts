@@ -29,7 +29,7 @@ export class User {
   @Prop({ required: true })
   profile_picture_url?: string;
 
-  @Prop({ required: true, default: Date.now })
+  @Prop({ required: true, type: Date, default: Date.now })
   created_at: Date;
 }
 

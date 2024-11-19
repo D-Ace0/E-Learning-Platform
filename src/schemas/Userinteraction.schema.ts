@@ -7,23 +7,23 @@ export type UserInteractionDocument = UserInteraction & Document;
 
 @Schema()
 export class UserInteraction{
-  @Prop({ required: true, type: Number})
-  interactionId: number;
+  @Prop({ required: true })
+  interaction_id: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
   user_id: mongoose.Types.ObjectId;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Course })
   course_id: mongoose.Types.ObjectId;
-  // ask TA about string/ObjectId
-  @Prop({ required: true, type: Number })
-  score: number;
+
+  @Prop({ required: true, type: mongoose.Schema.Types.Decimal128 })
+  score: number; //float
 
   @Prop({ required: true, type: Number })
-  timeSpentMinutes!: number;
+  timespentminutes: number;
 
-  @Prop({ required: true, type: Date })
-  lastAccessed!: Date;
+  @Prop({ required: true, type: Date, default: Date.now })
+  last_accessed: Date;
 }
 
 export const UserInteractionSchema = SchemaFactory.createForClass(UserInteraction);

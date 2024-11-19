@@ -15,7 +15,7 @@ export class Quiz {
   @Prop({ required: true })
   questions: string[];
 
-  @Prop({ required: true, default: Date.now })
+  @Prop({ required: true, type: Date, default: Date.now })
   created_at: Date;
 }
 

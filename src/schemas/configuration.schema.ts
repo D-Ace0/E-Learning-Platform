@@ -15,7 +15,7 @@ export class Configuration {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User })
   updated_by: string;
 
-  @Prop({ required: true, default: Date.now })
+  @Prop({ required: true, type: Date, default: Date.now })
   updated_at: Date;
 }
 

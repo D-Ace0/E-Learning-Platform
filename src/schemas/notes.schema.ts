@@ -19,10 +19,10 @@ export class Note {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Course' })
   course_id?: mongoose.Schema.Types.ObjectId;
 
-  @Prop({ default: Date.now })
+  @Prop({ required: true, type: Date, default: Date.now })
   created_at: Date;
 
-  @Prop({ default: Date.now })
+  @Prop({ required: true, type: Date, default: Date.now })
   updated_at: Date;
 }
 

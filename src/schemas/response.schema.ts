@@ -22,7 +22,7 @@ export class Respose {
   @Prop({ unique: true })
   score: string;
 
-  @Prop({ unique: true, default: Date.now })
+  @Prop({ required: true, type: Date, default: Date.now })
   submitted_at: Date;
 }
 
