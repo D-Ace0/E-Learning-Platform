@@ -3,14 +3,19 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NotesModule } from './notes/notes.module';
+import * as process from 'node:process';
+import * as dotenv from 'dotenv';
 
+dotenv.config();
+
+const MONGO_URI: string = process.env.MONGO_URI;
 @Module({
   imports: [
     AuthModule,
     UsersModule,
     NotesModule,
     MongooseModule.forRoot(
-      'mongodb+srv://AhmedKhadrawy:i6OKYku0wf8xamTL@database.r38ac.mongodb.net/E-Learning-Platform',
+      MONGO_URI ?? 'mongodb://127.0.0.1:27017/E-Learning-Platform',
     ),
   ],
 })
