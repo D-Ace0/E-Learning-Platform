@@ -26,5 +26,4 @@ export class AuthenticationLog {
   status: AuthenticationStatus
 }
 
-export const AuthenticationLogSchema =
-  SchemaFactory.createForClass(AuthenticationLog)
+export const AuthenticationLogSchema = SchemaFactory.createForClass(AuthenticationLog)
