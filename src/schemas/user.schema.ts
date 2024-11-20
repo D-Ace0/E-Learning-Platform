@@ -26,7 +26,7 @@ export class User {
   @Prop({ required: true, enum: UserRole })
   role: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   profile_picture_url?: string;
 
   @Prop({ required: true, type: Date, default: Date.now })
