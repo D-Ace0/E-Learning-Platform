@@ -10,6 +10,7 @@ import { User, UserSchema } from 'src/schemas/user.schema';
   providers: [AuthService],
   imports: [
     JwtModule.register({
+      global:true,
       secret:
         'dd29fce76b99ff2fc7c81ae157e38c06a3af27aad0da29274b5521bc190f4804',
       signOptions: { expiresIn: '1h' },

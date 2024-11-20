@@ -4,25 +4,20 @@ import { Request } from "express";
 import { Observable } from "rxjs";
 
 @Injectable()
-export class JwtGuard implements CanActivate {
+export class AuthenticationGuard implements CanActivate {
     constructor (private jwtService: JwtService){}
 
     async canActivate(
         context: ExecutionContext
     ): Promise<boolean>  {
-        const request = context.switchToHttp().getRequest();
-        const token = this.exractTokenFromHeader(request)
-
-        if(!token) throw new UnauthorizedException ()
-            
         try {
-            const payload = await this.jwtService.verifyAsync(token, {
-               secret: process.env.jwtSecretKey,
-            })
-            // insert payload into user object
-            request['user'] = payload
+            const request = context.switchToHttp().getRequest()
+            const token = this.exractTokenFromHeader(request)
+
+            if(!token) throw new UnauthorizedException()
+            
+            request.user = await this.jwtService.verifyAsync(token, {secret: process.env.JWT_SECRET})
         } 
-        
         catch (error) {
             throw new UnauthorizedException()
         }

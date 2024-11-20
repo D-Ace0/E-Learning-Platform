@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -7,7 +7,8 @@ import * as process from 'node:process';
 import * as dotenv from 'dotenv';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { RolesGuard } from './guards/roles.guard';
+import { LoggingMiddleware } from './middleware/loggerMiddleware';
+import { AuthorizationGuard } from './guards/authorization.guard';
 
 dotenv.config();
 
@@ -18,10 +19,7 @@ const MONGO_URI: string = process.env.MONGO_URI;
       provide: APP_GUARD,
       useClass: JwtService,
     },
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
+    Logger
   ],
   imports: [
     AuthModule,
@@ -32,4 +30,9 @@ const MONGO_URI: string = process.env.MONGO_URI;
     ),
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggingMiddleware).forRoutes('*')
+  }
+  
+}

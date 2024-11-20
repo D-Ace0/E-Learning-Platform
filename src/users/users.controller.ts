@@ -1,24 +1,25 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Put, Req, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User, UserRole } from 'src/schemas/user.schema';
-import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
-import { RolesGuard } from 'src/guards/roles.guard';
 import { JwtService } from '@nestjs/jwt';
 import { Roles } from 'src/decorators/roles.decorator';
+import { AuthenticationGuard } from 'src/guards/authentication.guard';
+import { AuthorizationGuard } from 'src/guards/authorization.guard';
 
 @Controller('users')
-@UseGuards(JwtService, RolesGuard)
+// @Roles(['admin'])
+@UseGuards(AuthenticationGuard, AuthorizationGuard)
 export class UsersController {
     constructor(private userService: UsersService){}
 
     @Get('allUsers')
-    @Roles(UserRole.ADMIN)
-    async getAllUsers(){
+    @Roles(['admin', 'instructor'])
+    async getAllUsers(@Req() {user}){
+        console.log(user)
         return this.userService.getAllUsers()
     }
 
     @Get('allStudents')
-    @Roles(UserRole.INSTRUCTOR)
     async getAllStudents(){
         return this.userService.getAllStudents()
     }
@@ -50,8 +51,8 @@ export class UsersController {
         } 
     }
 
-    @UseGuards(JwtService, RolesGuard)
-    @Roles(UserRole.ADMIN)
+    @UseGuards(JwtService)
+    // @Roles(UserRole.ADMIN)
     @Delete(':id')
     async deleteUser(@Param('id') id: string): Promise<User> {
         return this.userService.deleteUser(id)
