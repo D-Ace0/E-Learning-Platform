@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoggingMiddleware } from './middleware/loggerMiddleware';
 import { AuthorizationGuard } from './guards/authorization.guard';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { PusherService } from './pusher/pusher.service';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ const MONGO_URI: string = process.env.MONGO_URI;
       useClass: JwtService,
     },
     Logger,
+    PusherService,
   ],
   imports: [
     AuthModule,
