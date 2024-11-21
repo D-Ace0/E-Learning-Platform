@@ -2,19 +2,19 @@
 import { IsOptional, IsString, IsEmail, IsUrl } from 'class-validator';
 
 export class UpdateProfileDto {
-    @IsOptional()
-    @IsString()
-    name?: string;
+  @IsOptional()
+  @IsString()
+  name?: string;
 
-    @IsOptional()
-    @IsEmail()
-    email?: string;
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
-    @IsOptional()
-    @IsUrl()
-    profile_picture_url?: string;
+  @IsOptional()
+  @IsUrl()
+  profile_picture_url?: string;
 
-    @IsOptional()
-    @IsString()
-    user_id ?: string
+  @IsOptional()
+  @IsString()
+  user_id?: string;
 }

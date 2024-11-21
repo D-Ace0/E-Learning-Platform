@@ -1,8 +1,8 @@
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose'
-import { Course } from './course.schema'
-import mongoose, { Document } from 'mongoose'
+import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Course } from './course.schema';
+import mongoose, { Document } from 'mongoose';
 
-export type ModuleDocument = Module & Document
+export type ModuleDocument = Module & Document;
 
 @Schema()
 export class Module {
@@ -25,4 +25,4 @@ export class Module {
   created_at: Date;
 }
 
-export const ModuleSchema = SchemaFactory.createForClass(Module)
+export const ModuleSchema = SchemaFactory.createForClass(Module);
