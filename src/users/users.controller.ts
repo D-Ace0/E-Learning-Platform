@@ -16,6 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Roles } from 'src/decorators/roles.decorator';
 import { AuthenticationGuard } from 'src/guards/authentication.guard';
 import { AuthorizationGuard } from 'src/guards/authorization.guard';
+import { ResourceAccessGuard } from 'src/guards/resource-access.guard';
 
 @Controller('users')
 // @Roles(['admin'])
@@ -36,6 +37,8 @@ export class UsersController {
   }
 
   @Get(':id')
+  @Roles(['admin', 'student', 'instructor'])
+  @UseGuards(ResourceAccessGuard)
   async findMyProfile(@Param('id') id: string) {
     try {
       const user = await this.userService.getProfile(id);
