@@ -9,22 +9,24 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { LoggingMiddleware } from './middleware/loggerMiddleware';
 import { AuthorizationGuard } from './guards/authorization.guard';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 dotenv.config();
 
 const MONGO_URI: string = process.env.MONGO_URI;
 @Module({
-    providers:[
+  providers: [
     {
       provide: APP_GUARD,
       useClass: JwtService,
     },
-    Logger
+    Logger,
   ],
   imports: [
     AuthModule,
     UsersModule,
     NotesModule,
+    DashboardModule,
     MongooseModule.forRoot(
       MONGO_URI ?? 'mongodb://127.0.0.1:27017/E-Learning-Platform',
     ),
@@ -32,7 +34,6 @@ const MONGO_URI: string = process.env.MONGO_URI;
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggingMiddleware).forRoutes('*')
+    consumer.apply(LoggingMiddleware).forRoutes('*');
   }
-  
 }
