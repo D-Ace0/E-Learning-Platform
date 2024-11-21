@@ -4,7 +4,7 @@
 /build
 
 .env
-
+/.vscode
 # Logs
 logs
 *.log

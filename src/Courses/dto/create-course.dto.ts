@@ -1,5 +1,5 @@
 
-import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsUrl } from 'class-validator';
 
 export class CreateCourseDto {
   @IsString()
@@ -19,5 +19,17 @@ export class CreateCourseDto {
   category: string;
 
   @IsEnum(['beginner', 'intermediate', 'advanced'])
+  @IsNotEmpty()
   difficulty_level: string;
+
+  @IsString()
+  @IsUrl()
+  @IsNotEmpty()
+  pdf: string
+
+  @IsString()
+  @IsUrl()
+  @IsNotEmpty()
+  video: string
+
 }

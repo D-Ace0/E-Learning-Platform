@@ -32,6 +32,15 @@ export class Course {
 
   @Prop({ required: true, type: Date, default: Date.now })
   created_at: Date;
+
+  @Prop({required: true})
+  video: string
+
+  @Prop({required: true})
+  pdf: string
+
+  @Prop({default: null})
+  parentVersion?: string // this one will hold the course_id of the old updated version if exists or if this db coruse entry is created via an update functionality
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);

@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsNotEmpty } from 'class-validator';
 
 export class UpdateCourseDto {
   @IsString()
@@ -15,5 +15,14 @@ export class UpdateCourseDto {
 
   @IsString()
   @IsOptional()
-  newContent?: string; // New content for the course
+  newContent?: string;
+
+  @IsEnum(['beginner', 'intermediate', 'advanced'])
+  difficulty_level?: string
+
+  @IsString()
+  video?: string
+
+  @IsString()
+  pdf?: string
 }
