@@ -31,7 +31,7 @@ export class Course {
   created_by: string;
 
   @Prop({ required: true, type: Date, default: Date.now })
-  created_at: Date
+  created_at: Date;
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
