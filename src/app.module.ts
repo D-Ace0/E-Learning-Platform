@@ -10,6 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import { LoggingMiddleware } from './middleware/loggerMiddleware';
 import { AuthorizationGuard } from './guards/authorization.guard';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { CourseModule } from './Courses/courses.module';
+import { PusherService } from './pusher/pusher.service';
 
 dotenv.config();
 
