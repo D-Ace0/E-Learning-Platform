@@ -1,8 +1,8 @@
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Course } from './course.schema';
-import mongoose, { Document } from 'mongoose';
+import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose'
+import { Course } from './course.schema'
+import mongoose, { Document } from 'mongoose'
 
-export type ModuleDocument = Module & Document;
+export type ModuleDocument = Module & Document
 
 @Schema()
 export class Module {
@@ -10,7 +10,7 @@ export class Module {
   module_id: mongoose.Types.ObjectId
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Course })
-  course_id: mongoose.Types.ObjectId;
+  course_id: mongoose.Types.ObjectId
 
   @Prop({ required: true })
   title: string;
@@ -19,10 +19,10 @@ export class Module {
   content: string;
 
   @Prop({ required: true })
-  resources?: string[];
+  resources?: string[]
 
   @Prop({ required: true, type: Date, default: Date.now })
   created_at: Date;
 }
 
-export const ModuleSchema = SchemaFactory.createForClass(Module);
+export const ModuleSchema = SchemaFactory.createForClass(Module)

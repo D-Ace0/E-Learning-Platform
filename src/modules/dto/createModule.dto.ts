@@ -1,21 +1,29 @@
-import { IsNotEmpty, IsString, IsArray, IsOptional, IsMongoId } from 'class-validator';
+import { IsNotEmpty, IsString, IsArray, IsOptional, IsMongoId, IsDate } from 'class-validator';
 import mongoose from 'mongoose';
 
 export class createModuleDto{
 
   @IsNotEmpty()
   @IsMongoId()
-  quiz_id: mongoose.Types.ObjectId;
+  module_id: mongoose.Types.ObjectId
 
   @IsNotEmpty()
   @IsMongoId()
-  module_id: mongoose.Types.ObjectId;
+  course_id: mongoose.Types.ObjectId;
 
   @IsNotEmpty()
+  @IsString({ each: true })
+  title: string
+
+  @IsNotEmpty()
+  @IsString()
+  content: string
+
   @IsArray()
   @IsString({ each: true })
-  questions: string[];
+  resources?: string[]
 
   @IsNotEmpty()
-  created_at: Date;
+  @IsDate()
+  created_at: Date
 }
