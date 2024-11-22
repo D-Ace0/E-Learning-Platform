@@ -33,7 +33,30 @@ export class CoursesController {
   }
 
   @Get(':name')
+  @Roles(['student', 'instructor', 'admin']) //Users can search for a certain course.
   async searchCourse(@Param('name') courseName: string){
     return this.coursesService.searchCourse(courseName)
   }
+
+  
+  @Post('/students/:id')
+  @Roles(['student'])
+  async enroll(@Param('id') courseId: string, @Request() req:any){
+    const studentId = req.user.UserId
+    return this.coursesService.studentEnrollCourse(studentId, courseId)
+  }
+
+  @Get('/students/:id')
+  @Roles(['instructor'])
+  async searchStudent(@Param('id') studentId: string, @Request() req: any){
+    const InstructorId = req.user.UserId
+    return this.coursesService.searchStudent(studentId, InstructorId)
+  }
+
+  @Get('/instructors/:id')
+  @Roles(['student'])
+  async searchInstructor(@Param('id') InstructorId){
+    return this.coursesService.searchInstructor(InstructorId)
+  }
+
 }

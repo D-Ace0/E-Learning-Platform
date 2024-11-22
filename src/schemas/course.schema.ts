@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from './user.schema';
 import mongoose, { Document } from 'mongoose';
+import { Student } from './student.schema';
 
 export type CourseDocument = Course & Document;
 
@@ -41,6 +42,9 @@ export class Course {
 
   @Prop({default: null})
   parentVersion?: string // this one will hold the course_id of the old updated version if exists or if this db coruse entry is created via an update functionality
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }], default: [] })
+  enrolledStudents: mongoose.Schema.Types.ObjectId[];
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
