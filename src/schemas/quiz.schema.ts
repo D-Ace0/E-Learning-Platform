@@ -2,10 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Module } from './module.schema'
 import mongoose from 'mongoose'
 
-//export type QuizDocument = quiz & Document
+export type QuizDocument = quiz & Document
 
 @Schema()
 export class quiz {
+  @Prop({ type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId(), unique: true })
+  quiz_id: mongoose.Types.ObjectId
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Module })
   module_id: mongoose.Types.ObjectId

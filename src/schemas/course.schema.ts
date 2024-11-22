@@ -12,6 +12,8 @@ enum difficulty_levels {
 
 @Schema()
 export class Course {
+  @Prop({ required: true, unique: true })
+  course_id: string;
 
   @Prop({ required: true })
   title: string;
