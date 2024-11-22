@@ -5,6 +5,10 @@ export class createQuizDto{
 
   @IsNotEmpty()
   @IsMongoId()
+  quiz_id: mongoose.Types.ObjectId;
+
+  @IsNotEmpty()
+  @IsMongoId()
   module_id: mongoose.Types.ObjectId;
 
   @IsNotEmpty()
