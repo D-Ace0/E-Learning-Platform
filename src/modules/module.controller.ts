@@ -21,12 +21,12 @@ export class ModuleController {
 
   @Get()
   async findAll(): Promise<Module[]> {
-    return this.moduleService.findAll();
+    return this.moduleService.findAll()
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Module> {
-    return this.moduleService.findOne(id);
+    return this.moduleService.findOne(id)
   }
 
   @Put(':id')
@@ -34,11 +34,11 @@ export class ModuleController {
     @Param('id') id: string,
     @Body() updateModuleDto: Partial<Module>,
   ): Promise<Module> {
-    return this.moduleService.update(id, updateModuleDto);
+    return this.moduleService.update(id, updateModuleDto)
   }
 
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<void> {
-    return this.moduleService.delete(id);
+    return this.moduleService.delete(id)
   }
 }
