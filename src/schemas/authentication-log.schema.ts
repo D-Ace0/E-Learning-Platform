@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
+import { User } from './user.schema';
 
 export type AuthenticationLogDocument = AuthenticationLog & Document;
 
@@ -10,11 +11,11 @@ export enum AuthenticationStatus {
 
 @Schema()
 export class AuthenticationLog {
-  @Prop({ required: true })
-  log_id: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId(), unique: true })
+  log_id: mongoose.Types.ObjectId
 
-  @Prop({ required: true })
-  user_id: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
+  user_id: mongoose.Types.ObjectId
 
   @Prop({ required: true })
   event: string;

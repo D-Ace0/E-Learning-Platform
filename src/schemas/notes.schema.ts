@@ -7,8 +7,8 @@ export type NoteDocument = Note & Document;
 
 @Schema()
 export class Note {
-  @Prop({ required: true })
-  module_id: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId(), unique: true })
+  note_id: mongoose.Types.ObjectId
 
   @Prop({ required: true })
   content: string;

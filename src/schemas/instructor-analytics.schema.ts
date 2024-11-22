@@ -7,6 +7,10 @@ export type InstructorAnalyticsDocument = InstructorAnalytics & Document;
 
 @Schema()
 export class InstructorAnalytics {
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId(), unique: true })
+  analytic_id: mongoose.Types.ObjectId
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
   instructor_id: mongoose.Types.ObjectId;
 
