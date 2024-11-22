@@ -12,6 +12,7 @@ import { AuthorizationGuard } from './guards/authorization.guard';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { CourseModule } from './Courses/courses.module';
 import { PusherService } from './pusher/pusher.service';
+import { QuizModule } from './quizzes/quiz.module';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ const MONGO_URI: string = process.env.MONGO_URI;
     PusherService,
   ],
   imports: [
+    QuizModule,
     AuthModule,
     CourseModule,
     UsersModule,
