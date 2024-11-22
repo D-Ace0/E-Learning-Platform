@@ -13,7 +13,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { CourseModule } from './Courses/courses.module';
 import { PusherService } from './pusher/pusher.service';
 import { QuizModule } from './quizzes/quiz.module';
-
+import { ModuleModule } from './modules/module.module';
 dotenv.config();
 
 const MONGO_URI: string = process.env.MONGO_URI;
@@ -33,6 +33,7 @@ const MONGO_URI: string = process.env.MONGO_URI;
     UsersModule,
     NotesModule,
     DashboardModule,
+    ModuleModule,
     MongooseModule.forRoot(
       MONGO_URI ?? 'mongodb://127.0.0.1:27017/E-Learning-Platform',
     ),

@@ -11,11 +11,15 @@ export enum AuthenticationStatus {
 
 @Schema()
 export class AuthenticationLog {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId(), unique: true })
-  log_id: mongoose.Types.ObjectId
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    default: () => new mongoose.Types.ObjectId(),
+    unique: true,
+  })
+  log_id: mongoose.Types.ObjectId;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
-  user_id: mongoose.Types.ObjectId
+  user_id: mongoose.Types.ObjectId;
 
   @Prop({ required: true })
   event: string;
