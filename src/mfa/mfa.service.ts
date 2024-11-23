@@ -3,11 +3,10 @@ import * as speakeasy from 'speakeasy'
 
 @Injectable()
 export class MfaService {
-  generateSecret(user_id: string) {
+
+  generateSecret() {
     const secret = speakeasy.generateSecret({ length: 20 })
-    return {
-      base32: secret.base32, 
-    }
+    return secret.base32
   }
 
   verifyToken(secret: string, token: string) {
@@ -15,6 +14,14 @@ export class MfaService {
       secret,
       encoding: 'base32',
       token
+    })
+  }
+
+  generateCurrentOtp(secret: string) {
+    return speakeasy.totp({
+      secret,
+      encoding: 'base32',
+      step: 300 // Time for each token before it expires doen by seconds
     })
   }
 }

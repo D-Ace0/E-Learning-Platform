@@ -39,13 +39,21 @@ export class AuthService {
   }
 
   async enableMFA(user_id: string) {
-    const secret = this.mfaService.generateSecret(user_id)
+    const secret = this.mfaService.generateSecret()
     await this.userModel.findByIdAndUpdate(user_id, {
-      mfa_secret: secret.base32,
-      mfa_enabled: true,
-    })
-    return secret
+        mfa_secret: secret, 
+        mfa_enabled: true
+    });
+    return { message: 'MFA enabled successfully' }
   }
+
+  async disableMFA(user_id: string) {
+    await this.userModel.findByIdAndUpdate(user_id, {
+        mfa_secret: undefined, 
+        mfa_enabled: false
+    });
+    return { message: 'MFA disabled successfully' }
+}
 
   async signup(signUpDataDTO: SignupDTO) {
     const { email, password, name, role, user_id } = signUpDataDTO
@@ -63,7 +71,7 @@ export class AuthService {
       email,
       password_hash: hashedPassword,
       role,
-      user_id,
+      user_id
     })
 
    
@@ -75,4 +83,13 @@ export class AuthService {
     const accessToken = await this.jwtService.sign({ user_id, role })
     return { accessToken }
   }
+  async getCurrentOtp(user_id: string) {
+    const user = await this.userModel.findById(user_id)
+    if (!user || !user.mfa_enabled || !user.mfa_secret) {
+        throw new NotFoundException('User not found or MFA not enabled')
+    }
+    
+    const otp = this.mfaService.generateCurrentOtp(user.mfa_secret);
+    return { otp }
+}
 }
