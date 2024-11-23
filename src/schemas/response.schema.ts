@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { quiz } from './quiz.schema'
+import { Quiz } from './quiz.schema'
 import { User } from './user.schema'
 import mongoose, { Document } from 'mongoose'
 
@@ -13,7 +13,7 @@ export class Respose {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
   user_id: mongoose.Types.ObjectId
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => quiz })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Quiz })
   quiz_id: mongoose.Types.ObjectId
 
   @Prop({ unique: true })
