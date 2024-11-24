@@ -4,9 +4,9 @@ import mongoose from 'mongoose'
 
 export class createCourseDto {
   
-  @IsOptional()
-  @IsMongoId()
-  course_id?: mongoose.Types.ObjectId
+  @IsNotEmpty()
+  @IsString()
+  code: string
 
   @IsNotEmpty()
   @IsString()
@@ -25,8 +25,12 @@ export class createCourseDto {
   difficulty_level: string
 
   @IsNotEmpty()
+  @IsString()
+  created_by: string
+
+  @IsNotEmpty()
   @IsMongoId()
-  created_by: mongoose.Types.ObjectId
+  created_by_id: mongoose.Types.ObjectId
 
   @IsOptional()
   @IsDate()

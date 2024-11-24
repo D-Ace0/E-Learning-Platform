@@ -6,8 +6,6 @@ export type QuizDocument = Quiz & Document
 
 @Schema()
 export class Quiz {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, default: function () { return this._id; }, unique: true })
-  quiz_id: mongoose.Types.ObjectId;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Module })
   module_id: mongoose.Types.ObjectId

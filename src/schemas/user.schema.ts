@@ -11,8 +11,6 @@ export enum user_role {
 
 @Schema()
 export class User {
-  @Prop({ required: true, unique: true })
-  user_id: mongoose.Types.ObjectId
 
   @Prop({ required: true })
   name: string

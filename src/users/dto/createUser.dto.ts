@@ -3,10 +3,6 @@ import { IsString, IsNotEmpty, IsEnum, IsMongoId, IsDate, IsOptional, IsBoolean 
 import mongoose from 'mongoose'
 
 export class createUserDto {
-  
-  @IsOptional()
-  @IsMongoId()
-  user_id?: mongoose.Types.ObjectId
 
   @IsNotEmpty()
   @IsString()

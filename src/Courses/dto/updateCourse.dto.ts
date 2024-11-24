@@ -2,6 +2,10 @@ import { IsString, IsOptional, IsEnum, IsArray, IsMongoId, IsDate } from 'class-
 import mongoose from 'mongoose'
 
 export class updateCourseDto {
+
+  @IsOptional()
+  @IsString()
+  code?: string
   
   @IsOptional()
   @IsString()
@@ -19,9 +23,14 @@ export class updateCourseDto {
   @IsEnum(['beginner', 'intermediate', 'advanced'])
   difficulty_level?: string
 
+
+  @IsOptional()
+  @IsString()
+  created_by?: string
+
   @IsOptional()
   @IsMongoId()
-  created_by?: mongoose.Types.ObjectId
+  created_by_id?: mongoose.Types.ObjectId
 
   @IsOptional()
   @IsDate()
