@@ -6,7 +6,7 @@ import mongoose, { Document } from 'mongoose'
 export type ResponseDocument = Response & Document
 
 @Schema()
-export class Respose {
+export class Response {
 
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
   user_id: mongoose.Types.ObjectId
