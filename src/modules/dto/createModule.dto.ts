@@ -8,14 +8,14 @@ export class createModuleDto{
   course_id: mongoose.Types.ObjectId;
 
   @IsNotEmpty()
-  @IsString({ each: true })
+  @IsString()
   title: string
 
   @IsNotEmpty()
   @IsString()
   content: string
 
-  @IsArray()
+  @IsNotEmpty()
   @IsArray()
   @IsString({ each: true })
   resources?: string[]

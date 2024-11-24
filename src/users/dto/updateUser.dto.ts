@@ -1,4 +1,6 @@
-import { IsString, IsOptional, IsUrl, IsEnum, IsDate, IsEmail, IsBoolean } from 'class-validator'
+import { IsString, IsOptional, IsUrl, IsEnum, IsDate, IsEmail, IsBoolean, IsMongoId, IsArray } from 'class-validator'
+import mongoose from 'mongoose'
+
 
 export class updateUserDto {
 
@@ -15,16 +17,23 @@ export class updateUserDto {
   password_hash?: string
 
   @IsOptional()
+  @IsString()
   @IsEnum(['student', 'instructor', 'admin'])
   role?: string
 
   @IsOptional()
+  @IsString()
   @IsUrl()
   profile_picture_url?: string
 
   @IsOptional()
   @IsDate()
   created_at?: Date
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  courses?: mongoose.Schema.Types.ObjectId[]
 
   @IsOptional()
   @IsString()

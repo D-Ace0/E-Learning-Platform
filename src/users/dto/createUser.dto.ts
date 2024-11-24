@@ -1,5 +1,5 @@
 
-import { IsString, IsNotEmpty, IsEnum, IsMongoId, IsDate, IsOptional, IsBoolean } from 'class-validator'
+import { IsString, IsNotEmpty, IsEnum, IsArray, IsDate, IsOptional, IsBoolean, IsMongoId } from 'class-validator'
 import mongoose from 'mongoose'
 
 export class createUserDto {
@@ -27,6 +27,11 @@ export class createUserDto {
   @IsOptional()
   @IsDate()
   created_at?: Date
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  courses?: mongoose.Schema.Types.ObjectId[]
 
   @IsOptional()
   @IsString()

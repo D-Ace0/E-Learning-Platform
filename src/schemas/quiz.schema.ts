@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Module } from './module.schema'
 import mongoose from 'mongoose'
 
@@ -7,14 +7,14 @@ export type QuizDocument = Quiz & Document
 @Schema()
 export class Quiz {
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Module })
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => Module } as PropOptions)
   module_id: mongoose.Types.ObjectId
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: [String] })
   questions: string[]
 
-  @Prop({ required: true, type: Date, default: Date.now })
-  created_at: Date
+  @Prop({ required: false, type: Date, default: Date.now })
+  created_at?: Date
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz)

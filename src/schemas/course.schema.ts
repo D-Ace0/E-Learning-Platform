@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from './user.schema';
 import mongoose, { Document } from 'mongoose';
 
@@ -12,41 +12,38 @@ enum difficulty_levels {
 
 @Schema()
 export class Course {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, type: String })
   code: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   title: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   description: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   category: string;
 
-  @Prop({ required: true, enum: difficulty_levels })
+  @Prop({ required: true, enum: difficulty_levels, type: String })
   difficulty_level: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   created_by: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
-  created_by_id: mongoose.Types.ObjectId
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
+  created_by_id: mongoose.Types.ObjectId;
 
-  @Prop({ required: true, type: Date, default: Date.now })
+  @Prop({ required: false, type: Date, default: Date.now })
   created_at?: Date;
 
-  @Prop({required: true})
-  video: string
+  @Prop({ required: true, type: String })
+  video: string;
 
-  @Prop({required: true})
-  pdf: string
+  @Prop({ required: true, type: String })
+  pdf: string;
 
-  @Prop({default: null})
-  parent_version?: string // this one will hold the course_id of the old updated version if exists or if this db course entry is created via an update functionality
-
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }], default: [] })
-  enrolled_students?: mongoose.Schema.Types.ObjectId[];
+  @Prop({ required: false, default: null, type: String })
+  parent_version?: string;
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);

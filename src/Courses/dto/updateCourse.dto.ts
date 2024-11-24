@@ -20,6 +20,7 @@ export class updateCourseDto {
   category?: string
   
   @IsOptional()
+  @IsString()
   @IsEnum(['beginner', 'intermediate', 'advanced'])
   difficulty_level?: string
 
@@ -47,9 +48,5 @@ export class updateCourseDto {
   @IsOptional()
   @IsMongoId()
   parent_course_id?: mongoose.Types.ObjectId
-
-  @IsOptional()
-  @IsArray()
-  @IsMongoId({ each: true })
-  enrolled_students?: mongoose.Schema.Types.ObjectId[]
+  
 }

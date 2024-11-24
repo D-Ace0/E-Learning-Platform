@@ -1,4 +1,4 @@
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Schema, Prop, SchemaFactory, PropOptions } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { User } from './user.schema';
 import { Course } from './course.schema';
@@ -7,23 +7,21 @@ export type NoteDocument = Note & Document;
 
 @Schema()
 export class Note {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId(), unique: true })
-  note_id: mongoose.Types.ObjectId
 
-  @Prop({ required: true })
-  content: string;
-
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
   user_id: mongoose.Schema.Types.ObjectId;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Course })
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => Course } as PropOptions)
   course_id?: mongoose.Schema.Types.ObjectId;
 
-  @Prop({ required: true, type: Date, default: Date.now })
-  created_at: Date;
+  @Prop({ required: true, type: String })
+  content: string
 
-  @Prop({ required: true, type: Date, default: Date.now })
-  updated_at: Date;
+  @Prop({ required: false, type: Date, default: Date.now })
+  created_at?: Date
+
+  @Prop({ required: false, type: Date, default: Date.now })
+  last_updated?: Date
 }
 
 export const NoteSchema = SchemaFactory.createForClass(Note);

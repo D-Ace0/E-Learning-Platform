@@ -12,7 +12,7 @@ export class updateQuizDto{
   @IsString({ each: true })
   questions?: string[]
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsDate()
   created_at?: Date
 
