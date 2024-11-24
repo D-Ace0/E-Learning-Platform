@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose, { Document } from 'mongoose'
 import { User } from './user.schema'
 
@@ -6,17 +6,15 @@ export type RecommendationDocument = Recommendation & Document
 
 @Schema()
 export class Recommendation extends Document {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, default: () => new mongoose.Types.ObjectId(), unique: true })
-  recommendation_id: mongoose.Types.ObjectId
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
   user_id: mongoose.Types.ObjectId
 
   @Prop({ required: true, type: [String] })
-  recommendedItems: string[]
+  recommended_items: string[]
 
-  @Prop({ required: true, type: Date, default: Date.now })
-  generated_at: Date
+  @Prop({ required: false, type: Date, default: Date.now })
+  generated_at?: Date
 }
 
 export const RecommendationSchema = SchemaFactory.createForClass(Recommendation)
