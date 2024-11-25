@@ -1,7 +1,7 @@
 import { Schema, Prop, SchemaFactory, PropOptions } from '@nestjs/mongoose'
 import mongoose, { Date, Document, Types } from 'mongoose'
 import { User } from './user.schema'
-import { Course } from './course.schema'
+import { Course } from './courses.schema'
 
 export type UserInteractionDocument = UserInteraction & Document
 

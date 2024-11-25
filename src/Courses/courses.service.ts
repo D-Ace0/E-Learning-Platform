@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+<<<<<<< HEAD
 import mongoose, { Model, mongo } from 'mongoose';
 import { Course } from 'src/schemas/course.schema';
 import { CreateCourseDto } from './dto/createCourse.dto';
@@ -7,6 +8,13 @@ import { UpdateCourseDto } from './dto/updateCourse.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { isValidObjectId, Types } from 'mongoose';
 import { User } from 'src/schemas/user.schema';
+=======
+import { Course } from 'src/schemas/courses.schema';
+import { createCourseDto } from 'src/Courses/dto/createCourse.dto';
+import { updateCourseDto } from 'src/Courses/dto/updateCourse.dto';
+import mongoose from 'mongoose';
+
+>>>>>>> 997b3fe (dashboard now shows user, courses and completion percentage)
 
 
 @Injectable()

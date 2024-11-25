@@ -1,7 +1,24 @@
+<<<<<<< HEAD
 import { Controller, Post, Put, Body, Param, UseInterceptors, UploadedFile, UseGuards, Get, Request, Req, } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/createCourse.dto';
 import { UpdateCourseDto } from './dto/updateCourse.dto';
+=======
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards
+} from '@nestjs/common';
+import { CourseService } from './courses.service';
+import { Course } from 'src/schemas/courses.schema';
+import { createCourseDto } from './dto/createCourse.dto';
+import { updateCourseDto } from './dto/updateCourse.dto';
+>>>>>>> 997b3fe (dashboard now shows user, courses and completion percentage)
 import { Roles } from 'src/decorators/roles.decorator';
 import { AuthenticationGuard } from 'src/guards/authentication.guard';
 import { AuthorizationGuard } from 'src/guards/authorization.guard';

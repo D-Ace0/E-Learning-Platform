@@ -45,4 +45,8 @@ export class Course {
   enrolledStudents: mongoose.Schema.Types.ObjectId[];
 }
 
+<<<<<<< HEAD:src/schemas/course.schema.ts
 export const CourseSchema = SchemaFactory.createForClass(Course);
+=======
+export const CoursesSchema = SchemaFactory.createForClass(Course);
+>>>>>>> 997b3fe (dashboard now shows user, courses and completion percentage):src/schemas/courses.schema.ts
