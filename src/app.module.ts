@@ -13,6 +13,7 @@ import { CourseModule } from './Courses/courses.module'
 import { QuizModule } from './quizzes/quiz.module'
 import { ModuleModule } from './modules/module.module'
 import { MfaModule } from './mfa/mfa.module'
+import { DashboardModule } from "./dashboard/dashboard.module";
 
 dotenv.config();
 
@@ -32,9 +33,10 @@ dotenv.config();
     UsersModule,
     NotesModule,
     ModuleModule,
-    MfaModule, 
+    MfaModule,
+    DashboardModule,
     MongooseModule.forRoot(
-      'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
+      'mongodb+srv://AhmedKhadrawy:9g3bcGpd2Ay9v0LR@database.r38ac.mongodb.net/E-Learning-Platform', {}),
   ],
 })
 export class AppModule implements NestModule {

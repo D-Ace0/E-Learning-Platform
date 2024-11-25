@@ -2,6 +2,9 @@
 /dist
 /node_modules
 /build
+Project Description.pdf
+Suggested Workflow.pdf
+Supplementary Material.pdf
 
 .env
 /.vscode
