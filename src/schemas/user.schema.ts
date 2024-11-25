@@ -1,5 +1,5 @@
 import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose, { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose'
 import { Course } from './course.schema'
 
 export type UserDocument = User & Document
@@ -23,7 +23,7 @@ export class User {
   password_hash: string
 
   @Prop({ required: true, type: String, enum: user_role })
-  role: string;
+  role: string
 
   @Prop({ required: false, type: String})
   profile_picture_url?: string
