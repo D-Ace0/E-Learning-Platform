@@ -10,7 +10,7 @@ import {
   } from '@nestjs/common';
   import { JwtService } from '@nestjs/jwt';
   import { UsersService } from './users.service';
-  import { User } from 'src/schemas/user.schema';
+  import { User } from 'src/course/models/user.schema';
   import { createUserDto } from './dto/createUser.dto';
   import { updateUserDto } from './dto/updateUser.dto';
   import { Roles } from 'src/decorators/roles.decorator';

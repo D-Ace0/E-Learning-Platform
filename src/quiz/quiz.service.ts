@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Quiz } from 'src/schemas/quiz.schema';
+import { Quiz } from 'src/quiz/models/quiz.schema';
 import { createQuizDto } from 'src/quizzes/dto/createQuiz.dto';
 import { updateQuizDto } from 'src/quizzes/dto/updateQuiz.dto';
 import mongoose from 'mongoose';

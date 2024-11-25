@@ -9,7 +9,7 @@ import {
   UseGuards
 } from '@nestjs/common';
 import { QuizService } from 'src/quizzes/quiz.service';
-import { Quiz } from 'src/schemas/quiz.schema';
+import { Quiz } from 'src/quiz/models/quiz.schema';
 import { createQuizDto } from 'src/quizzes/dto/createQuiz.dto';
 import { updateQuizDto } from 'src/quizzes/dto/updateQuiz.dto';
 import { Roles } from 'src/decorators/roles.decorator';
