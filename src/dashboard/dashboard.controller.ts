@@ -10,4 +10,5 @@ export class DashboardController {
   async getStudentDashboard(@Param('id')id:string) {
     return this.dashboardService.getStudentDashboard(id);
   }
+
 }
