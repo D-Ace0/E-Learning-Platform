@@ -3,7 +3,7 @@ import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { JwtModule } from '@nestjs/jwt'
 import { MongooseModule } from '@nestjs/mongoose'
-import { User, UserSchema } from 'src/course/models/user.schema'
+import { User, UserSchema } from 'src/user/models/user.schema'
 import { MfaModule } from '../mfa/mfa.module' 
 
 @Module({

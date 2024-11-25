@@ -9,9 +9,9 @@ import {
   UseGuards
 } from '@nestjs/common';
 import { CourseService } from './courses.service';
-import { Course } from 'src/schemas/course.schema';
-import { createCourseDto } from './dto/createCourse.dto';
-import { updateCourseDto } from './dto/updateCourse.dto';
+import { Course } from 'src/course/models/course.schema';
+import { CreateCourseDto } from './dto/create.course.dto';
+import { UpdateCourseDto } from './dto/update.course.dto';
 import { Roles } from 'src/decorators/roles.decorator';
 import { AuthenticationGuard } from 'src/guards/authentication.guard';
 import { AuthorizationGuard } from 'src/guards/authorization.guard';
@@ -41,7 +41,7 @@ export class CourseController {
   //Create course
   @Post()
   //@Roles(['instructor'])
-  async createCourse(@Body() courseData: createCourseDto) {
+  async createCourse(@Body() courseData: CreateCourseDto) {
     // Get the new course data from the request body
     const newCourse = await this.courseService.create(courseData);
     return newCourse;
@@ -52,7 +52,7 @@ export class CourseController {
   //@Roles(['instructor'])
   async updateCourse(
     @Param('course_id') course_id: mongoose.Types.ObjectId,
-    @Body() courseData: updateCourseDto,
+    @Body() courseData: UpdateCourseDto,
   ) {
     const updatedCourse = await this.courseService.update(course_id, courseData);
     return updatedCourse;

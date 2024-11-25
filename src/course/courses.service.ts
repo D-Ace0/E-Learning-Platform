@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Course } from 'src/schemas/course.schema';
-import { createCourseDto } from 'src/Courses/dto/createCourse.dto';
-import { updateCourseDto } from 'src/Courses/dto/updateCourse.dto';
+import { Course } from 'src/course/models/course.schema';
+import { CreateCourseDto } from 'src/course/dto/create.course.dto';
+import { UpdateCourseDto } from 'src/course/dto/update.course.dto';
 import mongoose from 'mongoose';
 
 
@@ -14,7 +14,7 @@ export class CourseService {
   ) {}
 
   // create a course
-  async create(courseData: createCourseDto): Promise<Course> {
+  async create(courseData: CreateCourseDto): Promise<Course> {
     const newCourse = new this.courseModel(courseData); // Use DTO for course creation
     return await newCourse.save(); // Save it to the database
   }
@@ -32,7 +32,7 @@ export class CourseService {
 
   
   // Update a course's details by ID
-  async update(course_id: mongoose.Types.ObjectId, updateData: updateCourseDto): Promise<Course> {
+  async update(course_id: mongoose.Types.ObjectId, updateData: UpdateCourseDto): Promise<Course> {
     return await this.courseModel.findByIdAndUpdate(course_id, updateData, { new: true });  // Find and update the course
   } 
 

@@ -1,6 +1,6 @@
 import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Quiz } from '../quiz/models/quiz.schema'
-import { User } from '../course/models/user.schema'
+import { User } from '../user/models/user.schema'
 import mongoose, { Document } from 'mongoose'
 
 export type ResponseDocument = Response & Document

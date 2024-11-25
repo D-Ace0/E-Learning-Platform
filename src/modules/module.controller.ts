@@ -9,7 +9,7 @@ import {
   UseGuards
 } from '@nestjs/common';
 import { ModuleService } from './module.service';
-import { Module } from '../schemas/module.schema';
+import { Module } from 'src/modules/models/module.schema';
 import { createModuleDto } from 'src/modules/dto/createModule.dto';
 import { updateModuleDto } from 'src/modules/dto/updateModule.dto';
 import mongoose from 'mongoose';

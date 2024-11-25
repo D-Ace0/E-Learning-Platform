@@ -1,6 +1,6 @@
 import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose, { Document } from 'mongoose'
-import { User } from '../course/models/user.schema'
+import { User } from '../user/models/user.schema'
 
 export type RecommendationDocument = Recommendation & Document
 

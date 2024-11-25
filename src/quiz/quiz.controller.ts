@@ -8,10 +8,10 @@ import {
   Put,
   UseGuards
 } from '@nestjs/common';
-import { QuizService } from 'src/quizzes/quiz.service';
+import { QuizService } from 'src/quiz/quiz.service';
 import { Quiz } from 'src/quiz/models/quiz.schema';
-import { createQuizDto } from 'src/quizzes/dto/createQuiz.dto';
-import { updateQuizDto } from 'src/quizzes/dto/updateQuiz.dto';
+import { createQuizDto } from 'src/quiz/dto/createQuiz.dto';
+import { updateQuizDto } from 'src/quiz/dto/updateQuiz.dto';
 import { Roles } from 'src/decorators/roles.decorator';
 import { AuthenticationGuard } from 'src/guards/authentication.guard';
 import { AuthorizationGuard } from 'src/guards/authorization.guard';

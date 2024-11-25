@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose, { Document } from 'mongoose'
-import { User } from '../course/models/user.schema'
-import { Course } from './course.schema'
+import { User } from '../user/models/user.schema'
+import { Course } from '../course/models/course.schema'
 
 export type StudentSchemaDocument = Student & Document
 

@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Quiz } from 'src/quiz/models/quiz.schema';
-import { createQuizDto } from 'src/quizzes/dto/createQuiz.dto';
-import { updateQuizDto } from 'src/quizzes/dto/updateQuiz.dto';
+import { createQuizDto } from 'src/quiz/dto/createQuiz.dto';
+import { updateQuizDto } from 'src/quiz/dto/updateQuiz.dto';
 import mongoose from 'mongoose';
+
+
 
 @Injectable()
 export class QuizService { 
