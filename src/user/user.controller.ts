@@ -7,15 +7,15 @@ import {
     Post,
     Put,
   } from '@nestjs/common'
-  import { UsersService } from './users.service'
+  import { UserService } from './user.service'
   import { User } from 'src/user/models/user.schema'
-  import { createUserDto } from './dto/createUser.dto'
-  import { updateUserDto } from './dto/updateUser.dto'
+  import { createUserDto } from './dto/create.user.dto'
+  import { updateUserDto } from './dto/update.user.dto'
   import mongoose from 'mongoose'
 
 @Controller('user')
-export class UsersController {
-    constructor(private userService: UsersService){}
+export class UserController {
+    constructor(private userService: UserService){}
 
     // Get All Users
     @Get('allUsers')
@@ -33,7 +33,6 @@ export class UsersController {
 
     //Create user
     @Post()
-
     async createUser(@Body() userData: createUserDto) {
         // Get the new user data from the request body
         const newUser = await this.userService.create(userData)

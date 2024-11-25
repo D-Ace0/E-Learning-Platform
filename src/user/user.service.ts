@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { User, user_role } from 'src/user/models/user.schema'
-import { createUserDto } from './dto/createUser.dto'
-import { updateUserDto } from './dto/updateUser.dto'
+import { User } from 'src/user/models/user.schema'
+import { createUserDto } from './dto/create.user.dto'
+import { updateUserDto } from './dto/update.user.dto'
 import mongoose from 'mongoose'
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(@InjectModel(User.name) private userModel: mongoose.Model<User>) {}
 
 

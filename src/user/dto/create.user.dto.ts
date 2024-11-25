@@ -1,5 +1,5 @@
 
-import { IsString, IsNotEmpty, IsEnum, IsArray, IsDate, IsOptional, IsBoolean, IsMongoId } from 'class-validator'
+import { IsString, IsNotEmpty, IsArray, IsDate, IsOptional, IsMongoId } from 'class-validator'
 import mongoose from 'mongoose'
 
 export class createUserDto {
@@ -16,10 +16,6 @@ export class createUserDto {
   @IsString()
   password_hash: string
 
-  @IsNotEmpty()
-  @IsEnum(['student', 'instructor', 'admin'])
-  role: string
-
   @IsOptional()
   @IsString()
   profile_picture_url?: string
@@ -32,13 +28,5 @@ export class createUserDto {
   @IsArray()
   @IsMongoId({ each: true })
   courses?: mongoose.Schema.Types.ObjectId[]
-
-  @IsOptional()
-  @IsString()
-  mfa_secret?: string
-
-  @IsOptional()
-  @IsBoolean()
-  mfa_enabled?: boolean
   
 }

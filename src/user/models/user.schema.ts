@@ -4,26 +4,17 @@ import { Course } from '../../course/models/course.schema'
 
 export type UserDocument = HydratedDocument<User>
 
-export enum user_role {
-  STUDENT = 'student',
-  INSTRUCTOR = 'instructor',
-  ADMIN = 'admin'
-}
-
 @Schema()
 export class User {
 
   @Prop({ required: true, type: String  })
   name: string
 
-  @Prop({ required: true, type: String })
+  @Prop({ required: true, type: String, unique: true })
   email: string
 
   @Prop({ required: true, type: String })
   password_hash: string
-
-  @Prop({ required: true, type: String, enum: user_role })
-  role: string
 
   @Prop({ required: false, type: String})
   profile_picture_url?: string
@@ -33,12 +24,6 @@ export class User {
 
   @Prop({ required: false, default: [], type: [mongoose.Schema.Types.ObjectId], ref: () => Course} as PropOptions)
   courses?: mongoose.Schema.Types.ObjectId[]
-
-  @Prop({ required: false, type: String })
-  mfa_secret?: string
-
-  @Prop({ required: false, default: false, type: Boolean })
-  mfa_enabled?: boolean
   
 }
 
