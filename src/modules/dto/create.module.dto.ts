@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, IsArray, IsMongoId, IsDate, IsOptional } from 'class-validator';
 import mongoose from 'mongoose';
 
-export class createModuleDto{
+export class CreateModuleDto{
 
   @IsNotEmpty()
   @IsMongoId()

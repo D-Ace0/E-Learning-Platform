@@ -1,8 +1,8 @@
 import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose, { Document } from 'mongoose'
+import mongoose, { HydratedDocument } from 'mongoose'
 import { User } from '../user/models/user.schema'
 
-export type AuthenticationLogDocument = AuthenticationLog & Document
+export type AuthenticationLogDocument = HydratedDocument<AuthenticationLog>
 
 export enum AuthenticationStatus {
   SUCCESS = 'Success',

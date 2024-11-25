@@ -10,11 +10,8 @@ import {
 } from '@nestjs/common';
 import { QuizService } from 'src/quiz/quiz.service';
 import { Quiz } from 'src/quiz/models/quiz.schema';
-import { createQuizDto } from 'src/quiz/dto/createQuiz.dto';
-import { updateQuizDto } from 'src/quiz/dto/updateQuiz.dto';
-import { Roles } from 'src/decorators/roles.decorator';
-import { AuthenticationGuard } from 'src/guards/authentication.guard';
-import { AuthorizationGuard } from 'src/guards/authorization.guard';
+import { CreateQuizDto } from 'src/quiz/dto/create.quiz.dto';
+import { UpdateQuizDto } from 'src/quiz/dto/update.quiz.dto';
 import mongoose from 'mongoose';
 
 
@@ -41,8 +38,7 @@ export class QuizController {
 
   //Create quiz
   @Post()
-  //@Roles(['instructor'])
-  async createQuiz(@Body() quizData: createQuizDto) {
+  async createQuiz(@Body() quizData: CreateQuizDto) {
     // Get the new student data from the request body
     const newQuiz = await this.quizService.create(quizData);
     return newQuiz;
@@ -50,17 +46,15 @@ export class QuizController {
 
   // Update a quiz's details
   @Put(':quiz_id')
-  //@Roles(['instructor'])
   async updateQuiz(
     @Param('quiz_id') quiz_id: mongoose.Types.ObjectId,
-    @Body() quizData: updateQuizDto,
+    @Body() quizData: UpdateQuizDto,
   ) {
     const updatedQuiz = await this.quizService.update(quiz_id, quizData);
     return updatedQuiz;
   }
 
   // Delete a quiz by id
-  //@Roles(['instructor'])
   @Delete(':quiz_id')
   async deleteQuiz(@Param('quiz_id') quiz_id: mongoose.Types.ObjectId) {
     const deletedQuiz = await this.quizService.delete(quiz_id);

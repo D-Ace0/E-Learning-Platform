@@ -8,13 +8,10 @@ import {
   Put,
   UseGuards
 } from '@nestjs/common';
-import { CourseService } from './courses.service';
+import { CourseService } from './course.service';
 import { Course } from 'src/course/models/course.schema';
 import { CreateCourseDto } from './dto/create.course.dto';
 import { UpdateCourseDto } from './dto/update.course.dto';
-import { Roles } from 'src/decorators/roles.decorator';
-import { AuthenticationGuard } from 'src/guards/authentication.guard';
-import { AuthorizationGuard } from 'src/guards/authorization.guard';
 import mongoose from 'mongoose';
 
 

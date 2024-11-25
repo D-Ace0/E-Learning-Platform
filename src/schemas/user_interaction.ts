@@ -1,9 +1,9 @@
 import { Schema, Prop, SchemaFactory, PropOptions } from '@nestjs/mongoose'
-import mongoose, { Date, Document, Types } from 'mongoose'
+import mongoose, { Date, HydratedDocument, Types } from 'mongoose'
 import { User } from '../user/models/user.schema'
 import { Course } from '../course/models/course.schema'
 
-export type UserInteractionDocument = UserInteraction & Document
+export type UserInteractionDocument = HydratedDocument<UserInteraction>
 
 @Schema()
 export class UserInteraction {

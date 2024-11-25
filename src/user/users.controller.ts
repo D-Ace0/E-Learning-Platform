@@ -8,14 +8,10 @@ import {
     Put,
     UseGuards
   } from '@nestjs/common';
-  import { JwtService } from '@nestjs/jwt';
   import { UsersService } from './users.service';
   import { User } from 'src/user/models/user.schema';
   import { createUserDto } from './dto/createUser.dto';
   import { updateUserDto } from './dto/updateUser.dto';
-  import { Roles } from 'src/decorators/roles.decorator';
-  import { AuthenticationGuard } from 'src/guards/authentication.guard';
-  import { AuthorizationGuard } from 'src/guards/authorization.guard';
   import mongoose from 'mongoose';
 
 @Controller('user')

@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';;
 import { Module} from 'src/modules/models/module.schema';
-import { createModuleDto } from 'src/modules/dto/createModule.dto';
-import { updateModuleDto } from 'src/modules/dto/updateModule.dto';
+import { CreateModuleDto } from 'src/modules/dto/create.module.dto';
+import { UpdateModuleDto } from 'src/modules/dto/update.module.dto';
 import mongoose from 'mongoose';
 
 
@@ -13,45 +13,30 @@ export class ModuleService {
     @InjectModel(Module.name) private moduleModel: mongoose.Model<Module>, // Injects the Module model
   ) {}
 
-  // creates
-  async create(moduleData: createModuleDto): Promise<Module> {
+  // create a module
+  async create(moduleData: CreateModuleDto): Promise<Module> {
     const newModule = new this.moduleModel(moduleData);
     return newModule.save()
   }
 
-  //  finds
+  // Get all modules
   async findAll(): Promise<Module[]> {
     let modules = await this.moduleModel.find();
     return modules
   }
 
-  // finds one
+  // Get a module by ID
   async findById(module_id: mongoose.Types.ObjectId): Promise<Module> {
     return await this.moduleModel.findById(module_id);
-    // const module = await this.moduleModel.findById(module_id).exec();
-    // if (!module) {
-    //   throw new NotFoundException(`Module with ID ${module_id} not found`)
-    // }
-    // return module
   }
 
-  // updates
-  async update(module_id: mongoose.Types.ObjectId, updateData: updateModuleDto): Promise<Module> {
+  // Update a module's details by ID
+  async update(module_id: mongoose.Types.ObjectId, updateData: UpdateModuleDto): Promise<Module> {
     return await this.moduleModel.findByIdAndUpdate(module_id, updateData, { new: true });
-    //   .findByIdAndUpdate(module_id, updateModuleDto, { new: true })
-    //   .exec();
-    // if (!updatedModule) {
-    //   throw new NotFoundException(`Module with ID ${module_id} not found`);
-    // }
-    // return updatedModule;
   }
 
-  // Deletes
+  // Delete a module by ID
   async delete(module_id: mongoose.Types.ObjectId): Promise<Module> {
     return await this.moduleModel.findByIdAndDelete(module_id);
-    // const result = await this.moduleModel.findByIdAndDelete(module_id).exec();
-    // if (!result) {
-    //   throw new NotFoundException(`Module with ID ${module_id} not found`)
-    // }
   }
 }

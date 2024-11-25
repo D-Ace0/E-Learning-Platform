@@ -12,9 +12,6 @@ import { Note } from 'src/notes/models/note.schema'
 import { NoteService } from 'src/notes/note.service'
 import { CreateNoteDto } from 'src/notes/dto/create.note.dto'
 import { UpdateNoteDto } from 'src/notes/dto/update.note.dto'
-import { Roles } from 'src/decorators/roles.decorator'
-import { AuthenticationGuard } from 'src/guards/authentication.guard'
-import { AuthorizationGuard } from 'src/guards/authorization.guard'
 import mongoose from 'mongoose'
 
 
@@ -40,7 +37,6 @@ export class NoteController {
 
   //Create note
   @Post()
-  //@Roles(['instructor'])
   async createNote(@Body() noteData: CreateNoteDto) {
     // Get the new student data from the request body
     const newNote = await this.noteService.create(noteData)
@@ -49,7 +45,6 @@ export class NoteController {
 
   // Update a note's details
   @Put(':note_id')
-  //@Roles(['instructor'])
   async updateNote(
     @Param('note_id') note_id: mongoose.Types.ObjectId,
     @Body() noteData: UpdateNoteDto,
@@ -59,7 +54,6 @@ export class NoteController {
   }
 
   // Delete a note by id
-  //@Roles(['instructor'])
   @Delete(':note_id')
   async deleteNote(@Param('note_id') note_id: mongoose.Types.ObjectId) {
     const deletedNote = await this.noteService.delete(note_id)

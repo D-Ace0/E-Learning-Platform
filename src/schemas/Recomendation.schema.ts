@@ -1,11 +1,11 @@
 import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose, { Document } from 'mongoose'
+import mongoose, { HydratedDocument } from 'mongoose'
 import { User } from '../user/models/user.schema'
 
-export type RecommendationDocument = Recommendation & Document
+export type RecommendationDocument = HydratedDocument<Recommendation>
 
 @Schema()
-export class Recommendation extends Document {
+export class Recommendation {
 
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
   user_id: mongoose.Types.ObjectId

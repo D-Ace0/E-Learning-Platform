@@ -1,7 +1,7 @@
 import { IsString, IsOptional, IsDate, IsNotEmpty, IsMongoId, IsArray } from 'class-validator'
 import mongoose from 'mongoose'
 
-export class updateQuizDto{
+export class UpdateQuizDto{
 
   @IsOptional()
   @IsMongoId()
