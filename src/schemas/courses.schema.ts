@@ -46,4 +46,4 @@ export class Course {
   parent_version?: string;
 }
 
-export const CourseSchema = SchemaFactory.createForClass(Course);
+export const CoursesSchema = SchemaFactory.createForClass(Course);

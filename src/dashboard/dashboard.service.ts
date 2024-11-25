@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { Course, CourseDocument } from '../schemas/course.schema';
+import { Course, CourseDocument } from '../schemas/courses.schema';
 import { Progress, ProgressDocument } from '../schemas/progress.schema';
 import { User, UserDocument } from '../schemas/user.schema';
 
@@ -36,7 +36,7 @@ export class DashboardService {
 
       return {
         course,
-        completionPercentage: progress?.completionpercentage ?? 0,
+        completionPercentage: progress?.completionPercentage ?? 0,
       };
     }));
 

@@ -9,7 +9,7 @@ import {
   UseGuards
 } from '@nestjs/common';
 import { CourseService } from './courses.service';
-import { Course } from 'src/schemas/course.schema';
+import { Course } from 'src/schemas/courses.schema';
 import { createCourseDto } from './dto/createCourse.dto';
 import { updateCourseDto } from './dto/updateCourse.dto';
 import { Roles } from 'src/decorators/roles.decorator';
