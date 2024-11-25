@@ -7,12 +7,12 @@ import {
     Post,
     Put,
     UseGuards
-  } from '@nestjs/common';
-  import { UsersService } from './users.service';
-  import { User } from 'src/user/models/user.schema';
-  import { createUserDto } from './dto/createUser.dto';
-  import { updateUserDto } from './dto/updateUser.dto';
-  import mongoose from 'mongoose';
+  } from '@nestjs/common'
+  import { UsersService } from './users.service'
+  import { User } from 'src/user/models/user.schema'
+  import { createUserDto } from './dto/createUser.dto'
+  import { updateUserDto } from './dto/updateUser.dto'
+  import mongoose from 'mongoose'
 
 @Controller('user')
 // @Roles(['admin'])
@@ -25,7 +25,7 @@ export class UsersController {
     // @Roles(UserRole.ADMIN)
     @Get('allUsers')
     async getAllUsers(): Promise<User[]> {
-        return await this.userService.findAll();
+        return await this.userService.findAll()
     }
 
     // Get All Students
@@ -45,8 +45,8 @@ export class UsersController {
     @Get(':user_id')
     async getUserById(@Param('user_id') user_id: mongoose.Types.ObjectId) {
         // Get the user ID from the route parameters
-        const user = await this.userService.findById(user_id);
-        return user;
+        const user = await this.userService.findById(user_id)
+        return user
     }
 
     //Create user
@@ -54,8 +54,8 @@ export class UsersController {
     // @Roles(UserRole.ADMIN)
     async createUser(@Body() userData: createUserDto) {
         // Get the new user data from the request body
-        const newUser = await this.userService.create(userData);
-        return newUser;
+        const newUser = await this.userService.create(userData)
+        return newUser
     }
     
     // Update a user's details by Id
@@ -65,8 +65,8 @@ export class UsersController {
         @Param('user_id') user_id: mongoose.Types.ObjectId,
         @Body() userData: updateUserDto,
     ) {
-        const updatedUser = await this.userService.update(user_id, userData);
-        return updatedUser;
+        const updatedUser = await this.userService.update(user_id, userData)
+        return updatedUser
     }
 
     //@UseGuards(JwtService)
@@ -74,7 +74,7 @@ export class UsersController {
     @Delete(':user_id')
     // @Roles(UserRole.ADMIN)
     async deleteUser(@Param('user_id') user_id: mongoose.Types.ObjectId) {
-        const deletedUser = await this.userService.delete(user_id);
-        return deletedUser;
+        const deletedUser = await this.userService.delete(user_id)
+        return deletedUser
     }
 }

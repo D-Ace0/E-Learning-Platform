@@ -8,10 +8,10 @@ import {
   Put,
   UseGuards
 } from '@nestjs/common'
-import { Note } from 'src/notes/models/note.schema'
-import { NoteService } from 'src/notes/note.service'
-import { CreateNoteDto } from 'src/notes/dto/create.note.dto'
-import { UpdateNoteDto } from 'src/notes/dto/update.note.dto'
+import { Note } from 'src/note/models/note.schema'
+import { NoteService } from 'src/note/note.service'
+import { CreateNoteDto } from 'src/note/dto/create.note.dto'
+import { UpdateNoteDto } from 'src/note/dto/update.note.dto'
 import mongoose from 'mongoose'
 
 

@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Course } from 'src/course/models/course.schema';
-import { CreateCourseDto } from 'src/course/dto/create.course.dto';
-import { UpdateCourseDto } from 'src/course/dto/update.course.dto';
-import mongoose from 'mongoose';
+import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { Course } from 'src/course/models/course.schema'
+import { CreateCourseDto } from 'src/course/dto/create.course.dto'
+import { UpdateCourseDto } from 'src/course/dto/update.course.dto'
+import mongoose from 'mongoose'
 
 
 
@@ -15,30 +15,30 @@ export class CourseService {
 
   // create a course
   async create(courseData: CreateCourseDto): Promise<Course> {
-    const newCourse = new this.courseModel(courseData); // Use DTO for course creation
-    return await newCourse.save(); // Save it to the database
+    const newCourse = new this.courseModel(courseData) // Use DTO for course creation
+    return await newCourse.save() // Save it to the database
   }
 
   // Get all courses
   async findAll(): Promise<Course[]> {
-    let courses = await this.courseModel.find();  // Fetch all courses from the database
+    let courses = await this.courseModel.find()  // Fetch all courses from the database
     return courses
   }
 
   // Get a course by ID
   async findById(course_id: mongoose.Types.ObjectId): Promise<Course> {
-    return await this.courseModel.findById(course_id);  // Fetch a course by ID
+    return await this.courseModel.findById(course_id)  // Fetch a course by ID
   }
 
   
   // Update a course's details by ID
   async update(course_id: mongoose.Types.ObjectId, updateData: UpdateCourseDto): Promise<Course> {
-    return await this.courseModel.findByIdAndUpdate(course_id, updateData, { new: true });  // Find and update the course
+    return await this.courseModel.findByIdAndUpdate(course_id, updateData, { new: true })  // Find and update the course
   } 
 
   // Delete a course by ID
   async delete(course_id: mongoose.Types.ObjectId): Promise<Course> {
-    return await this.courseModel.findByIdAndDelete(course_id);  // Find and delete the course
+    return await this.courseModel.findByIdAndDelete(course_id)  // Find and delete the course
   }
 
   async enrollStudent(){
@@ -59,7 +59,7 @@ export class CourseService {
   //   if(!studentEnrolled) throw new ForbiddenException('The student you are searching for is not enrolled in any of your courses')
   
   //   const student = await this.userModel.findById(studentId).exec()
-  //   const plainStudent = student.toObject();
+  //   const plainStudent = student.toObject()
 
   //   if(!student) throw new NotFoundException('Student Not Found')
 

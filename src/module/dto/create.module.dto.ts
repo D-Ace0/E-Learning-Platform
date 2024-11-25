@@ -1,11 +1,11 @@
-import { IsNotEmpty, IsString, IsArray, IsMongoId, IsDate, IsOptional } from 'class-validator';
-import mongoose from 'mongoose';
+import { IsNotEmpty, IsString, IsArray, IsMongoId, IsDate, IsOptional } from 'class-validator'
+import mongoose from 'mongoose'
 
 export class CreateModuleDto{
 
   @IsNotEmpty()
   @IsMongoId()
-  course_id: mongoose.Types.ObjectId;
+  course_id: mongoose.Types.ObjectId
 
   @IsNotEmpty()
   @IsString()

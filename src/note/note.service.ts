@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Note } from 'src/notes/models/note.schema'
-import { CreateNoteDto } from 'src/notes/dto/create.note.dto'
-import { UpdateNoteDto } from 'src/notes/dto/update.note.dto'
+import { Note } from 'src/note/models/note.schema'
+import { CreateNoteDto } from 'src/note/dto/create.note.dto'
+import { UpdateNoteDto } from 'src/note/dto/update.note.dto'
 import mongoose from 'mongoose'
 
 
