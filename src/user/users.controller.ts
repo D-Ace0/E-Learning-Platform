@@ -6,7 +6,6 @@ import {
     Param,
     Post,
     Put,
-    UseGuards
   } from '@nestjs/common'
   import { UsersService } from './users.service'
   import { User } from 'src/user/models/user.schema'
@@ -15,31 +14,14 @@ import {
   import mongoose from 'mongoose'
 
 @Controller('user')
-// @Roles(['admin'])
-//@UseGuards(AuthenticationGuard, AuthorizationGuard)
 export class UsersController {
     constructor(private userService: UsersService){}
 
     // Get All Users
-    @Get()
-    // @Roles(UserRole.ADMIN)
     @Get('allUsers')
     async getAllUsers(): Promise<User[]> {
         return await this.userService.findAll()
     }
-
-    // Get All Students
-    @Get('allStudents')
-    async getAllStudents(){
-        return this.userService.getAllStudents()
-    }
-
-    // Get All Instructors
-    @Get('allInstructors')
-    async getAllInstructors(){
-        return this.userService.getAllInstructors()
-    }
-
 
     //Get user by id
     @Get(':user_id')
@@ -51,7 +33,7 @@ export class UsersController {
 
     //Create user
     @Post()
-    // @Roles(UserRole.ADMIN)
+
     async createUser(@Body() userData: createUserDto) {
         // Get the new user data from the request body
         const newUser = await this.userService.create(userData)
@@ -60,7 +42,6 @@ export class UsersController {
     
     // Update a user's details by Id
     @Put(':user_id')
-    // @Roles(UserRole.ADMIN)
     async updateUser(
         @Param('user_id') user_id: mongoose.Types.ObjectId,
         @Body() userData: updateUserDto,
@@ -69,10 +50,8 @@ export class UsersController {
         return updatedUser
     }
 
-    //@UseGuards(JwtService)
     // Delete a course by id
     @Delete(':user_id')
-    // @Roles(UserRole.ADMIN)
     async deleteUser(@Param('user_id') user_id: mongoose.Types.ObjectId) {
         const deletedUser = await this.userService.delete(user_id)
         return deletedUser

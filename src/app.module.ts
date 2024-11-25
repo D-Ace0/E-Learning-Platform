@@ -1,4 +1,4 @@
-import { Logger, MiddlewareConsumer, Module, NestModule } from '@nestjs/common'
+import { Logger, Module} from '@nestjs/common'
 import { UsersModule } from './user/users.module'
 import { MongooseModule } from '@nestjs/mongoose'
 import { NotesModule } from './note/note.module'
@@ -25,9 +25,7 @@ dotenv.config()
       'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
   ],
   controllers: [AppController],
-  providers: [AppService, {provide: APP_GUARD, useClass: JwtService}, Logger]
+  providers: [AppService]
 })
 
 export class AppModule {}
-
-//ask abdallah

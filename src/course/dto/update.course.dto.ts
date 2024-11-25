@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, IsArray, IsMongoId, IsDate } from 'class-validator'
+import { IsString, IsOptional, IsEnum, IsMongoId, IsDate } from 'class-validator'
 import mongoose from 'mongoose'
 
 export class UpdateCourseDto {

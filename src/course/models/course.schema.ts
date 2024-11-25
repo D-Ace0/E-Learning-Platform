@@ -44,6 +44,7 @@ export class Course {
 
   @Prop({ required: false, default: null, type: String })
   parent_version?: string
+  
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course)

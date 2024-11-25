@@ -6,7 +6,6 @@ import {
   Param,
   Post,
   Put,
-  UseGuards
 } from '@nestjs/common'
 import { QuizService } from 'src/quiz/quiz.service'
 import { Quiz } from 'src/quiz/models/quiz.schema'
@@ -18,7 +17,6 @@ import mongoose from 'mongoose'
 
 
 @Controller('quiz')
-//@UseGuards(AuthenticationGuard, AuthorizationGuard)
 export class QuizController {
   constructor(private quizService: QuizService) {}
 

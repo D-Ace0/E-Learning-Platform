@@ -17,7 +17,6 @@ import mongoose from 'mongoose'
 
 
 @Controller('module')
-//@UseGuards(AuthenticationGuard, AuthorizationGuard)
 export class ModuleController {
   constructor(private moduleService: ModuleService) {}
 

@@ -6,7 +6,6 @@ import {
   Param,
   Post,
   Put,
-  UseGuards
 } from '@nestjs/common'
 import { CourseService } from './course.service'
 import { Course } from 'src/course/models/course.schema'
@@ -17,7 +16,6 @@ import mongoose from 'mongoose'
 
 
 @Controller('course')
-//@UseGuards(AuthenticationGuard, AuthorizationGuard)
 export class CourseController {
   constructor(private courseService: CourseService) {}
 
@@ -37,7 +35,6 @@ export class CourseController {
 
   //Create course
   @Post()
-  //@Roles(['instructor'])
   async createCourse(@Body() courseData: CreateCourseDto) {
     // Get the new course data from the request body
     const newCourse = await this.courseService.create(courseData)
@@ -46,7 +43,6 @@ export class CourseController {
 
   // Update a course's details by Id
   @Put(':course_id')
-  //@Roles(['instructor'])
   async updateCourse(
     @Param('course_id') course_id: mongoose.Types.ObjectId,
     @Body() courseData: UpdateCourseDto,
@@ -57,29 +53,8 @@ export class CourseController {
 
   // Delete a course by id
   @Delete(':course_id')
-  //@Roles(['instructor'])
   async deleteCourse(@Param('course_id') course_id: mongoose.Types.ObjectId) {
     const deletedCourse = await this.courseService.delete(course_id)
     return deletedCourse
   }
 }
-
-// @Post('/students/:id')
-  // @Roles(['student'])
-  // async enroll(@Param('id') courseId: string, @Request() req:any){
-  //   const studentId = req.user.UserId
-  //   return this.coursesService.studentEnrollCourse(studentId, courseId)
-  // }
-
-  // @Get('/students/:id')
-  // @Roles(['instructor'])
-  // async searchStudent(@Param('id') studentId: string, @Request() req: any){
-  //   const InstructorId = req.user.UserId
-  //   return this.coursesService.searchStudent(studentId, InstructorId)
-  // }
-
-  // @Get('/instructors/:id')
-  // @Roles(['student'])
-  // async searchInstructor(@Param('id') InstructorId){
-  //   return this.coursesService.searchInstructor(InstructorId)
-  // }

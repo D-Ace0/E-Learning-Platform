@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional, IsMongoId, IsDate } from 'class-validator'
-import mongoose, { Document } from 'mongoose'
+import mongoose from 'mongoose'
 
 export class CreateNoteDto {
 

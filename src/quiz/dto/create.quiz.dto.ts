@@ -15,4 +15,5 @@ export class CreateQuizDto{
   @IsOptional()
   @IsDate()
   created_at?: Date
+  
 }

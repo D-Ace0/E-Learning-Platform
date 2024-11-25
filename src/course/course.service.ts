@@ -40,43 +40,5 @@ export class CourseService {
   async delete(course_id: mongoose.Types.ObjectId): Promise<Course> {
     return await this.courseModel.findByIdAndDelete(course_id)  // Find and delete the course
   }
-
-  async enrollStudent(){
-
-  }
-
-  // async searchStudent(studentId: string, InstructorId: string){
-  //   if(!isValidObjectId(studentId)) throw new BadRequestException()
-
-  //   const coursesCreatedByInstructor = await this.courseModel.find({created_by: InstructorId}).exec()
-
-  //   const studentEnrolled = coursesCreatedByInstructor.some((course) => //some loops over each course in the array of courses
-  //     course.enrolled_students.some(
-  //       (enrolledStudent) => enrolledStudent.toString() === studentId,
-  //     ),
-  //   )
-
-  //   if(!studentEnrolled) throw new ForbiddenException('The student you are searching for is not enrolled in any of your courses')
   
-  //   const student = await this.userModel.findById(studentId).exec()
-  //   const plainStudent = student.toObject()
-
-  //   if(!student) throw new NotFoundException('Student Not Found')
-
-  //   const {password_hash, role, ...StudentData} = plainStudent
-  //   return StudentData
-  // }
-
-  // async searchInstructor(InstructorId: string){
-
-  //   if(!isValidObjectId(InstructorId)) throw new BadRequestException()
-
-  //   const instructor = await this.userModel.findById(InstructorId).exec()
-  //   if(instructor.role.toString() !== "instructor") throw new ForbiddenException()
-
-  //   const plainInstructor = instructor.toObject()
-  //   const {password_hash, created_at, role, ...InstructorData} = plainInstructor
-
-  //   return InstructorData
-  // }
 }

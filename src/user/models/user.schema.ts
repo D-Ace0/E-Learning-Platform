@@ -39,6 +39,7 @@ export class User {
 
   @Prop({ required: false, default: false, type: Boolean })
   mfa_enabled?: boolean
+  
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)

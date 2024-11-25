@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsDate, IsNotEmpty, IsMongoId, IsArray } from 'class-validator'
+import { IsString, IsOptional, IsDate, IsMongoId, IsArray } from 'class-validator'
 import mongoose from 'mongoose'
 
 export class UpdateModuleDto{
@@ -23,4 +23,5 @@ export class UpdateModuleDto{
   @IsOptional()
   @IsDate()
   created_at?: Date
+
 }

@@ -1,11 +1,3 @@
-// import {
-//   ConflictException,
-//   ForbiddenException,
-//   Injectable,
-//   NotFoundException,
-// } from '@nestjs/common'
-
-
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { User, user_role } from 'src/user/models/user.schema'
@@ -28,18 +20,6 @@ export class UsersService {
   async findAll(): Promise<User[]> {
     let users = await this.userModel.find()  // Fetch all users from the database
     return users
-  }
-
-  // Get all Students
-  async getAllStudents(): Promise<User[]> {
-    let students = await this.userModel.find({ role: user_role.STUDENT })
-    return students
-  }
-
-  // get all Instructors
-  async getAllInstructors(): Promise<User[]> {
-    let students = await this.userModel.find({ role: user_role.INSTRUCTOR })
-    return students
   }
 
   // Get a user by ID

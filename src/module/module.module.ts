@@ -10,4 +10,5 @@ import { ModuleSchema } from 'src/module/models/module.schema'
   providers: [ModuleService],
   controllers: [ModuleController]
 })
+
 export class ModuleModule {}

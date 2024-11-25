@@ -39,4 +39,5 @@ export class ModuleService {
   async delete(module_id: mongoose.Types.ObjectId): Promise<Module> {
     return await this.moduleModel.findByIdAndDelete(module_id)
   }
+  
 }

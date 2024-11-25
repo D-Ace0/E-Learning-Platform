@@ -42,4 +42,5 @@ export class updateUserDto {
   @IsOptional()
   @IsBoolean()
   mfa_enabled?: boolean
+  
 }

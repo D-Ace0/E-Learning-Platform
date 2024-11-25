@@ -6,7 +6,6 @@ import {
   Body,
   Delete,
   Put,
-  UseGuards
 } from '@nestjs/common'
 import { Note } from 'src/note/models/note.schema'
 import { NoteService } from 'src/note/note.service'

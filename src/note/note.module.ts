@@ -9,4 +9,5 @@ import { Note, NoteSchema } from 'src/note/models/note.schema'
   controllers: [NoteController],
   providers: [NoteService],
 })
+
 export class NotesModule {}

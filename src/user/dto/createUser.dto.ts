@@ -40,4 +40,5 @@ export class createUserDto {
   @IsOptional()
   @IsBoolean()
   mfa_enabled?: boolean
+  
 }
