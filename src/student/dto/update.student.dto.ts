@@ -2,7 +2,7 @@ import { IsString, IsOptional, IsUrl, IsDate, IsEmail, IsMongoId, IsArray } from
 import mongoose from 'mongoose'
 
 
-export class updateUserDto {
+export class updateStudentDto {
 
   @IsOptional()
   @IsString()
@@ -28,6 +28,6 @@ export class updateUserDto {
   @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
-  courses?: mongoose.Schema.Types.ObjectId[]
+  courses_taking?: mongoose.Schema.Types.ObjectId[]
   
 }

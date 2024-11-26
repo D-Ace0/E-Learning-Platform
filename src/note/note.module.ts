@@ -12,4 +12,4 @@ import { Note, NoteSchema } from 'src/note/models/note.schema'
   providers: [NoteService],
 })
 
-export class NotesModule {}
+export class NoteModule {}

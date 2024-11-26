@@ -2,7 +2,7 @@
 import { IsString, IsNotEmpty, IsArray, IsDate, IsOptional, IsMongoId } from 'class-validator'
 import mongoose from 'mongoose'
 
-export class createUserDto {
+export class createInstructorDto {
 
   @IsNotEmpty()
   @IsString()
@@ -27,6 +27,6 @@ export class createUserDto {
   @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
-  courses?: mongoose.Schema.Types.ObjectId[]
+  courses_taught?: mongoose.Schema.Types.ObjectId[]
   
 }
