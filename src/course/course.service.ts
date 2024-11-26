@@ -29,7 +29,6 @@ export class CourseService {
   async findById(course_id: mongoose.Types.ObjectId): Promise<CourseDocument> {
     return await this.courseModel.findById(course_id)  // Fetch a course by ID
   }
-
   
   // Update a course's details by ID
   async update(course_id: mongoose.Types.ObjectId, updateData: UpdateCourseDto): Promise<CourseDocument> {

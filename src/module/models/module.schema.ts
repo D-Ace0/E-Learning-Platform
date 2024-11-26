@@ -16,7 +16,7 @@ export class Module {
   @Prop({ required: true, type: String})
   content: string
 
-  @Prop({ required: true, type: [String]})
+  @Prop({ required: false, type: [String]})
   resources?: string[]
 
   @Prop({ required: false, type: Date, default: Date.now })
