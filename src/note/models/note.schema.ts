@@ -11,7 +11,7 @@ export class Note {
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
   user_id: mongoose.Schema.Types.ObjectId
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => Course } as PropOptions)
+  @Prop({ required: false, type: mongoose.Schema.Types.ObjectId, ref: () => Course } as PropOptions)
   course_id?: mongoose.Schema.Types.ObjectId
 
   @Prop({ required: true, type: String })

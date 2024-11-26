@@ -10,11 +10,11 @@ export class CreateNoteDto {
     @IsOptional()
     @IsMongoId()
     course_id?: mongoose.Schema.Types.ObjectId
-    
+
     @IsNotEmpty()
     @IsString()
     content: string
-  
+
     @IsOptional()
     @IsDate()
     created_at?: Date

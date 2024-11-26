@@ -15,7 +15,6 @@ import mongoose from 'mongoose'
 
 
 
-
 @Controller('quiz')
 export class QuizController {
   constructor(private quizService: QuizService) {}

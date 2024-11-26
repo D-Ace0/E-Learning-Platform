@@ -5,7 +5,7 @@ export class UpdateNoteDto {
 
     @IsOptional()
     @IsMongoId()
-    user_id: mongoose.Schema.Types.ObjectId
+    user_id?: mongoose.Schema.Types.ObjectId
 
     @IsOptional()
     @IsMongoId()
@@ -13,7 +13,7 @@ export class UpdateNoteDto {
     
     @IsOptional()
     @IsString()
-    content: string
+    content?: string
   
     @IsOptional()
     @IsDate()

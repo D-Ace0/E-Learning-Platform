@@ -16,7 +16,6 @@ import mongoose from 'mongoose'
 
 
 @Controller('note')
-//@UseGuards(AuthenticationGuard, AuthorizationGuard)
 export class NoteController {
   constructor(private noteService: NoteService) {}
 
