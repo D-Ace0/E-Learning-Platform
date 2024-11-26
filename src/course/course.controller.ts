@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common'
 import { CourseService } from './course.service'
 import { Course } from 'src/course/models/course.schema'
-import { CreateCourseDto } from './dto/create.course.dto'
-import { UpdateCourseDto } from './dto/update.course.dto'
+import { CreateCourseDto } from 'src/course/dto/create.course.dto'
+import { UpdateCourseDto } from 'src/course/dto/update.course.dto'
 import mongoose from 'mongoose'
 
 

@@ -7,10 +7,10 @@ import {
     Post,
     Put,
   } from '@nestjs/common'
-  import { UserService } from './user.service'
+  import { UserService } from 'src/user/user.service'
   import { User } from 'src/user/models/user.schema'
-  import { createUserDto } from './dto/create.user.dto'
-  import { updateUserDto } from './dto/update.user.dto'
+  import { createUserDto } from 'src/user/dto/create.user.dto'
+  import { updateUserDto } from 'src/user/dto/update.user.dto'
   import mongoose from 'mongoose'
 
 @Controller('user')

@@ -1,5 +1,5 @@
 import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { User } from '../../user/models/user.schema'
+import { User } from 'src/user/models/user.schema'
 import mongoose, { HydratedDocument } from 'mongoose'
 
 export type CourseDocument = HydratedDocument<Course>
