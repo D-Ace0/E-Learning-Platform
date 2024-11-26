@@ -42,8 +42,8 @@ export class Course {
   @Prop({ required: true, type: String })
   pdf: string
 
-  @Prop({ required: false, default: null, type: String })
-  parent_version?: string
+  @Prop({ required: false, default: null, type: mongoose.Schema.Types.ObjectId })
+  parent_version?: mongoose.Schema.Types.ObjectId
   
 }
 

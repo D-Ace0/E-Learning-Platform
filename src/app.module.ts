@@ -20,7 +20,7 @@ dotenv.config()
     NotesModule,
     ModuleModule,
     MongooseModule.forRoot(
-      'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
+      'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/test', {}),
   ],
   controllers: [AppController],
   providers: [AppService]

@@ -27,7 +27,7 @@ export class CourseController {
 
   //get course by id
   @Get(':course_id')
-  async getCourseById(@Param('course_id') course_id: mongoose.Types.ObjectId) {
+  async getCourseById(@Param('course_id') course_id: mongoose.Types.ObjectId):Promise<Course> {
     // Get the course ID from the route parameters
     const course = await this.courseService.findById(course_id)
     return course
@@ -45,8 +45,7 @@ export class CourseController {
   @Put(':course_id')
   async updateCourse(
     @Param('course_id') course_id: mongoose.Types.ObjectId,
-    @Body() courseData: UpdateCourseDto,
-  ) {
+    @Body() courseData: UpdateCourseDto) {
     const updatedCourse = await this.courseService.update(course_id, courseData)
     return updatedCourse
   }
