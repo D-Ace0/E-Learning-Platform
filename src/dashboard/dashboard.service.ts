@@ -14,7 +14,7 @@ export class DashboardService {
     @InjectModel(Progress.name) private progressModel: Model<ProgressDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Response.name) private responseModel: Model<ResponseDocument>,
-    @InjectModel(Quiz.name) private course: Model<QuizDocument>,
+    @InjectModel(Quiz.name) private QuizModel: Model<QuizDocument>,
   ) {}
 
   async getStudentDashboard(user_id: string): Promise<{
@@ -59,6 +59,41 @@ export class DashboardService {
       name: user.name,
       courses: dashboardData,
     };
+  }
+  //
+  async getUserAverageScore(user_id: string, course_id: string): Promise<number> {
+    // Fetch all quizzes for the given course
+    const quizzes = await this.QuizModel
+      .find({ course_id })
+      .select('_id')
+      .lean()
+      .exec();
+
+    if (!quizzes.length) {
+      throw new NotFoundException(`No quizzes found for course ID ${course_id}`);
+    }
+
+    const quizIds = quizzes.map((quiz) => quiz._id);
+
+    // Fetch all responses for the user and quizzes in the course
+    const responses = await this.responseModel
+      .find({
+        user_id,
+        quiz_id: { $in: quizIds },
+      })
+      .select('score')
+      .lean()
+      .exec();
+
+    if (!responses.length) {
+      throw new NotFoundException(`No responses found for user ID ${user_id} in course ID ${course_id}`);
+    }
+
+    // Calculate the average score
+    const totalScore = responses.reduce((sum, response) => sum + response.score, 0);
+    const averageScore = totalScore / responses.length;
+
+    return averageScore;
   }
 
 }
