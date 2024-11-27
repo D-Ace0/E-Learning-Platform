@@ -16,7 +16,6 @@ import { MfaModule } from './mfa/mfa.module'
 import { MailModule } from './mail/mail.module'
 dotenv.config();
 
-const MONGO_URI: string = process.env.MONGO_URI;
 
 @Module({
   providers: [
@@ -36,8 +35,7 @@ const MONGO_URI: string = process.env.MONGO_URI;
     ModuleModule,
     MfaModule, 
     MongooseModule.forRoot(
-      MONGO_URI ?? 'mongodb://127.0.0.1:27017/E-Learning-Platform',
-    ),
+      'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
   ],
 })
 export class AppModule implements NestModule {

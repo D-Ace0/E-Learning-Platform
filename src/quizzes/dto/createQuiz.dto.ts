@@ -1,11 +1,7 @@
-import { IsNotEmpty, IsString, IsArray, IsOptional, IsMongoId } from 'class-validator'
+import { IsNotEmpty, IsString, IsArray, IsOptional, IsMongoId, IsDate } from 'class-validator'
 import mongoose from 'mongoose'
 
 export class createQuizDto{
-
-  @IsNotEmpty()
-  @IsMongoId()
-  quiz_id: mongoose.Types.ObjectId
 
   @IsNotEmpty()
   @IsMongoId()
@@ -16,6 +12,7 @@ export class createQuizDto{
   @IsString({ each: true })
   questions: string[]
 
-  @IsNotEmpty()
-  created_at: Date
+  @IsOptional()
+  @IsDate()
+  created_at?: Date
 }

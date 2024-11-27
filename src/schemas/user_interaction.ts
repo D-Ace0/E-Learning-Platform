@@ -1,12 +1,12 @@
-import { Schema, Prop, PropOptions, SchemaFactory } from '@nestjs/mongoose'
+import { Schema, Prop, SchemaFactory, PropOptions } from '@nestjs/mongoose'
+import mongoose, { Date, Document, Types } from 'mongoose'
 import { User } from './user.schema'
 import { Course } from './course.schema'
-import mongoose, { Document } from 'mongoose'
 
-export type ProgressDocument = Progress & Document
+export type UserInteractionDocument = UserInteraction & Document
 
 @Schema()
-export class Progress {
+export class UserInteraction {
 
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
   user_id: mongoose.Types.ObjectId
@@ -14,11 +14,14 @@ export class Progress {
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => Course } as PropOptions)
   course_id: mongoose.Types.ObjectId
 
+  @Prop({ required: true, type: Number})
+  score: number
+
   @Prop({ required: true, type: Number })
-  completionpercentage: number
+  time_spent_minutes: number
 
   @Prop({ required: false, type: Date, default: Date.now })
-  lastAccessed?: Date
+  last_accessed: Date
 }
 
-export const ProgressSchema = SchemaFactory.createForClass(Progress)
+export const UserInteractionSchema = SchemaFactory.createForClass(UserInteraction)
