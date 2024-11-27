@@ -7,7 +7,7 @@ export class MailService {
 
   constructor() {
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',  
+      service: 'gmail',
       auth: {
         user: process.env.FROM_EMAIL,  
         pass: process.env.FROM_EMAIL_PASSWORD,  
@@ -15,20 +15,27 @@ export class MailService {
     });
   }
 
-  // Send email with optional HTML content
-  async sendMail(
-    to: string,          // To email address
-    subject: string,     // Email subject
-    text: string,        // Email text content
-    from: string = process.env.FROM_EMAIL,  // Default 'from' to environment variable if not provided
-    html?: string        // Optional HTML content (if not provided, fallback to text)
-  ) {
+
+  async sendMail({
+    to,
+    subject,   
+    text,     
+    from = process.env.FROM_EMAIL, 
+    html,       
+  }: {
+    to: string;
+    subject: string;
+    text: string;
+    from?: string;
+    html?: string;
+  }) {
+    
     const mailOptions = {
-      from: from,  // 'From' email is now guaranteed to be passed (either via argument or environment variable)
-      to: to,
-      subject: subject,
-      text: text,
-      html: html || text,  // If 'html' is not provided, fallback to 'text'
+      from,  
+      to,    
+      subject,  
+      text,  
+      html: html || text,  
     };
 
     try {

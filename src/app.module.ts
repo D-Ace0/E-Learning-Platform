@@ -13,7 +13,7 @@ import { CourseModule } from './Courses/courses.module'
 import { QuizModule } from './quizzes/quiz.module'
 import { ModuleModule } from './modules/module.module'
 import { MfaModule } from './mfa/mfa.module'
-
+import { MailModule } from './mail/mail.module'
 dotenv.config();
 
 const MONGO_URI: string = process.env.MONGO_URI;
@@ -27,6 +27,7 @@ const MONGO_URI: string = process.env.MONGO_URI;
     Logger
   ],
   imports: [
+    MailModule,
     QuizModule,
     AuthModule,
     CourseModule,
