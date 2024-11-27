@@ -1,10 +1,12 @@
-import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose, { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import mongoose, { Document } from 'mongoose'
 import { Course } from './course.schema'
+
+
 
 export type UserDocument = User & Document
 
-export enum user_role {
+export enum UserRole {
   STUDENT = 'student',
   INSTRUCTOR = 'instructor',
   ADMIN = 'admin'
@@ -13,31 +15,34 @@ export enum user_role {
 @Schema()
 export class User {
 
-  @Prop({ required: true, type: String  })
+  @Prop({ required: true })
   name: string
 
-  @Prop({ required: true, type: String })
+  @Prop({ required: true })
   email: string
 
-  @Prop({ required: true, type: String })
+  @Prop({ required: true })
   password_hash: string
 
-  @Prop({ required: true, type: String, enum: user_role })
+  @Prop({ required: true, enum: UserRole })
   role: string
 
-  @Prop({ required: false, type: String})
+  @Prop({ required: false })
   profile_picture_url?: string
 
+  @Prop({required: true})
+  age: number
+
+  @Prop({ type: [{ type:  mongoose.Schema.Types.ObjectId, ref: 'course' }] })
+  courses: Course[];
+
   @Prop({ required: true, type: Date, default: Date.now })
-  created_at?: Date
+  created_at: Date
 
-  @Prop({ required: false, default: [], type: [mongoose.Schema.Types.ObjectId], ref: () => Course} as PropOptions)
-  courses?: mongoose.Schema.Types.ObjectId[]
-
-  @Prop({ required: false, type: String })
+  @Prop({ required: false })
   mfa_secret?: string
 
-  @Prop({ required: false, default: false, type: Boolean })
+  @Prop({ required: false, default: false })
   mfa_enabled?: boolean
 }
 

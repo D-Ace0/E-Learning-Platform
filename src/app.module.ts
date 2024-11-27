@@ -13,7 +13,7 @@ import { CourseModule } from './Courses/courses.module'
 import { QuizModule } from './quizzes/quiz.module'
 import { ModuleModule } from './modules/module.module'
 import { MfaModule } from './mfa/mfa.module'
-
+import { MailModule } from './mail/mail.module'
 dotenv.config();
 
 
@@ -26,6 +26,7 @@ dotenv.config();
     Logger
   ],
   imports: [
+    MailModule,
     QuizModule,
     AuthModule,
     CourseModule,
