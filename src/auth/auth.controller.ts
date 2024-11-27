@@ -20,7 +20,6 @@ export class AuthController {
   }
   
   @Post('enable-mfa')
-  
   @UseGuards(AuthenticationGuard)
 async enableMFA(@Request() req: any) {
     const user_id = req.user.user_id
@@ -33,7 +32,9 @@ async getOtp(@Body('user_id') user_id: string) {
 }
 
   @Post('disable-mfa')
-  async disableMFA(@Body('user_id') user_id: string) {
+  @UseGuards(AuthenticationGuard)
+  async disableMFA(@Request() req: any) {
+    const user_id = req.user.user_id
     const response = await this.authService.disableMFA(user_id);
     return response;
   }

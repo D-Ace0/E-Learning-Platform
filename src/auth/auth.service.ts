@@ -8,7 +8,7 @@ import { SignInDTO } from './dto/signin'
 import { SignupDTO } from './dto/signup.dto'
 import { InjectModel } from '@nestjs/mongoose'
 import { User } from 'src/schemas/user.schema'
-import { Model } from 'mongoose'
+import mongoose, { Model } from 'mongoose'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
 import { MfaService } from '../mfa/mfa.service'
@@ -34,27 +34,35 @@ export class AuthService {
       throw new UnauthorizedException('Invalid MFA token');
     }
 
-    const token = await this.generateUserToken(user._id.toString(), user.role)
+    const token = await this.generateUserToken(user._id, user.role)
        return token
       }
       
-  async generateUserToken(user_id: string, role: string) {
+  async generateUserToken(user_id: mongoose.Types.ObjectId, role: string) {
     const accessToken = await this.jwtService.sign({ user_id, role })
     return { accessToken }
   }
 
   async enableMFA(user_id: string) {
-    const secret = this.mfaService.generateSecret()
-    await this.userModel.findByIdAndUpdate(user_id, {
-      mfa_secret: secret, 
-        mfa_enabled: true
-    });
-    return { message: 'MFA enabled successfully' }
+    const user = await this.userModel.findById(user_id); 
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const secret = this.mfaService.generateSecret();
+    user.mfa_secret = secret;
+    user.mfa_enabled = true;
+    await user.save();
+
+   
+    await this.mfaService.sendOtpEmail(secret, user.email);
+
+    return { message: 'MFA enabled successfully and OTP sent to email' };
   }
 
 
   async disableMFA(user_id: string) {
-    const user = await this.userModel.findOne({ user_id }); 
+    const user = await this.userModel.findById(user_id); 
     if (!user) {
       throw new NotFoundException('User not found');
     }
