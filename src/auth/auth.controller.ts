@@ -2,7 +2,8 @@ import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common'
 import { SignInDTO } from './dto/signin'
 import { AuthService } from './auth.service'
 import { SignupDTO } from './dto/signup.dto'
-import { CurrentUser } from '../decorators/current-user.decorator' 
+import { AuthenticationGuard } from 'src/guards/authentication.guard'
+
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
