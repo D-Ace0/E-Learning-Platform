@@ -40,8 +40,8 @@ export class AuthService {
   }
 
  
-  async enableMFA(user_id: string) {
-    const user = await this.userModel.findOne({ user_id }); 
+  async enableMFA(email: string) {
+    const user = await this.userModel.findOne({ email }); 
     if (!user) {
       throw new NotFoundException('User not found');
     }
