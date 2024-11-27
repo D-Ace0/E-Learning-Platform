@@ -26,10 +26,6 @@ async enableMFA(@Request() req: any) {
     const response = await this.authService.enableMFA(user_id)
     return response
 }
-  @Post('get-otp')
-async getOtp(@Body('user_id') user_id: string) {
-    return this.authService.getCurrentOtp(user_id)
-}
 
   @Post('disable-mfa')
   @UseGuards(AuthenticationGuard)
