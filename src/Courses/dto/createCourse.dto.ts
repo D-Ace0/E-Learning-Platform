@@ -1,54 +1,32 @@
 
-import { IsString, IsNotEmpty, IsEnum, IsUrl, IsMongoId, IsDate, IsArray, IsOptional } from 'class-validator'
-import mongoose from 'mongoose'
+import { IsString, IsNotEmpty, IsEnum, IsUrl } from 'class-validator';
 
-export class createCourseDto {
-  
-  @IsNotEmpty()
-  @IsString()
-  code: string
+export class CreateCourseDto {
 
-  @IsNotEmpty()
   @IsString()
-  title: string
+  @IsNotEmpty()
+  title: string;
 
-  @IsNotEmpty()
   @IsString()
-  description: string
+  @IsNotEmpty()
+  description: string;
 
-  @IsNotEmpty()
   @IsString()
-  category: string
+  @IsNotEmpty()
+  category: string;
 
-  @IsNotEmpty()
-  @IsString()
   @IsEnum(['beginner', 'intermediate', 'advanced'])
-  difficulty_level: string
-
   @IsNotEmpty()
-  @IsString()
-  created_by: string
+  difficulty_level: string;
 
-  @IsNotEmpty()
-  @IsMongoId()
-  created_by_id: mongoose.Types.ObjectId
-
-  @IsOptional()
-  @IsDate()
-  created_at?: Date
-
-  @IsNotEmpty()
   @IsString()
   @IsUrl()
-  video: string
-
   @IsNotEmpty()
-  @IsString()
-  @IsUrl()
   pdf: string
 
-  @IsOptional()
-  @IsMongoId()
-  parent_course_id?: mongoose.Types.ObjectId
+  @IsString()
+  @IsUrl()
+  @IsNotEmpty()
+  video: string
 
 }

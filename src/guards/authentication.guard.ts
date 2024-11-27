@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
@@ -19,7 +20,7 @@ export class AuthenticationGuard implements CanActivate {
 
       if (!token) throw new UnauthorizedException("");
 
-      request.user = await this.jwtService.verify(token, { secret: "dd29fce76b99ff2fc7c81ae157e38c06a3af27aad0da29274b5521bc190f4804" });
+      request.user = await this.jwtService.verifyAsync(token, { secret: process.env.JWT_SECRET });
     } catch (error) {
       throw new UnauthorizedException("");
     }
@@ -28,7 +29,6 @@ export class AuthenticationGuard implements CanActivate {
   }
 
   private exractTokenFromHeader(request: Request) {
-    const [type, token] = request.headers.authorization.split(' ') ?? [];
-    return type == 'Bearer' ? token : undefined;
+    return request.cookies['auth_token']; // Extract token from cookies
   }
 }
