@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+<<<<<<< Updated upstream
 } from '@nestjs/common';
 import { AuthPayloadDTO } from './dto/auth.dto';
 import { SignupDTO } from './dto/signup.dto';
@@ -13,6 +14,18 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { MfaService } from '../mfa/mfa.service';
 import { MailModule } from 'src/mail/mail.module';
+=======
+} from '@nestjs/common'
+import { SignInDTO } from './dto/signin'
+import { SignupDTO } from './dto/signup.dto'
+import { InjectModel } from '@nestjs/mongoose'
+import { User } from 'src/schemas/user.schema'
+import { Model } from 'mongoose'
+import * as bcrypt from 'bcrypt'
+import { JwtService } from '@nestjs/jwt'
+import { MfaService } from '../mfa/mfa.service'
+
+>>>>>>> Stashed changes
 @Injectable()
 export class AuthService {
   constructor(
@@ -21,9 +34,14 @@ export class AuthService {
     private mfaService: MfaService  
   ) {}
 
+<<<<<<< Updated upstream
  
   async login({ email, password, mfaToken }: AuthPayloadDTO) {
     const user = await this.userModel.findOne({ email });
+=======
+  async login({ email, password, mfaToken }: SignInDTO) {
+    const user = await this.userModel.findOne({ email })
+>>>>>>> Stashed changes
 
     if (!user) throw new NotFoundException('User not found');
 
@@ -35,6 +53,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid MFA token');
     }
 
+<<<<<<< Updated upstream
     const token = await this.generateUserToken(user._id.toString(), user.role);
     return token;
   }
@@ -55,6 +74,24 @@ export class AuthService {
     await this.mfaService.sendOtpEmail(secret, user.email);
 
     return { message: 'MFA enabled successfully and OTP sent to email' };
+=======
+    const token = await this.generateUserToken(user._id.toString(), user.role)
+       return token
+      }
+      
+  async generateUserToken(user_id: string, role: string) {
+    const accessToken = await this.jwtService.sign({ user_id, role })
+    return { accessToken }
+  }
+
+  async enableMFA(user_id: string) {
+    const secret = this.mfaService.generateSecret()
+    await this.userModel.findByIdAndUpdate(user_id, {
+      mfa_secret: secret, 
+        mfa_enabled: true
+    });
+    return { message: 'MFA enabled successfully' }
+>>>>>>> Stashed changes
   }
 
 
@@ -73,21 +110,29 @@ export class AuthService {
 
 
   async signup(signUpDataDTO: SignupDTO) {
+<<<<<<< Updated upstream
     const { email, password, name, role, user_id } = signUpDataDTO;
+=======
+    const { email, password, name, role, age } = signUpDataDTO
+>>>>>>> Stashed changes
 
     const emailInUse = await this.userModel.findOne({ email });
     if (emailInUse) throw new BadRequestException('Email already in use');
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+<<<<<<< Updated upstream
     const user_id_InUse = await this.userModel.findOne({ user_id });
     if (user_id_InUse) throw new BadRequestException('User ID is already in use.');
 
+=======
+>>>>>>> Stashed changes
     const createdUser = await this.userModel.create({
       name,
       email,
       password_hash: hashedPassword,
       role,
+<<<<<<< Updated upstream
       user_id,
     });
 
@@ -102,4 +147,21 @@ export class AuthService {
   }
 
  
+=======
+      age
+    })
+   
+    createdUser.password_hash = undefined
+    return createdUser
+  }
+
+  async getCurrentOtp(user_id: string) {
+    const user = await this.userModel.findById(user_id)
+    if (!user || !user.mfa_enabled || !user.mfa_secret) {
+        throw new NotFoundException('User not found or MFA not enabled')
+    }
+    
+    const otp = this.mfaService.generateCurrentOtp(user.mfa_secret);
+    return { otp }
+>>>>>>> Stashed changes
 }

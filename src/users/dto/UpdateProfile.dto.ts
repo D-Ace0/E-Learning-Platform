@@ -13,8 +13,4 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsUrl()
   profile_picture_url?: string;
-
-  @IsOptional()
-  @IsString()
-  user_id?: string;
 }

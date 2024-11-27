@@ -1,5 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Document } from 'mongoose'
+import mongoose, { Document } from 'mongoose'
+import { Course } from './course.schema'
+
+
 
 export type UserDocument = User & Document
 
@@ -11,8 +14,6 @@ export enum UserRole {
 
 @Schema()
 export class User {
-  @Prop({ required: true, unique: true })
-  user_id: string
 
   @Prop({ required: true })
   name: string
@@ -28,6 +29,12 @@ export class User {
 
   @Prop({ required: false })
   profile_picture_url?: string
+
+  @Prop({required: true})
+  age: number
+
+  @Prop({ type: [{ type:  mongoose.Schema.Types.ObjectId, ref: 'course' }] })
+  courses: Course[];
 
   @Prop({ required: true, type: Date, default: Date.now })
   created_at: Date

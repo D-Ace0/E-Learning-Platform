@@ -43,23 +43,12 @@ export class UsersService {
     }
     if (updateProfileDto.profile_picture_url) {
       user.profile_picture_url = updateProfileDto.profile_picture_url;
-    }
-    if (updateProfileDto.user_id) {
-      const found = await this.userModel.findOne({
-        user_id: updateProfileDto.user_id,
-      });
-      if (found) {
-        throw new ConflictException(
-          `User with ID ${updateProfileDto.user_id} already used`,
-        );
-      }
-      user.user_id = updateProfileDto.user_id;
     } else {
       throw new ForbiddenException('You are not allowed to update this data');
     }
 
     // Ensure no other attributes are updated
-    const allowedUpdates = ['user_id', 'name', 'email', 'profile_picture_url'];
+    const allowedUpdates = ['name', 'email', 'profile_picture_url'];
     Object.keys(updateProfileDto).forEach((key) => {
       if (!allowedUpdates.includes(key)) {
         throw new ForbiddenException(
