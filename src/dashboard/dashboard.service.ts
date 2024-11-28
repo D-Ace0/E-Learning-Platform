@@ -104,10 +104,9 @@ export class DashboardService {
 
 
   // for Instructor
-  async getCourseAnalytics(course_id: string,user_role:string): Promise<{ downloadLink: string }> {
-    if(user_role!="instructor"){
-      throw new NotFoundException(`User is not an instructor`);
-    }
+  async getCourseAnalytics(course_id: string): Promise<{ downloadLink: string }> {
+    // Trim any extra whitespace or newline characters
+    course_id = course_id.trim();
 
     const interactions = await this.userInteractionModel.find({ course_id }).lean().exec();
     if (!interactions.length) {
@@ -118,8 +117,6 @@ export class DashboardService {
     if (!course) {
       throw new NotFoundException(`Course not found for course ID ${course_id}`);
     }
-
-
 
     // Calculate total score and total time spent
     const totalScore = interactions.reduce((sum, interaction) => sum + interaction.score, 0);
@@ -151,4 +148,5 @@ export class DashboardService {
     const filePath = join(__dirname, `course_analytics_${course_id}.csv`);
     return { downloadLink: filePath };
   }
+
 }

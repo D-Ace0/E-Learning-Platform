@@ -20,8 +20,8 @@ export class DashboardController {
 
   //instructor
   @Get('/course/:id')
-  async getCourseAnalytics(@Param('id')id:string,@Body() user_role:string){ {
-    return this.dashboardService.getCourseAnalytics(id,user_role);
+  async getCourseAnalytics(@Param('id')id:string){ {
+    return this.dashboardService.getCourseAnalytics(id);
   }
   }
 }
