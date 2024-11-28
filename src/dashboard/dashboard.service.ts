@@ -104,7 +104,7 @@ export class DashboardService {
 
 
   // for Instructor
-  async getCourseAnalytics(course_id: string): Promise<{ downloadLink: string, AverageQuizScores: any }> {
+  async getCourseAnalytics(course_id: string): Promise<{ downloadLink: string, AverageQuizScores: any,AllGrades:any }> {
     // Trim any extra whitespace or newline characters
     course_id = course_id.trim();
 
@@ -168,7 +168,7 @@ export class DashboardService {
     const filePath = join(__dirname, `course_analytics_${course_id}.csv`);
 
     // Return the download link and record details
-    return { downloadLink: filePath, AverageQuizScores: averageQuizScore };
+    return { downloadLink: filePath, AverageQuizScores: averageQuizScore ,AllGrades:[quizResponses]};
   }
 
 
