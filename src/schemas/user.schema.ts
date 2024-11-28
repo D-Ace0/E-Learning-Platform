@@ -1,12 +1,6 @@
-<<<<<<< HEAD
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose, { Document } from 'mongoose'
-import { Course } from './course.schema'
-=======
 import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose, { Document } from 'mongoose';
 import { Course } from './courses.schema'
->>>>>>> 997b3fe (dashboard now shows user, courses and completion percentage)
 
 
 
