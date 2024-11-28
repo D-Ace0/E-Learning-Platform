@@ -3,15 +3,16 @@ import { DashboardService } from './dashboard.service';
 import { AuthenticationGuard } from 'src/guards/authentication.guard';
 import { AuthorizationGuard } from 'src/guards/authorization.guard';
 import { Roles } from 'src/decorators/roles.decorator';
+import { ResourceAccessGuard } from 'src/guards/resource-access.guard';
 
 
 
-//@UseGuards(AuthenticationGuard, AuthorizationGuard)
+//@UseGuards(AuthenticationGuard, AuthorizationGuard, ResourceAccessGuard)
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
-  //@Roles(['student'])
+  @Roles(['student'])
   @Get('/student/:id')
   async getStudentDashboard(@Param('id')id:string) {
     return this.dashboardService.getStudentDashboard(id);
@@ -19,9 +20,10 @@ export class DashboardController {
   
 
   //instructor
+  //@Roles(['instructor'])
   @Get('/course/:id')
-  async getCourseAnalytics(@Param('id')id:string,@Body() user_role:string){ {
-    return this.dashboardService.getCourseAnalytics(id,user_role);
+  async getCourseAnalytics(@Param('id')id:string ){ {
+    return this.dashboardService.getCourseAnalytics(id);
    }
 }
 }
