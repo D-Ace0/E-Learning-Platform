@@ -14,6 +14,7 @@ import { QuizModule } from './quizzes/quiz.module'
 import { ModuleModule } from './modules/module.module'
 import { MfaModule } from './mfa/mfa.module'
 import { MailModule } from './mail/mail.module'
+import { DashboardModule } from './dashboard/dashboard.module'
 dotenv.config();
 
 
@@ -34,7 +35,8 @@ dotenv.config();
     NotesModule,
     ModuleModule,
     MfaModule, 
-    MongooseModule.forRoot('mongodb://localhost:27017/E-Learning-Platform')
+    DashboardModule,
+    MongooseModule.forRoot('mongodb+srv://AhmedKhadrawy:9g3bcGpd2Ay9v0LR@database.r38ac.mongodb.net/E-Learning-Platform')
     // MongooseModule.forRoot(
     //   'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
   ],
