@@ -1,6 +1,7 @@
-import { Controller, Get, Param, Query, Req } from '@nestjs/common';
+import { Controller, Get, Param, Query, Req,Body } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { Request } from 'express';
+import { user_role } from 'src/schemas/user.schema';
 
 @Controller('dashboard')
 export class DashboardController {
@@ -26,8 +27,8 @@ export class DashboardController {
 
   }
   @Get('/course/:id')
-  async getCourseAnalytics(@Param('id')id:string){ {
-    return this.dashboardService.getCourseAnalytics(id);
+  async getCourseAnalytics(@Param('id')id:string,@Body() user_role:string){ {
+    return this.dashboardService.getCourseAnalytics(id,user_role);
    }
 }
 }

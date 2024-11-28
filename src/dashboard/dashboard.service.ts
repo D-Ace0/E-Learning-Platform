@@ -101,7 +101,11 @@ export class DashboardService {
     return averageScore;
   }
 
-  async getCourseAnalytics(course_id: string) {
+  async getCourseAnalytics(course_id: string,user_role:string): Promise<{ downloadLink: string }> {
+    if(user_role!="instructor"){
+      throw new NotFoundException(`User is not an instructor`);
+    }
+    
     const interactions = await this.userInteractionModel.find({ course_id }).lean().exec();
     if (!interactions.length) {
       throw new NotFoundException(`No interactions found for course ID ${course_id}`);
