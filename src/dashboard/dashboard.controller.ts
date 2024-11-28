@@ -22,5 +22,12 @@ export class DashboardController {
       course_id,
       averageScore,
     };
+    
+
   }
+  @Get('/course/:id')
+  async getCourseAnalytics(@Param('id')id:string){ {
+    return this.dashboardService.getCourseAnalytics(id);
+   }
+}
 }

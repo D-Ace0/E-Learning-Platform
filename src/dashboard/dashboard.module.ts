@@ -7,6 +7,7 @@ import { Progress, ProgressSchema } from '../schemas/progress.schema';
 import { Response, ResponseSchema } from '../schemas/response.schema';
 import { User, UserSchema } from '../schemas/user.schema';
 import { Quiz, QuizSchema } from '../schemas/quiz.schema';
+import { UserInteraction, UserInteractionSchema } from '../schemas/user_interaction';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { Quiz, QuizSchema } from '../schemas/quiz.schema';
       { name: Response.name, schema: ResponseSchema },
       { name: User.name, schema: UserSchema },
       { name: Quiz.name, schema: QuizSchema },
+      { name: UserInteraction.name, schema: UserInteractionSchema },
     ]),
   ],
   controllers: [DashboardController],

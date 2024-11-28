@@ -6,6 +6,10 @@ import { Progress, ProgressDocument } from '../schemas/progress.schema';
 import { User, UserDocument } from '../schemas/user.schema';
 import { ResponseDocument } from '../schemas/response.schema';
 import { Quiz, QuizDocument } from '../schemas/quiz.schema';
+import { UserInteraction, UserInteractionDocument } from '../schemas/user_interaction';
+import { createObjectCsvWriter } from 'csv-writer';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class DashboardService {
@@ -15,6 +19,7 @@ export class DashboardService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Response.name) private responseModel: Model<ResponseDocument>,
     @InjectModel(Quiz.name) private QuizModel: Model<QuizDocument>,
+    @InjectModel(UserInteraction.name) private userInteractionModel: Model<UserInteractionDocument>,
   ) {}
 
   async getStudentDashboard(user_id: string): Promise<{
@@ -96,4 +101,47 @@ export class DashboardService {
     return averageScore;
   }
 
+  async getCourseAnalytics(course_id: string) {
+    const interactions = await this.userInteractionModel.find({ course_id }).lean().exec();
+    if (!interactions.length) {
+      throw new NotFoundException(`No interactions found for course ID ${course_id}`);
+    }
+
+    const course = await this.courseModel.findById(course_id).select('name').lean().exec();
+    if (!course) {
+      throw new NotFoundException(`Course not found for course ID ${course_id}`);
+    }
+  
+
+  
+    // Calculate total score and total time spent
+    const totalScore = interactions.reduce((sum, interaction) => sum + interaction.score, 0);
+    const totalTimeSpent = interactions.reduce((sum, interaction) => sum + interaction.time_spent_minutes, 0);
+    const averageScore = totalScore / interactions.length;
+    const averageTimeSpent = totalTimeSpent / interactions.length;
+  
+    const csvWriter = createObjectCsvWriter({
+      path: join(__dirname, `course_analytics_${course_id}.csv`),
+      header: [
+        { id: 'course_id', title: 'Course ID' },
+        { id: 'course_name', title: 'Course Name' },
+        { id: 'average_score', title: 'Average Score' },
+        { id: 'average_time_spent', title: 'Average Time Spent (minutes)' },
+      ],
+    });
+  
+    const records = [
+      {
+        course_id: course_id,
+        course_name: course.title,
+        average_score: averageScore,
+        average_time_spent: averageTimeSpent,
+      },
+    ];
+  
+    await csvWriter.writeRecords(records);
+  
+    const filePath = join(__dirname, `course_analytics_${course_id}.csv`);
+    return { downloadLink: filePath };
+  }
 }
