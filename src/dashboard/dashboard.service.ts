@@ -104,26 +104,41 @@ export class DashboardService {
 
 
   // for Instructor
-  async getCourseAnalytics(course_id: string): Promise<{ downloadLink: string }> {
+  async getCourseAnalytics(course_id: string): Promise<{ downloadLink: string, AverageQuizScores: any }> {
     // Trim any extra whitespace or newline characters
     course_id = course_id.trim();
 
+    // Get all interactions for the course
     const interactions = await this.userInteractionModel.find({ course_id }).lean().exec();
     if (!interactions.length) {
       throw new NotFoundException(`No interactions found for course ID ${course_id}`);
     }
 
-    const course = await this.courseModel.findById(course_id).select('name').lean().exec();
+    // Get course details by ID
+    const course = await this.courseModel.findById(course_id).select('title').lean().exec();
     if (!course) {
       throw new NotFoundException(`Course not found for course ID ${course_id}`);
     }
 
-    // Calculate total score and total time spent
+    // Get all quiz responses for the course
+    const quizzess = await this.QuizModel
+      .find({ course_id: course._id })
+      .select('_id')
+      .lean()
+      .exec();
+    const quizResponses= await this.responseModel
+      .find({quiz_id: quizzess})
+    // Calculate the average quiz score for all students in this course
+    const totalQuizScore = quizResponses.reduce((sum, response) => sum + response.score, 0);
+    const averageQuizScore = quizResponses.length > 0 ? totalQuizScore / quizResponses.length : 0;
+
+    // Calculate total score and total time spent from interactions
     const totalScore = interactions.reduce((sum, interaction) => sum + interaction.score, 0);
     const totalTimeSpent = interactions.reduce((sum, interaction) => sum + interaction.time_spent_minutes, 0);
     const averageScore = totalScore / interactions.length;
     const averageTimeSpent = totalTimeSpent / interactions.length;
 
+    // Prepare CSV writer
     const csvWriter = createObjectCsvWriter({
       path: join(__dirname, `course_analytics_${course_id}.csv`),
       header: [
@@ -131,22 +146,30 @@ export class DashboardService {
         { id: 'course_name', title: 'Course Name' },
         { id: 'average_score', title: 'Average Score' },
         { id: 'average_time_spent', title: 'Average Time Spent (minutes)' },
+        { id: 'average_quiz_score', title: 'Average Quiz Score' },
       ],
     });
 
+    // Records to be written to the CSV
     const records = [
       {
         course_id: course_id,
         course_name: course.title,
         average_score: averageScore,
         average_time_spent: averageTimeSpent,
+        average_quiz_score: averageQuizScore,
       },
     ];
 
+    // Write to CSV
     await csvWriter.writeRecords(records);
 
+    // Path to the generated CSV file
     const filePath = join(__dirname, `course_analytics_${course_id}.csv`);
-    return { downloadLink: filePath };
+
+    // Return the download link and record details
+    return { downloadLink: filePath, AverageQuizScores: averageQuizScore };
   }
+
 
 }
