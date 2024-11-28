@@ -8,6 +8,7 @@ import { Response, ResponseSchema } from '../schemas/response.schema';
 import { User, UserSchema } from '../schemas/user.schema';
 import { Quiz, QuizSchema } from '../schemas/quiz.schema';
 import { UserInteraction, UserInteractionSchema } from '../schemas/user_interaction';
+import { ModuleSchema } from "src/schemas/module.schema";
 
 
 @Module({
@@ -18,6 +19,7 @@ import { UserInteraction, UserInteractionSchema } from '../schemas/user_interact
       { name: Response.name, schema: ResponseSchema },
       { name: User.name, schema: UserSchema },
       { name: Quiz.name, schema: QuizSchema },
+      {name: Module.name, schema: ModuleSchema},
       { name: UserInteraction.name, schema: UserInteractionSchema },
     ]),
   ],
