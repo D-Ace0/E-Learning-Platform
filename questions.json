@@ -1,0 +1,152 @@
+[
+  {
+    "question": "What is the capital of Germany?",
+    "answer": "Berlin",
+    "difficulty": "easy"
+  },
+  {
+    "question": "How many continents are there?",
+    "answer": "Seven",
+    "difficulty": "easy"
+  },
+  {
+    "question": "What is the boiling point of water in Celsius?",
+    "answer": "100",
+    "difficulty": "easy"
+  },
+  {
+    "question": "Who painted the Mona Lisa?",
+    "answer": "Leonardo da Vinci",
+    "difficulty": "medium"
+  },
+  {
+    "question": "Which gas is most abundant in Earth's atmosphere?",
+    "answer": "Nitrogen",
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the largest desert in the world?",
+    "answer": "Sahara Desert",
+    "difficulty": "medium"
+  },
+  {
+    "question": "Who is the author of 'Pride and Prejudice'?",
+    "answer": "Jane Austen",
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the square root of 225?",
+    "answer": "15",
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the currency of Japan?",
+    "answer": "Yen",
+    "difficulty": "easy"
+  },
+  {
+    "question": "Which country is known as the Land of the Rising Sun?",
+    "answer": "Japan",
+    "difficulty": "easy"
+  },
+  {
+    "question": "Who was the first person to step on the Moon?",
+    "answer": "Neil Armstrong",
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the speed of light in a vacuum (approx.)?",
+    "answer": "299,792 km/s",
+    "difficulty": "hard"
+  },
+  {
+    "question": "Which element has the chemical symbol 'Au'?",
+    "answer": "Gold",
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the tallest mountain in the world?",
+    "answer": "Mount Everest",
+    "difficulty": "medium"
+  },
+  {
+    "question": "Which year did World War II end?",
+    "answer": "1945",
+    "difficulty": "hard"
+  },
+  {
+    "question": "What is the smallest planet in our solar system?",
+    "answer": "Mercury",
+    "difficulty": "easy"
+  },
+  {
+    "question": "Who discovered penicillin?",
+    "answer": "Alexander Fleming",
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the capital of Canada?",
+    "answer": "Ottawa",
+    "difficulty": "easy"
+  },
+  {
+    "question": "How many players are there in a soccer team?",
+    "answer": "11",
+    "difficulty": "easy"
+  },
+  {
+    "question": "Who wrote the play 'Hamlet'?",
+    "answer": "William Shakespeare",
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the powerhouse of the cell?",
+    "answer": "Mitochondria",
+    "difficulty": "easy"
+  },
+  {
+    "question": "Which country has the most Olympic gold medals in history?",
+    "answer": "United States",
+    "difficulty": "hard"
+  },
+  {
+    "question": "What is the capital of Egypt?",
+    "answer": "Cairo",
+    "difficulty": "easy"
+  },
+  {
+    "question": "Who is known as the father of computers?",
+    "answer": "Charles Babbage",
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the chemical symbol for Iron?",
+    "answer": "Fe",
+    "difficulty": "medium"
+  },
+  {
+    "question": "Which is the longest bone in the human body?",
+    "answer": "Femur",
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the name of the largest ocean on Earth?",
+    "answer": "Pacific Ocean",
+    "difficulty": "easy"
+  },
+  {
+    "question": "Who invented the telephone?",
+    "answer": "Alexander Graham Bell",
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the atomic number of Carbon?",
+    "answer": "6",
+    "difficulty": "hard"
+  },
+  {
+    "question": "Which planet has the most moons?",
+    "answer": "Saturn",
+    "difficulty": "hard"
+  }
+]
