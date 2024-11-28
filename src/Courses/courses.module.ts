@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { CoursesController } from './courses.service';
+import { CoursesController } from './courses.controller';
 
 import { UploadService } from 'src/Upload Module/upload.module';
 import { User, UserSchema } from 'src/schemas/user.schema';
 import { Course, CoursesSchema } from 'src/schemas/courses.schema';
-import { CoursesService } from './courses.controller';
+import { CoursesService } from './courses.service';
 
 
 @Module({
