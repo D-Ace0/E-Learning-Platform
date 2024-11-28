@@ -1,8 +1,10 @@
 import {
-  ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
+  ConflictException,
+  ForbiddenException,
+  InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -14,54 +16,85 @@ export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async getAllUsers(): Promise<User[]> {
-    return this.userModel.find().exec();
+    try {
+      return await this.userModel.find().exec();
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get all users');
+    }
   }
 
   async getAllStudents(): Promise<User[]> {
-    return this.userModel.find({ role: UserRole.STUDENT }).exec();
+    try {
+      return await this.userModel.find({ role: UserRole.STUDENT }).select('-password_hash').exec();
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get all students');
+    }
+  }
+
+  async getAllInstructors(): Promise<User[]> {
+    try {
+      return await this.userModel.find({ role: UserRole.INSTRUCTOR }).select('-password_hash').exec();
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get all students');
+    }
   }
 
   async getProfile(userId: string): Promise<User> {
-    return this.userModel.findById(userId).exec();
+    try {
+      const user = await this.userModel.findById(userId).select('-password_hash').exec();
+      if (!user) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
+      }
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to get user profile');
+    }
   }
 
   async updateProfile(
     id: string,
     updateProfileDto: UpdateProfileDto,
   ): Promise<User> {
-    const user = await this.userModel.findById(id).exec();
+    const user = await this.userModel.findById(id).select('-password_hash').exec();
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    // Only update fields specified in the DTO
-    if (updateProfileDto.name) {
-      user.name = updateProfileDto.name;
-    }
-    if (updateProfileDto.email) {
-      user.email = updateProfileDto.email;
-    }
-    if (updateProfileDto.profile_picture_url) {
-      user.profile_picture_url = updateProfileDto.profile_picture_url;
-    } else {
-      throw new ForbiddenException('You are not allowed to update this data');
+    const { name, email, profile_picture_url } = updateProfileDto;
+
+    // Check for unspecified attributes
+    // wrbna chatgpt
+    const allowedAttributes = ['name', 'email', 'profile_picture_url'];
+    const updateKeys = Object.keys(updateProfileDto);
+    const invalidKeys = updateKeys.filter(key => !allowedAttributes.includes(key));
+
+    if (invalidKeys.length > 0) {
+      throw new BadRequestException(`You can't edit Invalid attributes: ${invalidKeys.join(', ')}`);
     }
 
-    // Ensure no other attributes are updated
-    const allowedUpdates = ['name', 'email', 'profile_picture_url'];
-    Object.keys(updateProfileDto).forEach((key) => {
-      if (!allowedUpdates.includes(key)) {
-        throw new ForbiddenException(
-          `You are not allowed to update the attribute: ${key}`,
-        );
+    if (name) user.name = name;
+    if (email) {
+      const emailExists = await this.userModel.findOne({ email }).exec();
+      if (emailExists && emailExists.id !== id) {
+        throw new ConflictException('Email already in use');
       }
-    });
+      user.email = email;
+    }
+    if (profile_picture_url) {
+      user.profile_picture_url = profile_picture_url;
+    }
 
     return user.save();
   }
 
   // delete user
-  async deleteUser(id: string): Promise<User> {
-    return this.userModel.findByIdAndDelete(id).exec();
+  async deleteUser(id: string): Promise<{ message: string }> {
+    const user = await this.userModel.findByIdAndDelete(id).exec();
+    
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    return { message: 'Profile deleted successfully' };
   }
 }

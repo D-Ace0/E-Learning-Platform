@@ -15,6 +15,7 @@ import { ModuleModule } from './modules/module.module'
 import { MfaModule } from './mfa/mfa.module'
 import { MailModule } from './mail/mail.module'
 import { DashboardModule } from './dashboard/dashboard.module'
+import { ResourceAccessGuard } from './guards/resource-access.guard'
 dotenv.config();
 
 
@@ -24,7 +25,8 @@ dotenv.config();
       provide: APP_GUARD,
       useClass: JwtService
     },
-    Logger
+    Logger,
+    ResourceAccessGuard
   ],
   imports: [
     MailModule,

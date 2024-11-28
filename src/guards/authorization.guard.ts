@@ -20,7 +20,7 @@ export class AuthorizationGuard implements CanActivate {
             const userRole = request.user.role
             return (Object.values(requiredRoles).indexOf(userRole) > -1) ? true : false
         }catch{
-            throw new UnauthorizedException("")
+            throw new UnauthorizedException("Unauthorized gwa authorization shaklak nseet t7ot @Roles")
         }
     }
     
