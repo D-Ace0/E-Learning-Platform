@@ -7,7 +7,7 @@ import { ResourceAccessGuard } from 'src/guards/resource-access.guard';
 
 
 
-//@UseGuards(AuthenticationGuard, AuthorizationGuard, ResourceAccessGuard)
+@UseGuards(AuthenticationGuard, AuthorizationGuard, ResourceAccessGuard)
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
@@ -20,7 +20,7 @@ export class DashboardController {
   
 
   //instructor
-  //@Roles(['instructor'])
+  @Roles(['instructor'])
   @Get('/course/:id')
   async getCourseAnalytics(@Param('id')id:string ){ {
     return this.dashboardService.getCourseAnalytics(id);
