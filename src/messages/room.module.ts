@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RoomService } from './room.service';
-import { ChatGateway } from './WebSocket_Gateway';
-import { Room, RoomSchema } from './room.schema';
+import { RoomSchema } from './room.schema';
+import { MessagesModule } from '../messages/MessagesModule'; // Import MessagesModule
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Room.name, schema: RoomSchema }]),
+    MongooseModule.forFeature([{ name: 'Room', schema: RoomSchema }]),
+    MessagesModule, // Include MessagesModule
   ],
-  providers: [RoomService, ChatGateway],
-  exports: [RoomService], // Export RoomService
+  providers: [RoomService],
+  exports: [RoomService],
 })
 export class RoomModule {}

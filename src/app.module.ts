@@ -16,6 +16,7 @@ import { MfaModule } from './mfa/mfa.module'
 import { MailModule } from './mail/mail.module'
 import { ChatGateway } from './messages/WebSocket_Gateway';
 import {RoomModule} from './messages/room.module';
+import {MessagesModule} from './messages/MessagesModule';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ dotenv.config();
     ModuleModule,
     MfaModule,
     RoomModule,
+    MessagesModule,
     MongooseModule.forRoot('mongodb://localhost:27017/E-Learning-Platform'),
 
 

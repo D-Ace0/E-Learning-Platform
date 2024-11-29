@@ -3,57 +3,119 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Join Room Test</title>
+  <title>Real-Time Chat</title>
   <script src="https://cdn.socket.io/4.5.3/socket.io.min.js"></script>
+  <style>
+      body {
+          font-family: Arial, sans-serif;
+      }
+      #messages {
+          list-style-type: none;
+          padding: 0;
+          max-height: 300px;
+          overflow-y: auto;
+          border: 1px solid #ccc;
+          margin-bottom: 10px;
+      }
+      #messages li {
+          padding: 5px;
+          border-bottom: 1px solid #eee;
+      }
+      #messages li:nth-child(odd) {
+          background: #f9f9f9;
+      }
+      #logs {
+          background: #f4f4f4;
+          padding: 10px;
+          margin-top: 10px;
+          max-height: 150px;
+          overflow-y: auto;
+          border: 1px solid #ccc;
+      }
+      .input-group {
+          margin-bottom: 10px;
+      }
+  </style>
 </head>
 <body>
-<h1>Join Room Test</h1>
-<div>
+<h1>Real-Time Chat</h1>
+
+<!-- Room and User Input -->
+<div class="input-group">
   <label for="roomName">Room Name:</label>
   <input type="text" id="roomName" placeholder="Enter room name">
 </div>
-<div>
+<div class="input-group">
   <label for="studentId">Student ID:</label>
   <input type="text" id="studentId" placeholder="Enter student ID">
 </div>
 <button id="joinRoomButton">Join Room</button>
+
+<!-- Logs -->
 <div>
   <h3>Logs</h3>
   <pre id="logs"></pre>
 </div>
+
+<!-- Joined Room Information -->
 <div>
   <h3>Joined Room Info</h3>
   <div id="roomInfo"></div>
 </div>
+
+<!-- User Details -->
 <div>
   <h3>User Details</h3>
   <ul id="userDetails"></ul>
 </div>
 
+<!-- Chat Section -->
+<div>
+  <h3>Chat Messages</h3>
+  <ul id="messages"></ul>
+  <label for="messageContent">Message:</label>
+  <input type="text" id="messageContent" placeholder="Type your message">
+  <button id="sendMessageButton">Send</button>
+</div>
+
 <script>
-  const socket = io('ws://localhost:7316'); // Update port if needed
+  const socket = io('ws://localhost:7406'); // Update port if needed
 
   const logs = document.getElementById('logs');
   const roomInfo = document.getElementById('roomInfo');
   const userDetails = document.getElementById('userDetails');
+  const messagesList = document.getElementById('messages');
+  const messageContentInput = document.getElementById('messageContent');
 
   const logMessage = (message) => {
     logs.textContent += `${message}\n`;
+    logs.scrollTop = logs.scrollHeight; // Auto-scroll to the bottom
+    console.debug(`[DEBUG] Log: ${message}`);
   };
 
   const displayRoomInfo = (room) => {
+    console.debug('[DEBUG] Room Info:', room);
     roomInfo.innerHTML = `<p>Room Name: ${room.name}</p>`;
   };
 
   const displayUserDetails = (user) => {
+    console.debug('[DEBUG] User Details:', user);
     userDetails.innerHTML = `
-        <li><strong>Name:</strong> ${user.name}</li>
-        <li><strong>Email:</strong> ${user.email}</li>
-        <li><strong>Role:</strong> ${user.role}</li>
-        <li><strong>Age:</strong> ${user.age}</li>
-      `;
+      <li><strong>Name:</strong> ${user.name}</li>
+      <li><strong>Email:</strong> ${user.email}</li>
+      <li><strong>Role:</strong> ${user.role}</li>
+    `;
   };
 
+  const displayMessage = (message) => {
+    console.debug('[DEBUG] Message:', message);
+    const messageItem = document.createElement('li');
+    messageItem.textContent = `${message.sender.name}: ${message.content}`;
+    messagesList.appendChild(messageItem);
+    messagesList.scrollTop = messagesList.scrollHeight; // Auto-scroll to the bottom
+  };
+
+  // WebSocket Events
   socket.on('connect', () => {
     logMessage(`Connected to server with id: ${socket.id}`);
   });
@@ -64,24 +126,56 @@
 
   socket.on('error', (error) => {
     logMessage(`Error: ${error}`);
-  });
-
-  document.getElementById('joinRoomButton').addEventListener('click', () => {
-    const roomName = document.getElementById('roomName').value;
-    const studentId = document.getElementById('studentId').value;
-
-    if (roomName && studentId) {
-      logMessage(`Joining room "${roomName}" as student "${studentId}"`);
-      socket.emit('joinRoom', { roomName, studentId });
-    } else {
-      logMessage('Please enter both room name and student ID');
-    }
+    console.error('[ERROR] WebSocket Error:', error);
   });
 
   socket.on('roomJoined', (data) => {
+    console.debug('[DEBUG] Room Joined Event:', data);
     logMessage(`Success: ${data.message}`);
     displayRoomInfo(data.room);
     displayUserDetails(data.user);
+
+    // Display previous messages
+    if (data.messages && data.messages.length > 0) {
+      console.debug('[DEBUG] Previous Messages:', data.messages);
+      data.messages.forEach(displayMessage);
+    }
+  });
+
+  socket.on('messageReceived', (data) => {
+    console.debug('[DEBUG] Message Received Event:', data);
+    displayMessage(data.message);
+  });
+
+  // Join Room Button
+  document.getElementById('joinRoomButton').addEventListener('click', () => {
+    const roomName = document.getElementById('roomName').value.trim();
+    const studentId = document.getElementById('studentId').value.trim();
+
+    if (roomName && studentId) {
+      logMessage(`Joining room "${roomName}" as student "${studentId}"`);
+      console.debug('[DEBUG] Emitting joinRoom event:', { roomName, studentId });
+      socket.emit('joinRoom', { roomName, studentId });
+    } else {
+      logMessage('Please enter both room name and student ID');
+      console.warn('[WARN] Missing room name or student ID');
+    }
+  });
+
+  // Send Message Button
+  document.getElementById('sendMessageButton').addEventListener('click', () => {
+    const content = messageContentInput.value.trim();
+    const roomName = document.getElementById('roomName').value.trim();
+    const studentId = document.getElementById('studentId').value.trim();
+
+    if (content && roomName && studentId) {
+      console.debug('[DEBUG] Emitting sendMessage event:', { roomName, studentId, content });
+      socket.emit('sendMessage', { roomName, studentId, content });
+      messageContentInput.value = ''; // Clear input
+    } else {
+      logMessage('Please fill in the message, room name, and student ID');
+      console.warn('[WARN] Missing message content, room name, or student ID');
+    }
   });
 </script>
 </body>
