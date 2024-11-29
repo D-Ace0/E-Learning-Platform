@@ -11,7 +11,7 @@ export class AuthController {
 
   @Post('signup')
   async signup(@Body() signUpData: SignupDTO) {
-    return this.authService.signup(signUpData);
+    return this.authService.signup(signUpData)
   }
 
   @Post('login')
@@ -31,7 +31,7 @@ async enableMFA(@Request() req: any) {
   @UseGuards(AuthenticationGuard)
   async disableMFA(@Request() req: any) {
     const user_id = req.user.user_id
-    const response = await this.authService.disableMFA(user_id);
+    const response = await this.authService.disableMFA(user_id)
     return response;
   }
 }
