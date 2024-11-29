@@ -1,9 +1,9 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common'
+import { Body, Controller, Post, Request, Res, UseGuards } from '@nestjs/common'
 import { SignInDTO } from './dto/signin'
 import { AuthService } from './auth.service'
 import { SignupDTO } from './dto/signup.dto'
 import { AuthenticationGuard } from 'src/guards/authentication.guard'
-
+import { Response } from 'express'
 
 @Controller('auth')
 export class AuthController {
@@ -11,12 +11,18 @@ export class AuthController {
 
   @Post('signup')
   async signup(@Body() signUpData: SignupDTO) {
-    return this.authService.signup(signUpData)
+    return this.authService.signup(signUpData);
   }
 
   @Post('login')
-  async login(@Body() authPayloadDTO: SignInDTO) {
-    return this.authService.login(authPayloadDTO)
+  async login(@Body() authPayloadDTO: SignInDTO, @Res() response: Response) {
+    return this.authService.login(authPayloadDTO, response)
+  }
+
+  @Post('logout')
+  @UseGuards(AuthenticationGuard)
+  async logout(@Res() response: Response) {
+    return await this.authService.signOut(response);
   }
   
   @Post('enable-mfa')
@@ -31,7 +37,7 @@ async enableMFA(@Request() req: any) {
   @UseGuards(AuthenticationGuard)
   async disableMFA(@Request() req: any) {
     const user_id = req.user.user_id
-    const response = await this.authService.disableMFA(user_id)
+    const response = await this.authService.disableMFA(user_id);
     return response;
   }
 }
