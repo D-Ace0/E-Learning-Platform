@@ -14,6 +14,7 @@ import { QuizModule } from './quizzes/quiz.module'
 import { ModuleModule } from './modules/module.module'
 import { MfaModule } from './mfa/mfa.module'
 import { MailModule } from './mail/mail.module'
+import { BackupModule } from './backup/backup.module'
 dotenv.config();
 
 
@@ -26,6 +27,7 @@ dotenv.config();
     Logger
   ],
   imports: [
+    BackupModule,
     MailModule,
     QuizModule,
     AuthModule,
