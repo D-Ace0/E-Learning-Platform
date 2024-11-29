@@ -19,39 +19,41 @@ import { AuthenticationLog, AuthenticationLogDocument, AuthenticationStatus } fr
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(AuthenticationLog.name) private authLogModel: Model<AuthenticationLogDocument>, 
+    @InjectModel(AuthenticationLog.name) private authLogModel: Model<AuthenticationLogDocument>, // Inject the AuthenticationLog model
     private jwtService: JwtService,
     private mfaService: MfaService  
   ) {}
 
-  // Login method
   async login({ email, password, mfaToken }: SignInDTO, response: Response) {
     const user = await this.userModel.findOne({ email });
 
     if (!user) {
-      await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE); 
+      await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE); // Log failure with email
       throw new NotFoundException('User not found');
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
-      await this.logAuthenticationAttempt(user._id, 'Login Attempt', AuthenticationStatus.FAILURE); 
+      await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE); // Log failure with email
       throw new UnauthorizedException('Invalid Credentials');
     }
 
     if (user.mfa_enabled && !this.mfaService.verifyToken(user.mfa_secret, mfaToken)) {
-      await this.logAuthenticationAttempt(user._id, 'Login Attempt', AuthenticationStatus.FAILURE); 
+      await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE); // Log failure with email
       throw new UnauthorizedException('Invalid MFA token');
     }
 
     const token = await this.generateUserToken(user._id, user.role);
+    // Store token in a cookie
     response.cookie('auth_token', token.accessToken, {
-      httpOnly: true,
+      httpOnly: true, // prevents xss
+      // secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    await this.logAuthenticationAttempt(user._id, 'Login', AuthenticationStatus.SUCCESS); 
+    // Log successful login with email
+    await this.logAuthenticationAttempt(email, 'Login', AuthenticationStatus.SUCCESS);
 
     return response.status(200).json({ message: 'Login successful' });
   }
@@ -59,10 +61,12 @@ export class AuthService {
   async signOut(response: Response) {
     response.clearCookie('auth_token', {
       httpOnly: true,
+      // secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
     });
 
-    await this.logAuthenticationAttempt('N/A', 'Sign Out', AuthenticationStatus.SUCCESS); 
+    // Log successful sign out with 'N/A' for email
+    await this.logAuthenticationAttempt('N/A', 'Sign Out', AuthenticationStatus.SUCCESS);
 
     return response.status(200).json({ message: 'Successfully signed out' });
   }
@@ -104,49 +108,39 @@ export class AuthService {
   async signup(signUpDataDTO: SignupDTO) {
     const { email, password, name, role, age } = signUpDataDTO;
 
-    try {
-      const emailInUse = await this.userModel.findOne({ email });
-      if (emailInUse) {
-        await this.logAuthenticationAttempt(email, 'Signup Attempt', AuthenticationStatus.FAILURE); 
-        throw new BadRequestException('Email already in use');
-      }
+    const emailInUse = await this.userModel.findOne({ email });
+    if (emailInUse) throw new BadRequestException('Email already in use');
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-      const createdUser = await this.userModel.create({
-        name,
-        email,
-        password_hash: hashedPassword,
-        role,
-        age,
-      });
+    const createdUser = await this.userModel.create({
+      name,
+      email,
+      password_hash: hashedPassword,
+      role,
+      age,
+    });
 
-      createdUser.password_hash = undefined;
+    createdUser.password_hash = undefined;
 
-      await this.logAuthenticationAttempt(createdUser._id, 'Signup', AuthenticationStatus.SUCCESS); 
+    await this.logAuthenticationAttempt(email, 'Signup', AuthenticationStatus.SUCCESS);
 
-      return createdUser;
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        await this.logAuthenticationAttempt(email, 'Signup Attempt', AuthenticationStatus.FAILURE); 
-      }
-      throw error; 
-    }
+    return createdUser;
   }
 
   async getCurrentOtp(user_id: string) {
     const user = await this.userModel.findById(user_id);
     if (!user || !user.mfa_enabled || !user.mfa_secret) {
-      throw new NotFoundException('User not found or MFA not enabled');
+        throw new NotFoundException('User not found or MFA not enabled');
     }
 
     const otp = this.mfaService.generateCurrentOtp(user.mfa_secret);
     return { otp };
   }
 
-  private async logAuthenticationAttempt(userId: string | mongoose.Types.ObjectId, event: string, status: AuthenticationStatus) {
+  private async logAuthenticationAttempt(email: string, event: string, status: AuthenticationStatus) {
     const log = new this.authLogModel({
-      user_id: userId, 
+      user_id: email, 
       event,
       status,
       timestamp: new Date(),
