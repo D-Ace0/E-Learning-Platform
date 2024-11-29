@@ -14,6 +14,9 @@ import { QuizModule } from './quizzes/quiz.module'
 import { ModuleModule } from './modules/module.module'
 import { MfaModule } from './mfa/mfa.module'
 import { MailModule } from './mail/mail.module'
+import { ChatGateway } from './messages/WebSocket_Gateway';
+import {RoomModule} from './messages/room.module';
+
 dotenv.config();
 
 
@@ -23,7 +26,8 @@ dotenv.config();
       provide: APP_GUARD,
       useClass: JwtService
     },
-    Logger
+    Logger,
+     ChatGateway
   ],
   imports: [
     MailModule,
@@ -33,8 +37,11 @@ dotenv.config();
     UsersModule,
     NotesModule,
     ModuleModule,
-    MfaModule, 
-    MongooseModule.forRoot('mongodb://localhost:27017/E-Learning-Platform')
+    MfaModule,
+    RoomModule,
+    MongooseModule.forRoot('mongodb://localhost:27017/E-Learning-Platform'),
+
+
     // MongooseModule.forRoot(
     //   'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
   ],
