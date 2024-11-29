@@ -34,8 +34,7 @@ dotenv.config();
     NotesModule,
     ModuleModule,
     MfaModule, 
-     MongooseModule.forRoot(
-      'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
+    MongooseModule.forRoot('mongodb://localhost:27017/E-Learning-Platform')
   ],
 })
 export class AppModule implements NestModule {
