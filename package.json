@@ -34,7 +34,7 @@
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.5",
     "mongodb-memory-server": "^10.1.2",
-    "mongoose": "^8.8.2",
+    "mongoose": "^8.8.3",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.16",
     "passport-jwt": "^4.0.1",
