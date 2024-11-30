@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test API</title>
+</head>
+<body>
+<h1>Test API: Get Posts by Course</h1>
+<form id="apiForm">
+  <label for="courseId">Enter Course ID:</label>
+  <input type="text" id="courseId" name="courseId" placeholder="Enter course ID here" required>
+  <button type="submit">Fetch Posts</button>
+</form>
+
+<h2>Response:</h2>
+<pre id="response"></pre>
+
+<script>
+  const form = document.getElementById('apiForm');
+  const responseContainer = document.getElementById('response');
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault(); // Prevent form submission
+    const courseId = document.getElementById('courseId').value;
+
+    // Clear the response container
+    responseContainer.textContent = "Loading...";
+
+    try {
+      const response = await fetch(`http://localhost:7701/posts/${courseId}`);
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      responseContainer.textContent = JSON.stringify(data, null, 2);
+    } catch (error) {
+      responseContainer.textContent = `Failed to fetch: ${error.message}`;
+    }
+  });
+</script>
+</body>
+</html>

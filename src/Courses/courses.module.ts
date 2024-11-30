@@ -6,15 +6,13 @@ import { Course, CourseSchema } from 'src/schemas/course.schema';
 import { UploadService } from 'src/Upload Module/upload.module';
 import { User, UserSchema } from 'src/schemas/user.schema';
 
-
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Course.name, schema: CourseSchema }]),
-     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])
   ],
   controllers: [CoursesController],
-  providers: [CoursesService, UploadService], 
-  exports: [CoursesService], 
+  providers: [CoursesService],
+  exports: [MongooseModule], // Export MongooseModule so CourseModel is accessible in other modules
 })
 export class CourseModule {}
-    

@@ -14,9 +14,9 @@ import { QuizModule } from './quizzes/quiz.module'
 import { ModuleModule } from './modules/module.module'
 import { MfaModule } from './mfa/mfa.module'
 import { MailModule } from './mail/mail.module'
-import { ChatGateway } from './messages/WebSocket_Gateway';
-import {RoomModule} from './messages/room.module';
-import {MessagesModule} from './messages/MessagesModule';
+import { ChatGateway } from './communication_handler/WebSocket_Gateway';
+import {RoomModule} from './communication_handler/Communication_Modules/room.module';
+import {MessagesModule} from './communication_handler/Communication_Modules/MessagesModule';
 
 dotenv.config();
 

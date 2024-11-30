@@ -6,11 +6,11 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { RoomService } from './room.service';
+import { RoomService } from './Communication_Service/room.service';
 import { UsersService } from '../users/users.service';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { Message, MessageDocument } from './message.schema';
+import { Message, MessageDocument } from './Communication_schemas/message.schema';
 
 @WebSocketGateway({
   cors: {
@@ -51,7 +51,7 @@ export class ChatGateway {
       const savedMessage = await message.save();
       console.debug('[DEBUG] Message saved:', savedMessage);
 
-      // Add the message to the room's messages array
+      // Add the message to the room's communication_handler array
       room.messages.push(savedMessage._id as mongoose.Types.ObjectId);
       await room.save();
 
