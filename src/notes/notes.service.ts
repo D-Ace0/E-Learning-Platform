@@ -25,7 +25,7 @@ export class NotesService {
     return this.noteModel.find().exec();
   }
 
-  async update(id: string, updateNoteDTO: UpdateNoteDTO): Promise<Note> {
+  async update(id: string, updateNoteDTO: Partial<UpdateNoteDTO>): Promise<Note> {
     const updatedNote = await this.noteModel
       .findByIdAndUpdate(id, updateNoteDTO, { new: true })
       .exec();
@@ -34,6 +34,7 @@ export class NotesService {
     }
     return updatedNote;
   }
+
 
   async delete(id: string): Promise<void> {
     const result = await this.noteModel.findByIdAndDelete(id).exec();

@@ -5,8 +5,8 @@ import {
   Param,
   Body,
   Delete,
-  Put,
-} from '@nestjs/common';
+  Put, Patch
+} from "@nestjs/common";
 import { NotesService } from './notes.service';
 import { CreateNoteDTO, UpdateNoteDTO } from './dto/note.dto';
 
@@ -41,4 +41,12 @@ export class NotesController {
   async deleteNoteById(@Param('id') id: string) {
     return this.notesService.delete(id);
   }
+  @Patch(':id')
+  async patchNote(
+    @Param('id') id: string,
+    @Body() updateNoteDTO: Partial<UpdateNoteDTO>,
+  ) {
+    return this.notesService.update(id, updateNoteDTO);
+  }
+
 }
