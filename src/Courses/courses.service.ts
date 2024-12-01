@@ -1,82 +1,104 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import mongoose, { Model, mongo } from 'mongoose';
 import { Course } from 'src/schemas/course.schema';
-import { createCourseDto } from 'src/Courses/dto/createCourse.dto';
-import { updateCourseDto } from 'src/Courses/dto/updateCourse.dto';
-import mongoose from 'mongoose';
-
+import { CreateCourseDto } from './dto/createCourse.dto';
+import { UpdateCourseDto } from './dto/updateCourse.dto';
+import { v4 as uuidv4 } from 'uuid';
+import { isValidObjectId, Types } from 'mongoose';
+import { User } from 'src/schemas/user.schema';
 
 
 @Injectable()
-export class CourseService {
-  constructor(
-    @InjectModel(Course.name) private courseModel: mongoose.Model<Course>
-  ) {}
+export class CoursesService {
+  constructor(@InjectModel(Course.name) private courseModel: Model<Course>, @InjectModel(User.name) private userModel: Model<User>) {}
 
-  // create a course
-  async create(courseData: createCourseDto): Promise<Course> {
-    const newCourse = new this.courseModel(courseData); // Use DTO for course creation
-    return await newCourse.save(); // Save it to the database
-  }
+  
+  async create(createCourseDto: CreateCourseDto, userid: string) {
+    const newCourse = new this.courseModel({
+      ...createCourseDto,
+      created_by: userid
+    });
+    if(await this.courseModel.findOne({title: newCourse.title})) throw new BadRequestException("Course with this title already exists!")
 
-  // Get all courses
-  async findAll(): Promise<Course[]> {
-    let courses = await this.courseModel.find();  // Fetch all courses from the database
-    return courses
-  }
-
-  // Get a course by ID
-  async findById(course_id: mongoose.Types.ObjectId): Promise<Course> {
-    return await this.courseModel.findById(course_id);  // Fetch a course by ID
+    return newCourse.save();
   }
 
   
-  // Update a course's details by ID
-  async update(course_id: mongoose.Types.ObjectId, updateData: updateCourseDto): Promise<Course> {
-    return await this.courseModel.findByIdAndUpdate(course_id, updateData, { new: true });  // Find and update the course
-  } 
+  async updateCourse(id: string, updateCourseDto: UpdateCourseDto, instructor_id: string){
 
-  // Delete a course by ID
-  async delete(course_id: mongoose.Types.ObjectId): Promise<Course> {
-    return await this.courseModel.findByIdAndDelete(course_id);  // Find and delete the course
+    if(!isValidObjectId(id)) throw new BadRequestException('Invalid course ID');
+
+    const course = await this.courseModel.findById(id).exec()
+    if(!course) throw new NotFoundException("Course Does not exist")
+    
+    const instructor_id_AS_ObjectId = new Types.ObjectId(instructor_id);
+    if (course.created_by.toString() !== instructor_id_AS_ObjectId.toString()) throw new ForbiddenException('You cannot update this course');
+
+    return await this.courseModel.findById(id, updateCourseDto)
   }
 
-  async enrollStudent(){
 
+  async searchCourse(courseName: string){
+    const course = await this.courseModel.findOne({title: courseName})
+    if(!course) throw new NotFoundException('Course not found')
+    return course
   }
 
-  // async searchStudent(studentId: string, InstructorId: string){
-  //   if(!isValidObjectId(studentId)) throw new BadRequestException()
 
-  //   const coursesCreatedByInstructor = await this.courseModel.find({created_by: InstructorId}).exec()
 
-  //   const studentEnrolled = coursesCreatedByInstructor.some((course) => //some loops over each course in the array of courses
-  //     course.enrolled_students.some(
-  //       (enrolledStudent) => enrolledStudent.toString() === studentId,
-  //     ),
-  //   )
+  async studentEnrollCourse(studentId: string, courseId: string){
+    const course = await this.courseModel.findById(courseId)
+    if(!course) throw new NotFoundException('Course not found')
+      
 
-  //   if(!studentEnrolled) throw new ForbiddenException('The student you are searching for is not enrolled in any of your courses')
+    // add the student to enrolledStudents in course document
+    const studentId_ObjectId = new Types.ObjectId(studentId)
+    const EnrolledStudentsIds = course.enrolledStudents
+    if(EnrolledStudentsIds.includes(studentId_ObjectId as any)) throw new BadRequestException('You are already enrolled in this course')
+    course.enrolledStudents.push(studentId_ObjectId as any)
+
+    // add the course to the courses array of the user document
+    const user = await this.userModel.findById(studentId).exec()
+    const courseId_ObjectId = new Types.ObjectId(courseId)
+    user.courses.push(courseId_ObjectId as any)
+    await user.save()
+
+    return await course.save()
+  }
+
+  async searchStudent(studentId: string, InstructorId: string){
+    if(!isValidObjectId(studentId)) throw new BadRequestException()
+
+    const coursesCreatedByInstructor = await this.courseModel.find({created_by: InstructorId}).exec()
+
+    const studentEnrolled = coursesCreatedByInstructor.some((course) => //some loops over each course in the array of courses
+      course.enrolledStudents.some(
+        (enrolledStudent) => enrolledStudent.toString() === studentId,
+      ),
+    )
+
+    if(!studentEnrolled) throw new ForbiddenException('The student you are searching for is not enrolled in any of your courses')
   
-  //   const student = await this.userModel.findById(studentId).exec()
-  //   const plainStudent = student.toObject();
+    const student = await this.userModel.findById(studentId).exec()
+    const plainStudent = student.toObject();
 
-  //   if(!student) throw new NotFoundException('Student Not Found')
+    if(!student) throw new NotFoundException('Student Not Found')
 
-  //   const {password_hash, role, ...StudentData} = plainStudent
-  //   return StudentData
-  // }
+    const {password_hash, role, ...StudentData} = plainStudent
+    return StudentData
+  }
 
-  // async searchInstructor(InstructorId: string){
+  async searchInstructor(InstructorId: string){
 
-  //   if(!isValidObjectId(InstructorId)) throw new BadRequestException()
+    if(!isValidObjectId(InstructorId)) throw new BadRequestException()
 
-  //   const instructor = await this.userModel.findById(InstructorId).exec()
-  //   if(instructor.role.toString() !== "instructor") throw new ForbiddenException()
+    const instructor = await this.userModel.findById(InstructorId).exec()
+    if(instructor.role.toString() !== "instructor") throw new ForbiddenException()
 
-  //   const plainInstructor = instructor.toObject()
-  //   const {password_hash, created_at, role, ...InstructorData} = plainInstructor
+    const plainInstructor = instructor.toObject()
+    const {password_hash, created_at, role, ...InstructorData} = plainInstructor
 
-  //   return InstructorData
-  // }
+    return InstructorData
+  }
 }

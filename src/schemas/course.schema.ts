@@ -1,6 +1,8 @@
-import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from './user.schema';
 import mongoose, { Document } from 'mongoose';
+import { Student } from './student.schema';
+import { Quiz } from './quiz.schema';
 
 export type CourseDocument = Course & Document;
 
@@ -12,38 +14,39 @@ enum difficulty_levels {
 
 @Schema()
 export class Course {
-  @Prop({ required: true, unique: true, type: String })
-  code: string;
 
-  @Prop({ required: true, type: String })
+  @Prop({ unique:true, required: true })
   title: string;
 
-  @Prop({ required: true, type: String })
+  @Prop({ required: true })
   description: string;
 
-  @Prop({ required: true, type: String })
+  @Prop({ required: true })
   category: string;
 
-  @Prop({ required: true, enum: difficulty_levels, type: String })
+  @Prop({ required: true, enum: difficulty_levels })
   difficulty_level: string;
 
-  @Prop({ required: true, type: String })
-  created_by: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
+  created_by: mongoose.Schema.Types.ObjectId
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
-  created_by_id: mongoose.Types.ObjectId;
+  @Prop({ required: true, type: Date, default: Date.now })
+  created_at: Date;
 
-  @Prop({ required: false, type: Date, default: Date.now })
-  created_at?: Date;
+  @Prop({required: true})
+  video: string
 
-  @Prop({ required: true, type: String })
-  video: string;
+  @Prop({required: true})
+  pdf: string
 
-  @Prop({ required: true, type: String })
-  pdf: string;
+  @Prop({default: [], type: [mongoose.Schema.Types.ObjectId], ref: () => Course})
+  parentVersion?: mongoose.Schema.Types.ObjectId[]; // this one will hold the course object id of the old version
 
-  @Prop({ required: false, default: null, type: String })
-  parent_version?: string;
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }], default: [] })
+  enrolledStudents: mongoose.Schema.Types.ObjectId[];
+
+  @Prop({type: [mongoose.Schema.Types.ObjectId], ref: () => Quiz})
+  Quiz: mongoose.Schema.Types.ObjectId
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);

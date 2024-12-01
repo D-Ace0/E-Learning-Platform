@@ -3,17 +3,15 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-} from '@nestjs/common';
-import { SignInDTO } from './dto/signin';
-import { SignupDTO } from './dto/signup.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { User } from 'src/schemas/user.schema';
-import mongoose, { Model } from 'mongoose';
-import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
-import { MfaService } from '../mfa/mfa.service';
-import { Response } from 'express';
-import { AuthenticationLog, AuthenticationLogDocument, AuthenticationStatus } from 'src/schemas/authentication_logs.schema'; 
+} from '@nestjs/common'
+import { SignInDTO } from './dto/signin'
+import { SignupDTO } from './dto/signup.dto'
+import { InjectModel } from '@nestjs/mongoose'
+import { User } from 'src/schemas/user.schema'
+import mongoose, { Model } from 'mongoose'
+import * as bcrypt from 'bcrypt'
+import { JwtService } from '@nestjs/jwt'
+import { MfaService } from '../mfa/mfa.service'
 
 @Injectable()
 export class AuthService {
@@ -24,8 +22,8 @@ export class AuthService {
     private mfaService: MfaService  
   ) {}
 
-  async login({ email, password, mfaToken }: SignInDTO, response: Response) {
-    const user = await this.userModel.findOne({ email });
+  async login({ email, password, mfaToken }: SignInDTO) {
+    const user = await this.userModel.findOne({ email })
 
     if (!user) {
       await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE); // Log failure with email
@@ -43,34 +41,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid MFA token');
     }
 
-    const token = await this.generateUserToken(user._id, user.role);
-    // Store token in a cookie
-    response.cookie('auth_token', token.accessToken, {
-      httpOnly: true, // prevents xss
-      // secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    // Log successful login with email
-    await this.logAuthenticationAttempt(email, 'Login', AuthenticationStatus.SUCCESS);
-
-    return response.status(200).json({ message: 'Login successful' });
-  }
-
-  async signOut(response: Response) {
-    response.clearCookie('auth_token', {
-      httpOnly: true,
-      // secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-    });
-
-    // Log successful sign out with 'N/A' for email
-    await this.logAuthenticationAttempt('N/A', 'Sign Out', AuthenticationStatus.SUCCESS);
-
-    return response.status(200).json({ message: 'Successfully signed out' });
-  }
-
+    const token = await this.generateUserToken(user._id, user.role)
+       return token
+      }
+      
   async generateUserToken(user_id: mongoose.Types.ObjectId, role: string) {
     const accessToken = await this.jwtService.sign({ user_id, role });
     return { accessToken };

@@ -8,10 +8,10 @@ export type ResponseDocument = Response & Document
 @Schema()
 export class Response {
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
-  user_id: mongoose.Types.ObjectId
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
+  user_id: mongoose.Schema.Types.ObjectId
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => Quiz } as PropOptions)
+  @Prop({default: [], type: [mongoose.Schema.Types.ObjectId], ref: () => Quiz})
   quiz_id: mongoose.Types.ObjectId
 
   @Prop({ required: true, type: [Object]})
