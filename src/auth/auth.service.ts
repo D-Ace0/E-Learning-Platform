@@ -13,7 +13,11 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { MfaService } from '../mfa/mfa.service';
 import { Response } from 'express';
-import { AuthenticationLog, AuthenticationLogDocument, AuthenticationStatus } from 'src/schemas/authentication_logs.schema'; 
+import {
+  AuthenticationLog,
+  AuthenticationLogDocument,
+  AuthenticationStatus,
+} from 'src/schemas/authentication_logs.schema';
 
 @Injectable()
 export class AuthService {
@@ -47,7 +51,6 @@ export class AuthService {
     // Store token in a cookie
     response.cookie('auth_token', token.accessToken, {
       httpOnly: true, // prevents xss
-      // secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
@@ -61,7 +64,6 @@ export class AuthService {
   async signOut(response: Response) {
     response.clearCookie('auth_token', {
       httpOnly: true,
-      // secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
     });
 
@@ -79,6 +81,7 @@ export class AuthService {
   async enableMFA(user_id: string) {
     const user = await this.userModel.findById(user_id); 
     if (!user) {
+      await this.logAuthenticationAttempt(user_id, 'Enable MFA Attempt', AuthenticationStatus.FAILURE); // Log failure
       throw new NotFoundException('User not found');
     }
 
@@ -88,6 +91,8 @@ export class AuthService {
     await user.save();
 
     await this.mfaService.sendOtpEmail(secret, user.email);
+    
+    await this.logAuthenticationAttempt(user.email, 'MFA Enabled', AuthenticationStatus.SUCCESS); // Log success
 
     return { message: 'MFA enabled successfully and OTP sent to email' };
   }
@@ -130,11 +135,13 @@ export class AuthService {
 
   async getCurrentOtp(user_id: string) {
     const user = await this.userModel.findById(user_id);
+    
     if (!user || !user.mfa_enabled || !user.mfa_secret) {
         throw new NotFoundException('User not found or MFA not enabled');
     }
 
     const otp = this.mfaService.generateCurrentOtp(user.mfa_secret);
+    
     return { otp };
   }
 
@@ -145,6 +152,7 @@ export class AuthService {
       status,
       timestamp: new Date(),
     });
+    
     await log.save();
   }
 }
