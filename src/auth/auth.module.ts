@@ -5,8 +5,7 @@ import { JwtModule } from '@nestjs/jwt'
 import { MongooseModule } from '@nestjs/mongoose'
 import { User, UserSchema } from 'src/schemas/user.schema'
 import { MfaModule } from '../mfa/mfa.module' 
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { AuthenticationLog, AuthenticationLogSchema } from 'src/schemas/authentication_logs.schema'
 
 @Module({
   controllers: [AuthController],
@@ -17,7 +16,10 @@ dotenv.config();
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1h' }
     }),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: AuthenticationLog.name, schema: AuthenticationLogSchema }, 
+    ]),
     MfaModule, 
   ]
 })

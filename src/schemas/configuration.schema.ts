@@ -8,7 +8,7 @@ export type ConfigurationDocument = Configuration & Document
 export class Configuration {
 
   @Prop({ required: true, type: Object })
-  settings: Record<string, any> //double check
+  settings: Record<string, any> 
 
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
   updated_by: mongoose.Types.ObjectId

@@ -17,21 +17,20 @@ import { MailModule } from './mail/mail.module'
 import { ChatGateway } from './communication_handler/WebSocket_Gateway';
 import {RoomModule} from './communication_handler/Communication_Modules/room.module';
 import {MessagesModule} from './communication_handler/Communication_Modules/MessagesModule';
-
-
+import { BackupModule } from './backup/backup.module';
 dotenv.config();
-
 
 @Module({
   providers: [
     {
       provide: APP_GUARD,
-      useClass: JwtService
+      useClass: JwtService,  // You might want to use the actual AuthGuard or AuthorizationGuard here
     },
     Logger,
      ChatGateway
   ],
   imports: [
+    BackupModule,
     MailModule,
     QuizModule,
     AuthModule,
@@ -39,19 +38,16 @@ dotenv.config();
     UsersModule,
     NotesModule,
     ModuleModule,
-    MfaModule,
     RoomModule,
     MessagesModule,
-
-    MongooseModule.forRoot('mongodb://localhost:27017/E-Learning-Platform'),
-
-
+    MfaModule, 
+    MongooseModule.forRoot('mongodb://localhost:27017/E-Learning-Platform')
     // MongooseModule.forRoot(
     //   'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggingMiddleware).forRoutes('*')
+    consumer.apply(LoggingMiddleware).forRoutes('*');
   }
 }
