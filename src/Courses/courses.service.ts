@@ -7,7 +7,7 @@ import { UpdateCourseDto } from './dto/updateCourse.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { isValidObjectId, Types } from 'mongoose';
 import { User } from 'src/schemas/user.schema';
-import { Course } from 'src/schemas/courses.schema';
+import { Course } from 'src/schemas/course.schema';
 
 
 @Injectable()

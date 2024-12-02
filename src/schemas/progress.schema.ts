@@ -1,6 +1,6 @@
 import { Schema, Prop, PropOptions, SchemaFactory } from '@nestjs/mongoose'
 import { User } from './user.schema'
-import { Course } from './courses.schema'
+import { Course } from './course.schema'
 import mongoose, { Document } from 'mongoose'
 
 export type ProgressDocument = Progress & Document
