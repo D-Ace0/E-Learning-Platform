@@ -15,7 +15,7 @@ export class createModuleDto{
   @IsString()
   content: string
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   resources?: string[]

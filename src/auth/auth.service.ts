@@ -24,29 +24,41 @@ export class AuthService {
     private mfaService: MfaService  
   ) {}
 
-  async login({ email, password, mfaToken }: SignInDTO) {
+  async login({ email, password, mfaToken }: SignInDTO, response: Response) {
     const user = await this.userModel.findOne({ email });
 
-    if (!user) {
-      await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE);
-      throw new NotFoundException('User not found');
-    }
+    if (!user) throw new NotFoundException('User not found');
 
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    if (!isValidPassword) {
-      await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE);
-      throw new UnauthorizedException('Invalid Credentials');
-    }
+    if (!isValidPassword) throw new UnauthorizedException('Invalid Credentials');
 
-    if (user.mfa_enabled && !this.mfaService.verifyToken(user.mfa_secret, mfaToken)) {
-      await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE);
-      throw new UnauthorizedException('Invalid MFA token');
+    if (user.mfa_enabled) {
+      if (!mfaToken) {
+        const otp = this.mfaService.generateCurrentOtp(user.mfa_secret);
+        await this.mfaService.sendOtpEmail(otp, user.email);
+
+        return response.status(202).json({
+          message: 'MFA token sent to your email. Please provide the MFA token to complete the login process.',
+        });
+      }
+        if (!this.mfaService.verifyToken(user.mfa_secret, mfaToken)) {
+        throw new UnauthorizedException('Invalid MFA token');
+      }
     }
 
     const token = await this.generateUserToken(user._id, user.role);
-    await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.SUCCESS);  // Success log for login
-    return { message: 'Login successful', token };
+
+    // Store token in a cookie
+    response.cookie('auth_token', token.accessToken, {
+      httpOnly: true, // prevents XSS
+      // secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    return response.status(200).json({ message: 'Login successful' });
   }
+
 
   async signOut(response: Response) {
     response.clearCookie('auth_token', {

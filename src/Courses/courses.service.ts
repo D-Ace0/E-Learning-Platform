@@ -36,7 +36,7 @@ export class CoursesService {
     const instructor_id_AS_ObjectId = new Types.ObjectId(instructor_id);
     if (course.created_by.toString() !== instructor_id_AS_ObjectId.toString()) throw new ForbiddenException('You cannot update this course');
 
-    return await this.courseModel.findById(id, updateCourseDto)
+    return await this.courseModel.findByIdAndUpdate(id, updateCourseDto, {new: true}).exec()
   }
 
 

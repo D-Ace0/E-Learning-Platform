@@ -2,6 +2,7 @@ import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Module } from './module.schema'
 import mongoose from 'mongoose'
 import { Question } from './question.schema'
+import { Course } from './course.schema'
 
 export type QuizDocument = Quiz & Document
 

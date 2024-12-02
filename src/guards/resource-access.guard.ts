@@ -8,8 +8,10 @@ export class ResourceAccessGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    const params = request.params;
-
+    const params = request.params; 
+    
+    // id=                       674865554b82ebcbed67c78d
+    // user_id fe el jwt token = 6747a6c9cdb411fbf139ba3a
     // Admin has access to everything
     if (user.role === 'admin') {
       return true;

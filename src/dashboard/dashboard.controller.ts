@@ -18,8 +18,10 @@ export class DashboardController {
     return this.dashboardService.getStudentDashboard(id);
   }
   
-
+//123 << instructor id
+//1234 << user id
   //instructor
+  // it takes data from user_interaction schema..
   @Roles(['instructor'])
   @Get('/course/:id')
   async getCourseAnalytics(@Param('id')id:string ){ {

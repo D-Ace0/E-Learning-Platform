@@ -157,7 +157,8 @@ export class QuizService {
       attempted_at: new Date(),
     });
 
-    return await newQuizPerformance.save();
+    const QuizReturn = await newQuizPerformance.save()
+    return {QuizReturn, selectedQuestions};
   }
 
 }

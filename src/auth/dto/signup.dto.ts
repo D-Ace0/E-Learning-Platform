@@ -18,5 +18,5 @@ export class SignupDTO {
 
   @IsString()
   @IsIn(['student', 'instructor'])
-  role: string='student'
+  role?: string='student'
 }

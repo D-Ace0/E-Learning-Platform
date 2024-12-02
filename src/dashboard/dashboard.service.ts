@@ -87,8 +87,10 @@ export class DashboardService {
           ? responses.reduce((sum, response) => sum + response.score, 0) / responses.length
           : 0;
 
+        const {Thread, parentVersion, created_by, enrolledStudents, ...restOFCoure} = course
+
         return {
-          course,
+          course: restOFCoure,
           completionPercentage: progress?.completionPercentage ?? 0,
           averageScore,
         };

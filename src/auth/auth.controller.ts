@@ -17,14 +17,7 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() authPayloadDTO: SignInDTO, @Res() response: Response) {
-    const { message, token } = await this.authService.login(authPayloadDTO); 
-    response.cookie('auth_token', token.accessToken, {
-      httpOnly: true, // prevents XSS attacks
-      // secure: process.env.NODE_ENV === 'production', // Uncomment for production
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-    return response.status(200).json({ message });
+    return this.authService.login(authPayloadDTO, response)
   }
 
   @Post('logout')

@@ -16,7 +16,7 @@ export class ModuleService {
   // creates
   async create(moduleData: createModuleDto): Promise<Module> {
     const newModule = new this.moduleModel(moduleData);
-    return newModule.save()
+    return await newModule.save()
   }
 
   //  finds
