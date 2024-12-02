@@ -7,11 +7,19 @@ import { UpdateCourseDto } from './dto/updateCourse.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { isValidObjectId, Types } from 'mongoose';
 import { User } from 'src/schemas/user.schema';
+import { CreateThreadDTO } from './dto/createThread.dto';
+import { Thread } from 'src/schemas/thread.schema';
+import { CreatePostDTO } from './dto/createPost.dto';
+import { Post } from 'src/schemas/post.schema';
 
 
 @Injectable()
 export class CoursesService {
-  constructor(@InjectModel(Course.name) private courseModel: Model<Course>, @InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(@InjectModel(Course.name) private courseModel: Model<Course>,
+   @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Thread.name) private threadModel: Model<Thread>,
+    @InjectModel(Post.name) private postModel: Model<Post>
+  ) {}
 
   
   async create(createCourseDto: CreateCourseDto, userid: string) {
@@ -101,4 +109,49 @@ export class CoursesService {
 
     return InstructorData
   }
+
+  async createThread(courseId: string, createThreadDTO: CreateThreadDTO, instructorid: string){
+    const course = await this.courseModel.findById(courseId).exec()
+    if(!course) throw new NotFoundException()
+    if(course.created_by.toString() !== instructorid) throw new ForbiddenException("You can't add thread for this course")
+    
+    const newThread = await new this.threadModel({...createThreadDTO, instructor_id: instructorid}).save()
+
+    await this.courseModel.findByIdAndUpdate(courseId, {$push: {Thread: newThread}})
+    return newThread
+  }
+
+  async makePost(threadId: string, createPostDTO :CreatePostDTO, role: string, userid: string){
+    const thread = await this.threadModel.findById(threadId)
+    if(!thread) throw new NotFoundException()
+
+    if(createPostDTO.type === 'announcement' && role !== 'instructor') throw new ForbiddenException('Only Instructor can create announcement')
+
+    const post = await new this.postModel({...createPostDTO, thread: threadId, user_id: userid}).save()
+    
+    await this.threadModel.findByIdAndUpdate(threadId, {$push: {posts: post}})
+    return post
+  }
+
+  async getAllThreads(){
+    return await this.threadModel.find()
+  }
+
+  async getAllPostsOfThread(threadId: string, instructorId: string) {
+    if(!isValidObjectId(threadId)) throw new NotFoundException()
+      
+    const thread = await this.threadModel.findById(threadId).populate('posts').exec(); // this line will get all the posts object ids, and will go to the posts collection and get these posts
+  
+    if (!thread) {
+      throw new NotFoundException('Thread not found');
+    }
+  
+    if (instructorId !== thread.instructor_id.toString()) {
+      throw new ForbiddenException("You cannot view posts of another instructor's thread");
+    }
+  
+    return thread.posts; 
+  }
+  
+
 }

@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from './user.schema';
 import mongoose, { Document } from 'mongoose';
 import { Student } from './student.schema';
-import { Quiz } from './quiz.schema';
 
 export type CourseDocument = Course & Document;
 
@@ -41,6 +40,9 @@ export class Course {
 
   @Prop({default: [], type: [mongoose.Schema.Types.ObjectId], ref: () => Course})
   parentVersion?: mongoose.Schema.Types.ObjectId[]; // this one will hold the course object id of the old version
+
+  @Prop({default: [], type: [mongoose.Schema.Types.ObjectId], ref: () => Thread})
+  Thread: mongoose.Schema.Types.ObjectId[];
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }], default: [] })
   enrolledStudents: mongoose.Schema.Types.ObjectId[];

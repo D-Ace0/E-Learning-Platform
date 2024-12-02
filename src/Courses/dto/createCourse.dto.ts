@@ -1,5 +1,5 @@
 
-import { IsString, IsNotEmpty, IsEnum, IsUrl } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsUrl, IsMongoId } from 'class-validator';
 
 export class CreateCourseDto {
 
@@ -28,5 +28,7 @@ export class CreateCourseDto {
   @IsUrl()
   @IsNotEmpty()
   video: string
+
+  threads?: string[]
 
 }
