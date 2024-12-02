@@ -33,15 +33,17 @@ export class Course {
   @Prop({ required: true })
   pdf: string;
 
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }], default: [] })
+  enrolledStudents: mongoose.Schema.Types.ObjectId[];
   @Prop({
     default: [],
     type: [mongoose.Schema.Types.ObjectId],
     ref: 'Course',
   })
-  parentVersion?: mongoose.Schema.Types.ObjectId[]; // Holds the course object ID of the old version
+  parentVersion?: mongoose.Schema.Types.ObjectId[];
 
-  @Prop({ default: [], type: [mongoose.Schema.Types.ObjectId], ref: 'Forum' }) // Forums array
-  forums: mongoose.Schema.Types.ObjectId[];
+
+
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
