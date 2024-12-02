@@ -14,16 +14,13 @@ export class MfaService {
   }
 
   verifyToken(secret: string, token: string) {
-    this.logger.log('Verification Attempt Details:');
-    this.logger.log(`Secret: ${secret}`);
-    this.logger.log(`Provided Token: ${token}`);
-  
-    // Generate the expected OTP for logging
-    const expectedOtp = this.generateCurrentOtp(secret);
-    this.logger.log(`Expected OTP: ${expectedOtp}`);
-  
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug('Verification Attempt Details:');
+      this.logger.debug('Provided Token: [REDACTED]');  // Avoid logging sensitive token
+    }
+
     const tokenString = token.trim().replace(/\s/g, '');
-  
+
     // Verify the token using the speakeasy library with the updated step
     const verificationResults = [
       speakeasy.totp.verify({
@@ -41,38 +38,40 @@ export class MfaService {
         window: 1,
       }),
     ];
-  
-    this.logger.log(
-      `Verification Results (no window, 1-step window): ${verificationResults[0]}, ${verificationResults[1]}`
-    );
-  
-    // If either verification passes, return true
+
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug(
+        `Verification Results (no window, 1-step window): ${verificationResults[0]}, ${verificationResults[1]}`
+      );
+    }
+
     if (verificationResults[0] || verificationResults[1]) {
       return true;
     }
-  
+
     throw new UnauthorizedException('Invalid MFA token');
   }
-  
+
   generateCurrentOtp(secret: string) {
     const otp = speakeasy.totp({
       secret,
       encoding: 'base32',
       step: 3600, // 1 hour
     });
-  
-    this.logger.log(`Generated OTP: ${otp}`);
+
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug('[REDACTED] Generated OTP for User');
+    }
     return otp;
   }
-  
 
   async sendOtpEmail(secret: string, email: string, user: any) {
     const otp = this.generateCurrentOtp(secret);
 
-    this.logger.log('Sending OTP Email:');
-    this.logger.log(`Email: ${email}`);
-    this.logger.log(`Secret: ${secret}`);
-    this.logger.log(`Generated OTP: ${otp}`);
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug('Sending OTP Email:');
+      this.logger.debug(`Sending OTP to: [REDACTED]`);
+    }
 
     // Additional verification for debugging
     const verificationTest = speakeasy.totp.verify({
@@ -80,7 +79,9 @@ export class MfaService {
       encoding: 'base32',
       token: otp,
     });
-    this.logger.log(`Self-Verification of OTP: ${verificationTest}`);
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug(`Self-Verification of OTP: [REDACTED]`);
+    }
 
     const subject = 'Your OTP Code - Expiry Notice';
     const expiryTime = new Date(Date.now() + 5 * 60 * 1000); // OTP expiry time (5 minutes)
@@ -161,5 +162,9 @@ export class MfaService {
       text: `Your OTP code is: ${otp}`,
       html: htmlContent,
     });
+
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug('Email sent successfully!');
+    }
   }
 }

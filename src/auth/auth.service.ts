@@ -23,20 +23,21 @@ export class AuthService {
     private jwtService: JwtService,
     private mfaService: MfaService  
   ) {}
+
   async login({ email, password, mfaToken }: SignInDTO): Promise<{ message: string; token?: { accessToken: string } }> {
     console.log(`Login Attempt - Email: ${email}`);
     console.log(`MFA Token Provided: ${mfaToken}`);
-  
+
     const user = await this.userModel.findOne({ email });
     
     if (!user) {
       await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE);
       throw new NotFoundException('User not found');
     }
-  
+
     console.log(`User MFA Status: ${user.mfa_enabled}`);
     console.log(`User MFA Secret: ${user.mfa_secret}`);
-  
+
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
       await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE);
@@ -57,6 +58,7 @@ export class AuthService {
           }
         } catch (error) {
           console.error('MFA Verification Error:', error);
+          await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE);
           throw new UnauthorizedException('Invalid MFA token');
         }
       } else {
@@ -103,7 +105,7 @@ export class AuthService {
     await user.save();
     console.log('Updated user with MFA secret:', user);
 
-    await this.mfaService.sendOtpEmail(secret, user.email, user); // Pass the user object
+    await this.mfaService.sendOtpEmail(secret, user.email, user); 
     console.log('OTP email sent to:', user.email);
 
     await this.logAuthenticationAttempt(user_id, 'Enable MFA', AuthenticationStatus.SUCCESS);
@@ -152,7 +154,7 @@ export class AuthService {
 
   private async logAuthenticationAttempt(email: string, event: string, status: AuthenticationStatus) {
     const log = new this.authLogModel({
-      user_id: email,
+      user_id: email, 
       event,
       status,
       timestamp: new Date(),
