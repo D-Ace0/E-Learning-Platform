@@ -14,12 +14,13 @@ export class MfaService {
   }
 
   verifyToken(secret: string, token: string) {
+    const tokenString = token.trim().replace(/\s/g, '');
+
+    // Log only when in development environment
     if (process.env.NODE_ENV === 'development') {
       this.logger.debug('Verification Attempt Details:');
-      this.logger.debug('Provided Token: [REDACTED]');  // Avoid logging sensitive token
+      this.logger.debug('Provided Token: [REDACTED]');
     }
-
-    const tokenString = token.trim().replace(/\s/g, '');
 
     // Verify the token using the speakeasy library with the updated step
     const verificationResults = [
@@ -73,12 +74,12 @@ export class MfaService {
       this.logger.debug(`Sending OTP to: [REDACTED]`);
     }
 
-    // Additional verification for debugging
     const verificationTest = speakeasy.totp.verify({
       secret,
       encoding: 'base32',
       token: otp,
     });
+
     if (process.env.NODE_ENV === 'development') {
       this.logger.debug(`Self-Verification of OTP: [REDACTED]`);
     }
