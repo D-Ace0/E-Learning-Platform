@@ -135,7 +135,7 @@
     displayRoomInfo(data.room);
     displayUserDetails(data.user);
 
-    // Display previous messages
+    // Display previous communication_handler
     if (data.messages && data.messages.length > 0) {
       console.debug('[DEBUG] Previous Messages:', data.messages);
       data.messages.forEach(displayMessage);

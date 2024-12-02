@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { RoomService } from './room.service';
-import { RoomSchema } from './room.schema';
-import { MessagesModule } from '../messages/MessagesModule'; // Import MessagesModule
+import { RoomService } from '../Communication_Service/room.service';
+import { RoomSchema } from '../Communication_schemas/room.schema';
+import { MessagesModule } from './MessagesModule'; // Import MessagesModule
 
 @Module({
   imports: [
