@@ -18,9 +18,6 @@ export class UserInteraction {
   @Prop({type: mongoose.Schema.Types.ObjectId, ref: () => Response})
   response_id: mongoose.Schema.Types.ObjectId
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => Response } as PropOptions)
-  response_id: mongoose.Types.ObjectId
-
   @Prop({ type: Number })
   time_spent_minutes: number
 
