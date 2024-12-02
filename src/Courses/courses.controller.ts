@@ -5,6 +5,9 @@ import { UpdateCourseDto } from './dto/updateCourse.dto';
 import { Roles } from 'src/decorators/roles.decorator';
 import { AuthenticationGuard } from 'src/guards/authentication.guard';
 import { AuthorizationGuard } from 'src/guards/authorization.guard';
+import { CreateThreadDTO } from './dto/createThread.dto';
+import { threadId } from 'worker_threads';
+import { CreatePostDTO } from './dto/createPost.dto';
 
 
 
@@ -59,4 +62,32 @@ export class CoursesController {
     return this.coursesService.searchInstructor(InstructorId)
   }
 
+  @Post(":CourseID/thread")
+  @Roles(['instructor'])
+  async createThread(@Param('CourseID') courseid: string, @Body() createThreadDTO: CreateThreadDTO, @Request() req: any){
+    const instructorId = req.user.user_id
+    return this.coursesService.createThread(courseid, createThreadDTO, instructorId)
+  }
+
+  @Get(':CourseID/threads')
+  @Roles(['instructor', 'user'])
+  async getAllThreads(){
+    return this.coursesService.getAllThreads()
+  }
+
+  @Post(':CourseID/thread/:ThreadID/post')
+  @Roles(['user', 'instructor'])
+  async makePost(@Param("ThreadID") threadId: string, @Request() req: any, @Body() createPostDTO: CreatePostDTO){
+    const userid = req.user.user_id
+    const role = req.user.role
+    return this.coursesService.makePost(threadId, createPostDTO, role, userid)
+  }
+
+
+  @Get(':CourseID/thread/:ThreadID/posts')
+  @Roles(['instructor', 'user'])
+  async getAllPostsOfThread(@Param('ThreadID') threadId: string, @Request() req: any){
+    const instructorID = req.user.user_id
+    return this.coursesService.getAllPostsOfThread(threadId, instructorID)
+  }
 }
