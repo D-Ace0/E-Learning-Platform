@@ -9,14 +9,11 @@ export class AuthorizationGuard implements CanActivate {
 
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
         try{
-            console.log("Inside the Authorization guard")
             const request = context.switchToHttp().getRequest()
             const requiredRoles = this.reflector.getAllAndOverride(ROLES_KEY, [
                 context.getClass(),
                 context.getHandler()
             ]);
-            console.log('the required roles are, ', requiredRoles)
-            console.log("type of required roles: ", typeof requiredRoles)
             const userRole = request.user.role
             return (Object.values(requiredRoles).indexOf(userRole) > -1) ? true : false
         }catch{

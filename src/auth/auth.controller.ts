@@ -1,9 +1,9 @@
-import { Body, Controller, Post, Request, Res, UseGuards } from '@nestjs/common'
-import { SignInDTO } from './dto/signin'
-import { AuthService } from './auth.service'
-import { SignupDTO } from './dto/signup.dto'
-import { AuthenticationGuard } from 'src/guards/authentication.guard'
-import { Response } from 'express'
+import { Body, Controller, Post, Request, Res, UseGuards } from '@nestjs/common';
+import { SignInDTO } from './dto/signin';
+import { AuthService } from './auth.service';
+import { SignupDTO } from './dto/signup.dto';
+import { AuthenticationGuard } from 'src/guards/authentication.guard';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -11,33 +11,42 @@ export class AuthController {
 
   @Post('signup')
   async signup(@Body() signUpData: SignupDTO) {
-    return this.authService.signup(signUpData);
+    const result = await this.authService.signup(signUpData);
+    return result; 
   }
 
   @Post('login')
   async login(@Body() authPayloadDTO: SignInDTO, @Res() response: Response) {
-    return this.authService.login(authPayloadDTO, response)
+    const { message, token } = await this.authService.login(authPayloadDTO); 
+    response.cookie('auth_token', token.accessToken, {
+      httpOnly: true, // prevents XSS attacks
+      // secure: process.env.NODE_ENV === 'production', // Uncomment for production
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+    return response.status(200).json({ message });
   }
 
   @Post('logout')
   @UseGuards(AuthenticationGuard)
   async logout(@Res() response: Response) {
-    return await this.authService.signOut(response);
+    const result = await this.authService.signOut(response);
+    return result; 
   }
-  
+
   @Post('enable-mfa')
   @UseGuards(AuthenticationGuard)
-async enableMFA(@Request() req: any) {
-    const user_id = req.user.user_id
-    const response = await this.authService.enableMFA(user_id)
-    return response
-}
+  async enableMFA(@Request() req: any) {
+    const user_id = req.user.user_id;
+    const response = await this.authService.enableMFA(user_id);
+    return response; 
+  }
 
   @Post('disable-mfa')
   @UseGuards(AuthenticationGuard)
   async disableMFA(@Request() req: any) {
-    const user_id = req.user.user_id
+    const user_id = req.user.user_id;
     const response = await this.authService.disableMFA(user_id);
-    return response;
+    return response; 
   }
 }

@@ -1,8 +1,8 @@
-import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose, { Document } from 'mongoose'
-import { User } from './user.schema'
+import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { Document } from 'mongoose';
+import { User } from './user.schema';
 
-export type AuthenticationLogDocument = AuthenticationLog & Document
+export type AuthenticationLogDocument = AuthenticationLog & Document;
 
 export enum AuthenticationStatus {
   SUCCESS = 'Success',
@@ -11,18 +11,18 @@ export enum AuthenticationStatus {
 
 @Schema()
 export class AuthenticationLog {
-
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
-  user_id: mongoose.Types.ObjectId
+  
+  @Prop({ required: true, type: mongoose.Schema.Types.Mixed })
+  user_id: mongoose.Types.ObjectId | string; 
 
   @Prop({ required: true, type: String })
-  event: string
+  event: string;
 
   @Prop({ required: false, type: Date, default: Date.now })
-  timestamp?: Date
+  timestamp?: Date;
 
   @Prop({ required: true, enum: AuthenticationStatus, type: String })
-  status: string
+  status: string;
 }
 
-export const AuthenticationLogSchema = SchemaFactory.createForClass(AuthenticationLog)
+export const AuthenticationLogSchema = SchemaFactory.createForClass(AuthenticationLog);

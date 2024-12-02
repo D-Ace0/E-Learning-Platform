@@ -9,19 +9,22 @@ export type UserInteractionDocument = UserInteraction & Document
 @Schema()
 export class UserInteraction {
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => User } as PropOptions)
-  user_id: mongoose.Types.ObjectId
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
+  user_id: mongoose.Schema.Types.ObjectId
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => Course } as PropOptions)
-  course_id: mongoose.Types.ObjectId
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => Course})
+  course_id: mongoose.Schema.Types.ObjectId
+
+  @Prop({type: mongoose.Schema.Types.ObjectId, ref: () => Response})
+  response_id: mongoose.Schema.Types.ObjectId
 
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: () => Response } as PropOptions)
   response_id: mongoose.Types.ObjectId
 
-  @Prop({ required: true, type: Number })
+  @Prop({ type: Number })
   time_spent_minutes: number
 
-  @Prop({ required: false, type: Date, default: Date.now })
+  @Prop({ type: Date, default: Date.now })
   last_accessed: Date
 }
 

@@ -9,8 +9,7 @@ export class createQuizDto{
 
   @IsNotEmpty()
   @IsArray()
-  @IsString({ each: true })
-  questions: string[]
+  questions: mongoose.Schema.Types.ObjectId[]
 
   @IsOptional()
   @IsDate()

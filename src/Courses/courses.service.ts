@@ -14,7 +14,7 @@ import { Course } from 'src/schemas/courses.schema';
 export class CoursesService {
   constructor(@InjectModel(Course.name) private courseModel: Model<Course>, @InjectModel(User.name) private userModel: Model<User>) {}
 
-  
+
   async create(createCourseDto: CreateCourseDto, userid: string) {
     const newCourse = new this.courseModel({
       ...createCourseDto,
@@ -25,14 +25,14 @@ export class CoursesService {
     return newCourse.save();
   }
 
-  
+
   async updateCourse(id: string, updateCourseDto: UpdateCourseDto, instructor_id: string){
 
     if(!isValidObjectId(id)) throw new BadRequestException('Invalid course ID');
 
     const course = await this.courseModel.findById(id).exec()
     if(!course) throw new NotFoundException("Course Does not exist")
-    
+
     const instructor_id_AS_ObjectId = new Types.ObjectId(instructor_id);
     if (course.created_by.toString() !== instructor_id_AS_ObjectId.toString()) throw new ForbiddenException('You cannot update this course');
 
@@ -51,7 +51,7 @@ export class CoursesService {
   async studentEnrollCourse(studentId: string, courseId: string){
     const course = await this.courseModel.findById(courseId)
     if(!course) throw new NotFoundException('Course not found')
-      
+
 
     // add the student to enrolledStudents in course document
     const studentId_ObjectId = new Types.ObjectId(studentId)
@@ -80,7 +80,7 @@ export class CoursesService {
     )
 
     if(!studentEnrolled) throw new ForbiddenException('The student you are searching for is not enrolled in any of your courses')
-  
+
     const student = await this.userModel.findById(studentId).exec()
     const plainStudent = student.toObject();
 
@@ -102,4 +102,25 @@ export class CoursesService {
 
     return InstructorData
   }
+
+
+  async findById(courseId: string): Promise<Course | null> {
+    return this.courseModel.findById(courseId).exec(); // Ensures Mongoose methods are available
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

@@ -14,21 +14,26 @@ import { QuizModule } from './quizzes/quiz.module'
 import { ModuleModule } from './modules/module.module'
 import { MfaModule } from './mfa/mfa.module'
 import { MailModule } from './mail/mail.module'
+import { ChatGateway } from './communication_handler/WebSocket_Gateway';
+import {RoomModule} from './communication_handler/Communication_Modules/room.module';
+import {MessagesModule} from './communication_handler/Communication_Modules/MessagesModule';
+import { BackupModule } from './backup/backup.module';
 import { DashboardModule } from './dashboard/dashboard.module'
 import { ResourceAccessGuard } from './guards/resource-access.guard'
 dotenv.config();
-
 
 @Module({
   providers: [
     {
       provide: APP_GUARD,
-      useClass: JwtService
+      useClass: JwtService,  // You might want to use the actual AuthGuard or AuthorizationGuard here
     },
     Logger,
+    ChatGateway,
     ResourceAccessGuard
   ],
   imports: [
+    BackupModule,
     MailModule,
     QuizModule,
     AuthModule,
@@ -36,6 +41,8 @@ dotenv.config();
     UsersModule,
     NotesModule,
     ModuleModule,
+    RoomModule,
+    MessagesModule,
     MfaModule, 
     DashboardModule,
     MongooseModule.forRoot('mongodb+srv://AhmedKhadrawy:9g3bcGpd2Ay9v0LR@database.r38ac.mongodb.net/E-Learning-Platform')
@@ -45,6 +52,6 @@ dotenv.config();
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggingMiddleware).forRoutes('*')
+    consumer.apply(LoggingMiddleware).forRoutes('*');
   }
 }
