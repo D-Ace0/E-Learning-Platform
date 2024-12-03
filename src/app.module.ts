@@ -20,6 +20,7 @@ import {MessagesModule} from './communication_handler/Communication_Modules/Mess
 import { BackupModule } from './backup/backup.module';
 import { DashboardModule } from './dashboard/dashboard.module'
 import { ResourceAccessGuard } from './guards/resource-access.guard'
+import { RecommendationModule } from './recommendation/recommendation.module';
 dotenv.config();
 
 @Module({
@@ -33,6 +34,7 @@ dotenv.config();
     ResourceAccessGuard
   ],
   imports: [
+    RecommendationModule,
     BackupModule,
     MailModule,
     QuizModule,
