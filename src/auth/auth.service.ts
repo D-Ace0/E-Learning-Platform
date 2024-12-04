@@ -21,81 +21,71 @@ export class AuthService {
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(AuthenticationLog.name) private authLogModel: Model<AuthenticationLogDocument>,
     private jwtService: JwtService,
-    private mfaService: MfaService  
+    private mfaService: MfaService
   ) {}
 
-  async login({ email, password, mfaToken }: SignInDTO): Promise<{ message: string; token?: { accessToken: string } }> {
-    console.log(`Login Attempt - Email: ${email}`);
-    console.log(`MFA Token Provided: ${mfaToken}`);
-
+  // Login method
+  async login({ email, password, mfaToken }: SignInDTO, response: Response) {
     const user = await this.userModel.findOne({ email });
-    
     if (!user) {
-      await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE);
+      await this.logAuthenticationAttempt(null, email, 'Login', AuthenticationStatus.FAILURE, 'User not found');
       throw new NotFoundException('User not found');
     }
 
-    console.log(`User MFA Status: ${user.mfa_enabled}`);
-    console.log(`User MFA Secret: ${user.mfa_secret}`);
-
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
-      await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE);
+      await this.logAuthenticationAttempt(user._id, email, 'Login', AuthenticationStatus.FAILURE, 'Invalid Credentials');
       throw new UnauthorizedException('Invalid Credentials');
     }
-    
-    // Handle MFA if enabled
+
     if (user.mfa_enabled) {
-      if (mfaToken) {
-        console.log('Attempting MFA Token Verification');
-        try {
-          const isValidMfaToken = this.mfaService.verifyToken(user.mfa_secret, mfaToken);
-          console.log(`MFA Verification Result: ${isValidMfaToken}`);
-          
-          if (!isValidMfaToken) {
-            await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE);
-            throw new UnauthorizedException('Invalid MFA token');
-          }
-        } catch (error) {
-          console.error('MFA Verification Error:', error);
-          await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.FAILURE);
-          throw new UnauthorizedException('Invalid MFA token');
-        }
-      } else {
-        console.log('No MFA Token Provided - Generating New OTP');
-        const secret = user.mfa_secret || this.mfaService.generateSecret();
-        user.mfa_secret = secret;
-        await user.save();
-        
-        await this.mfaService.sendOtpEmail(secret, user.email, user);
-        return { message: 'OTP sent to email, please enter it to proceed' };
+      if (!mfaToken) {
+        const otp = this.mfaService.generateCurrentOtp(user.mfa_secret);
+        await this.mfaService.sendOtpEmail(user.mfa_secret, user.email, user);
+        await this.logAuthenticationAttempt(user._id, email, 'MFA', AuthenticationStatus.PENDING_MFA, 'MFA token sent to email');
+        return response.status(202).json({
+          message: 'MFA token sent to your email. Please provide the MFA token to complete the login process.',
+        });
+      }
+
+      try {
+        this.mfaService.verifyToken(user.mfa_secret, mfaToken);
+      } catch (error) {
+        await this.logAuthenticationAttempt(user._id, email, 'MFA', AuthenticationStatus.FAILURE, 'Invalid MFA token');
+        throw new UnauthorizedException('Invalid MFA token');
       }
     }
-    
-    // If no MFA, generate and send the token directly
-    const token = await this.generateUserToken(user._id, user.role);
-    await this.logAuthenticationAttempt(email, 'Login Attempt', AuthenticationStatus.SUCCESS);
-    return { message: 'Login successful', token };
-  }
 
-  async signOut(response: Response) {
-    response.clearCookie('auth_token', {
+    const token = await this.generateUserToken(user._id, user.role);
+
+    response.cookie('auth_token', token.accessToken, {
       httpOnly: true,
       sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    await this.logAuthenticationAttempt('N/A', 'Sign Out', AuthenticationStatus.SUCCESS);  
+
+    await this.logAuthenticationAttempt(user._id, email, 'Login', AuthenticationStatus.SUCCESS, 'Login successful');
+    return response.status(200).json({ message: 'Login successful' });
+  }
+
+  // Sign-out method
+  async signOut(response: Response) {
+    response.clearCookie('auth_token', { httpOnly: true, sameSite: 'strict' });
+    await this.logAuthenticationAttempt(null, 'N/A', 'Sign Out', AuthenticationStatus.SUCCESS, 'Signed out successfully');
     return response.status(200).json({ message: 'Successfully signed out' });
   }
 
+  // Generate JWT token
   async generateUserToken(user_id: mongoose.Types.ObjectId, role: string) {
     const accessToken = await this.jwtService.sign({ user_id, role });
     return { accessToken };
   }
 
+  // Enable MFA
   async enableMFA(user_id: string) {
     const user = await this.userModel.findById(user_id);
     if (!user) {
-      await this.logAuthenticationAttempt(user_id, 'Enable MFA', AuthenticationStatus.FAILURE);
+      await this.logAuthenticationAttempt(new mongoose.Types.ObjectId(user_id), user?.email || 'N/A', 'Enable MFA', AuthenticationStatus.FAILURE, 'User not found');
       throw new NotFoundException('User not found');
     }
 
@@ -103,19 +93,18 @@ export class AuthService {
     user.mfa_secret = secret;
     user.mfa_enabled = true;
     await user.save();
-    console.log('Updated user with MFA secret:', user);
 
-    await this.mfaService.sendOtpEmail(secret, user.email, user); 
-    console.log('OTP email sent to:', user.email);
+    await this.mfaService.sendOtpEmail(secret, user.email, user);
 
-    await this.logAuthenticationAttempt(user_id, 'Enable MFA', AuthenticationStatus.SUCCESS);
+    await this.logAuthenticationAttempt(new mongoose.Types.ObjectId(user_id), user.email, 'Enable MFA', AuthenticationStatus.SUCCESS, 'MFA enabled successfully');
     return { message: 'MFA enabled successfully and OTP sent to email' };
   }
 
+  // Disable MFA
   async disableMFA(user_id: string) {
     const user = await this.userModel.findById(user_id);
     if (!user) {
-      await this.logAuthenticationAttempt(user_id, 'Disable MFA', AuthenticationStatus.FAILURE);
+      await this.logAuthenticationAttempt(new mongoose.Types.ObjectId(user_id), user?.email || 'N/A', 'Disable MFA', AuthenticationStatus.FAILURE, 'User not found');
       throw new NotFoundException('User not found');
     }
 
@@ -123,16 +112,17 @@ export class AuthService {
     user.mfa_enabled = false;
     await user.save();
 
-    await this.logAuthenticationAttempt(user_id, 'Disable MFA', AuthenticationStatus.SUCCESS);
+    await this.logAuthenticationAttempt(new mongoose.Types.ObjectId(user_id), user.email, 'Disable MFA', AuthenticationStatus.SUCCESS, 'MFA disabled successfully');
     return { message: 'MFA disabled successfully' };
   }
 
+  // Signup method
   async signup(signUpDataDTO: SignupDTO) {
     const { email, password, name, role, age } = signUpDataDTO;
 
     const emailInUse = await this.userModel.findOne({ email });
     if (emailInUse) {
-      await this.logAuthenticationAttempt(email, 'Signup Attempt', AuthenticationStatus.FAILURE);
+      await this.logAuthenticationAttempt(null, email, 'Signup Attempt', AuthenticationStatus.FAILURE, 'Email already in use');
       throw new BadRequestException('Email already in use');
     }
 
@@ -148,15 +138,18 @@ export class AuthService {
 
     createdUser.password_hash = undefined;
 
-    await this.logAuthenticationAttempt(email, 'Signup Attempt', AuthenticationStatus.SUCCESS);
+    await this.logAuthenticationAttempt(createdUser._id, email, 'Signup Attempt', AuthenticationStatus.SUCCESS, 'Signup successful');
     return { message: 'Signup successful', user: createdUser };
   }
 
-  private async logAuthenticationAttempt(email: string, event: string, status: AuthenticationStatus) {
+  // Log authentication attempts
+  private async logAuthenticationAttempt(user_id: mongoose.Types.ObjectId | null, email: string, event: string, status: AuthenticationStatus, message: string) {
     const log = new this.authLogModel({
-      user_id: email, 
+      user_id,  
+      email,
       event,
       status,
+      message,
       timestamp: new Date(),
     });
     await log.save();

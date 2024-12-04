@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Request, Res, UseGuards } from '@nestjs/common';
 import { SignInDTO } from './dto/signin';
 import { AuthService } from './auth.service';
 import { SignupDTO } from './dto/signup.dto';
@@ -16,19 +16,13 @@ export class AuthController {
   }
   
   @Post('login')
-  async login(@Body() authPayloadDTO: SignInDTO, @Res() response: Response) {
-    const { message, token } = await this.authService.login(authPayloadDTO);
-    
-    if (token) {
-      response.cookie('auth_token', token.accessToken, {
-        httpOnly: true, // prevents XSS attacks
-        // secure: process.env.NODE_ENV === 'production', // Uncomment for production
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
-    }
-    
-    return response.status(200).json({ message });
+  @HttpCode(200)  // Status code for success
+  async login(
+    @Body() signInDTO: SignInDTO,  // Request body for sign-in
+    @Res() response: Response       // Response object to set the cookie
+  ) {
+    // Call login method from AuthService and pass the response object for setting cookies
+    return this.authService.login(signInDTO, response);
   }
   
   @Post('logout')
