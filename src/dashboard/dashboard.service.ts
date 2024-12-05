@@ -102,16 +102,16 @@ export class DashboardService {
       courses: dashboardData,
     };
   }
-  
+
 
 
   // for Instructor
- 
+
   // for Instructor
   async getCourseAnalytics(user_id: string): Promise<{ downloadLink: string, AverageQuizScores: any, AllGrades: any }> {
     // Fetch user interactions for the given user_id
-    const interactions = await this.userInteractionModel.find({ user_id }).lean().exec();
-    if (!interactions.length) {
+    const interactions = await this.userInteractionModel.find({ user_id:user_id }).lean().exec();
+    if (!interactions) {
         throw new NotFoundException(`No interactions found for user ID ${user_id}`);
     }
 
@@ -120,7 +120,7 @@ export class DashboardService {
 
     // Fetch course details for the courses the user interacted with
     const courses = await this.courseModel.find({ _id: { $in: courseIds } }).select('title').lean().exec();
-    if (!courses.length) {
+    if (!courses) {
         throw new NotFoundException(`No courses found for user ID ${user_id}`);
     }
 
@@ -171,9 +171,61 @@ export class DashboardService {
 
   async calculateTotalScore(interactions: UserInteractionDocument[]) {
       const responses = await this.responseModel.find({ _id: { $in: interactions.map(i => i.response_id) } });
-  
+
       const totalScore = responses.reduce((sum, response) => sum + response.score, 0);
       return totalScore;
     }
+
+
+  async getCourseForStudentAnalytics(
+
+    courseId: string,
+    user_id: string,
+  ): Promise<{ AverageQuizScores: number; AllGrades: any[],ProgressPercent:any }> {
+    // Step 1: Find user interactions for the specified course
+    const interactionResponses = await this.userInteractionModel
+      .find({ user_id: user_id,course_id: courseId })
+      .select("response_id")
+      .lean()
+      .exec();
+
+    if (!interactionResponses || interactionResponses.length === 0) {
+      throw new NotFoundException(`No interactions found for user ID ${user_id} and course ${courseId}`);
+    }
+
+    // Extract response IDs
+    const responseIds = interactionResponses.map((interaction) => interaction.response_id);
+
+    // Step 2: Fetch the scores for the responses
+    const responses = await this.responseModel
+      .find({ _id: { $in: responseIds } })
+      .select("score")
+      .lean()
+      .exec();
+
+    if (!responses || responses.length === 0) {
+      throw new NotFoundException(`No response scores found for the interactions.`);
+    }
+
+    // Step 3: Calculate the average quiz scores
+    const totalScore = responses.reduce((sum, response) => sum + response.score, 0);
+    const averageScore = totalScore / responses.length;
+
+    // Step 4: Prepare a list of all grades
+    const allGrades = responses.map((response) => ({ id: response._id, score: response.score }));
+
+    // Step 5: Generate a download link for analytics (dummy link for now)
+
+    const progress= await this.progressModel.find({user_id:user_id,course_id:courseId}).select("completionPercentage");
+    // Step 6: Return the data
+    return {
+
+      AverageQuizScores: averageScore,
+      AllGrades: allGrades,
+      ProgressPercent: progress,
+
+    };
+  }
+
 
 }

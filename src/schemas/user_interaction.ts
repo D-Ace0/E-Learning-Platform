@@ -3,6 +3,7 @@ import mongoose, { Date, Document, Types } from 'mongoose'
 import { User } from './user.schema'
 import { Course } from './course.schema'
 import { Response } from './response.schema'
+import { Progress } from './progress.schema';
 
 export type UserInteractionDocument = UserInteraction & Document
 
@@ -17,6 +18,8 @@ export class UserInteraction {
 
   @Prop({type: mongoose.Schema.Types.ObjectId, ref: () => Response})
   response_id: mongoose.Schema.Types.ObjectId
+
+
 
   @Prop({ type: Number })
   time_spent_minutes: number
