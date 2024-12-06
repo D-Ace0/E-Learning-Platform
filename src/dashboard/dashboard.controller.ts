@@ -7,12 +7,12 @@ import { ResourceAccessGuard } from 'src/guards/resource-access.guard';
 
 
 
-//@UseGuards(AuthenticationGuard, AuthorizationGuard, ResourceAccessGuard)
+@UseGuards(AuthenticationGuard, AuthorizationGuard, ResourceAccessGuard)
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
-//  @Roles(['student'])
+ @Roles(['student'])
   @Get('/student/:id')
   async getStudentDashboard(@Param('id')id:string) {
     return this.dashboardService.getStudentDashboard(id);
@@ -22,7 +22,7 @@ export class DashboardController {
 //1234 << user id
   //instructor
   // it takes data from user_interaction schema..
- // @Roles(['instructor'])
+  @Roles(['instructor'])
   @Get('/course/:id')
   async getCourseAnalytics(@Param('id')id:string ){ {
     return this.dashboardService.getCourseAnalytics(id);
