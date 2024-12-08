@@ -1,42 +1,93 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import * as speakeasy from 'speakeasy';
-import { MailService } from '../mail/mail.service';  
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class MfaService {
-  constructor(private mailService: MailService) {}
+  private readonly logger = new Logger(MfaService.name);
 
+  constructor(private mailService: MailService) {}
 
   generateSecret() {
     const secret = speakeasy.generateSecret({ length: 20 });
     return secret.base32;
   }
 
- 
   verifyToken(secret: string, token: string) {
-    return speakeasy.totp.verify({
-      secret,
-      encoding: 'base32',
-      token,
-    });
+    const tokenString = token.trim().replace(/\s/g, '');
+
+    // Log only when in development environment
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug('Verification Attempt Details:');
+      this.logger.debug('Provided Token: [REDACTED]');
+    }
+
+    // Verify the token using the speakeasy library with the updated step
+    const verificationResults = [
+      speakeasy.totp.verify({
+        secret,
+        encoding: 'base32',
+        token: tokenString,
+        step: 3600, // 1 hour
+        window: 2, // Allow a window for time drift
+      }),
+      speakeasy.totp.verify({
+        secret,
+        encoding: 'base32',
+        token: tokenString,
+        step: 3600, // 1 hour
+        window: 1,
+      }),
+    ];
+
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug(
+        `Verification Results (no window, 1-step window): ${verificationResults[0]}, ${verificationResults[1]}`
+      );
+    }
+
+    if (verificationResults[0] || verificationResults[1]) {
+      return true;
+    }
+
+    throw new UnauthorizedException('Invalid MFA token');
   }
 
-  
   generateCurrentOtp(secret: string) {
-    return speakeasy.totp({
+    const otp = speakeasy.totp({
       secret,
       encoding: 'base32',
-      step: 300,  
+      step: 3600, // 1 hour
     });
+
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug('[REDACTED] Generated OTP for User');
+    }
+    return otp;
   }
 
- 
-  async sendOtpEmail(secret: string, email: string) {
-    const otp = this.generateCurrentOtp(secret);  
+  async sendOtpEmail(secret: string, email: string, user: any) {
+    const otp = this.generateCurrentOtp(secret);
+
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug('Sending OTP Email:');
+      this.logger.debug(`Sending OTP to: [REDACTED]`);
+    }
+
+    const verificationTest = speakeasy.totp.verify({
+      secret,
+      encoding: 'base32',
+      token: otp,
+    });
+
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug(`Self-Verification of OTP: [REDACTED]`);
+    }
+
     const subject = 'Your OTP Code - Expiry Notice';
-    const expiryTime = new Date(Date.now() + 5 * 60 * 1000); 
+    const expiryTime = new Date(Date.now() + 5 * 60 * 1000); // OTP expiry time (5 minutes)
     const formattedExpiryTime = expiryTime.toLocaleTimeString();
-  
+
     const htmlContent = `
       <html>
         <head>
@@ -53,7 +104,7 @@ export class MfaService {
               background-color: #ffffff;
               border-radius: 8px;
               max-width: 600px;
-              margin: 0 auto;
+              margin: auto;
             }
             .email-header {
               background-color: #4CAF50;
@@ -72,6 +123,7 @@ export class MfaService {
               font-weight: bold;
               color: #4CAF50;
               margin: 20px 0;
+              text-align: center;
             }
             .expiry-info {
               font-size: 14px;
@@ -91,29 +143,29 @@ export class MfaService {
               <h2>Your OTP Code</h2>
             </div>
             <div class="email-body">
-              <p>Hello,</p>
+              <p>Hello!</p>
               <p>We received a request to verify your identity. Please use the OTP code below to complete the verification process.</p>
-              <div class="otp-code">
-                ${otp}
-              </div>
-              <p class="expiry-info">
-                This OTP code will expire at <strong>${formattedExpiryTime}</strong>. Please use it before the time runs out.
-              </p>
+              <div class="otp-code">${otp}</div>
+              <p class="expiry-info">This OTP code will expire at <strong>${formattedExpiryTime}</strong>. Please use it before the time runs out.</p>
             </div>
             <div class="footer">
-              <p>If you did not request this code, please disregard this email.</p>
+              <p>If you did not request this code please disregard it.</p>
             </div>
           </div>
         </body>
       </html>
     `;
-  
+
+    // Send OTP email
     await this.mailService.sendMail({
       to: email,
       subject: subject,
-      text: `Your OTP code is: ${otp}`, 
-      html: htmlContent 
-    })
+      text: `Your OTP code is: ${otp}`,
+      html: htmlContent,
+    });
+
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug('Email sent successfully!');
+    }
   }
-  
 }
