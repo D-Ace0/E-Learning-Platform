@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-
+// haa
 const Signup = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
