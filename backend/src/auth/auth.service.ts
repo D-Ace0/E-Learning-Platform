@@ -31,6 +31,11 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
+    if (!user.password_hash) {
+      await this.logAuthenticationAttempt(user._id, email, 'Login', AuthenticationStatus.FAILURE, 'Password hash not found');
+      throw new UnauthorizedException('Password not found');
+    }
+
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
       await this.logAuthenticationAttempt(user._id, email, 'Login', AuthenticationStatus.FAILURE, 'Invalid Credentials');
