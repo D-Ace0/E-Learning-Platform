@@ -2,7 +2,11 @@
 /dist
 /node_modules
 /build
-
+node_modules
+dist
+build
+.vscode
+coverage
 .env
 Project Description.pdf
 Supplementary Material.pdf
