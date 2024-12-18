@@ -50,24 +50,24 @@ export const options: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user && typeof user === 'object' && 'auth_token' in user) {
-        token.accessToken = user.auth_token;
+    // async jwt({ token, user }) {
+    //   if (user && typeof user === 'object' && 'auth_token' in user) {
+    //     token.accessToken = user.auth_token;
         
-        try {
-          if (typeof user.auth_token === 'string') {
-            const decoded = jwt.decode(user.auth_token) as unknown as { user_id: string; role: string };
-            console.log('Decoded token:', decoded);
-            console.log('Raw token:', user.auth_token);
-            token.user_id = decoded.user_id;
-            token.role = decoded.role;
-          }
-        } catch (error) {
-          console.error('Error decoding JWT:', error);
-        }
-      }
-      return token;
-    },
+    //     try {
+    //       if (typeof user.auth_token === 'string') {
+    //         const decoded = jwt.decode(user.auth_token) as unknown as { user_id: string; role: string };
+    //         console.log('Decoded token:', decoded);
+    //         console.log('Raw token:', user.auth_token);
+    //         token.user_id = decoded.user_id;
+    //         token.role = decoded.role;
+    //       }
+    //     } catch (error) {
+    //       console.error('Error decoding JWT:', error);
+    //     }
+    //   }
+    //   return token;
+    // },
     async session({ session, token }) {
       session.accessToken = token.accessToken as string;
       
