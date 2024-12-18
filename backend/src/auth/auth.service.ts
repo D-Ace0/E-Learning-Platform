@@ -60,7 +60,7 @@ export class AuthService {
       }
     }
 
-    const token = await this.generateUserToken(user._id, user.role);
+    const token = await this.generateUserToken(user._id, user.role, user.name);
 
     response.cookie('auth_token', token.accessToken, {
       httpOnly: true,
@@ -82,8 +82,8 @@ export class AuthService {
   }
 
   // Generate JWT token
-  async generateUserToken(user_id: mongoose.Types.ObjectId, role: string) {
-    const accessToken = await this.jwtService.sign({ user_id, role });
+  async generateUserToken(user_id: mongoose.Types.ObjectId, role: string, name: string) {
+    const accessToken = await this.jwtService.sign({ user_id, role, name });
     return { accessToken };
   }
 

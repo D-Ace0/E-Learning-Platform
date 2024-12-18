@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 declare module "next-auth" {
   interface Session {
     accessToken?: string;
+    name?: string;
     user_id?: string;
     role?: string;
   }
@@ -56,11 +57,12 @@ export const options: NextAuthOptions = {
         
         try {
           if (typeof user.auth_token === 'string') {
-            const decoded = jwt.decode(user.auth_token) as unknown as { user_id: string; role: string };
-            console.log('Decoded token:', decoded);
-            console.log('Raw token:', user.auth_token);
+            const decoded = jwt.decode(user.auth_token) as unknown as { user_id: string; role: string, name: string };
+            //console.log('Decoded token:', decoded);
+            //console.log('Raw token:', user.auth_token);
             token.user_id = decoded.user_id;
             token.role = decoded.role;
+            token.name = decoded.name;
           }
         } catch (error) {
           console.error('Error decoding JWT:', error);
@@ -72,10 +74,11 @@ export const options: NextAuthOptions = {
       session.accessToken = token.accessToken as string;
       
       if (token.accessToken) {
-        const decoded = jwt.decode(token.accessToken as string) as unknown as { user_id: string; role: string };
+        const decoded = jwt.decode(token.accessToken as string) as unknown as { user_id: string; role: string, name: string };
         console.log('Decoded session token:', decoded); // Debug log
         session.user_id = decoded.user_id;
         session.role = decoded.role;
+        session.name = decoded.name;
       }
       
       return session;
