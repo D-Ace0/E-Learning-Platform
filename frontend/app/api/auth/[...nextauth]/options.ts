@@ -1,11 +1,13 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { Session } from "next-auth";
+import jwt from 'jsonwebtoken';
 
 declare module "next-auth" {
   interface Session {
     accessToken?: string;
-    user: any;
+    user_id?: string;
+    role?: string;
   }
 }
 
@@ -37,12 +39,11 @@ export const options: NextAuthOptions = {
             if (authToken) {
               user.auth_token = authToken.split('=')[1];
             }
-            console.log("User:", user); // Log the user object
+            
             return user;
           }
           return null;
         } catch (error) {
-          console.error("Authorization error:", error);
           return null;
         }
       }
@@ -52,13 +53,31 @@ export const options: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user && typeof user === 'object' && 'auth_token' in user) {
         token.accessToken = user.auth_token;
-        token.user = user;
+        
+        try {
+          if (typeof user.auth_token === 'string') {
+            const decoded = jwt.decode(user.auth_token) as unknown as { user_id: string; role: string };
+            console.log('Decoded token:', decoded);
+            console.log('Raw token:', user.auth_token);
+            token.user_id = decoded.user_id;
+            token.role = decoded.role;
+          }
+        } catch (error) {
+          console.error('Error decoding JWT:', error);
+        }
       }
       return token;
     },
     async session({ session, token }) {
-      session.user = token.user as any;
       session.accessToken = token.accessToken as string;
+      
+      if (token.accessToken) {
+        const decoded = jwt.decode(token.accessToken as string) as unknown as { user_id: string; role: string };
+        console.log('Decoded session token:', decoded); // Debug log
+        session.user_id = decoded.user_id;
+        session.role = decoded.role;
+      }
+      
       return session;
     }
   },
