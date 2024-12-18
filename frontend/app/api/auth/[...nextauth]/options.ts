@@ -37,11 +37,12 @@ export const options: NextAuthOptions = {
             if (authToken) {
               user.auth_token = authToken.split('=')[1];
             }
-            
+            console.log("User:", user); // Log the user object
             return user;
           }
           return null;
         } catch (error) {
+          console.error("Authorization error:", error);
           return null;
         }
       }
