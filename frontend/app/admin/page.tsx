@@ -61,8 +61,12 @@ export default function AdminPage() {
      setEditedUser({ ...editedUser, [name]: value });
    }
  };
+
+ 
   const handleUpdateSubmit = async () => {
    if (!editedUser || !selectedUser) return;
+   const confirmUpdate = window.confirm("Are you sure you wanna update?")
+   if(!confirmUpdate) return
    setLoading(true);
    try {
      const response = await fetch(`http://localhost:5000/users/editProfile/${selectedUser._id}`, {
@@ -89,6 +93,8 @@ export default function AdminPage() {
    }
  };
   const handleDelete = async (userId: string) => {
+    const confirmDelete = window.confirm("Are you sure you wanna Delete this user?")
+   if(!confirmDelete) return
    setLoading(true);
    try {
      const response = await fetch(`http://localhost:5000/users/delete/${userId}`, {
@@ -111,6 +117,8 @@ export default function AdminPage() {
      setLoading(false);
    }
  };
+
+ 
   return (
    <main className="p-4">
      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
