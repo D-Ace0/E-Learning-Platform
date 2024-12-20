@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface studentDashBoard {
     AverageQuizScores: number;
     AllGrades: Array<{ id: string; score: number }>;
-    ProgressPercent: Array<{ completionPercentage: number }>;
+    ProgressPercent: Array<{ completionPercentage: number; course_id: string }>;
     interaction: Array<{ _id: string; user_id: string; course_id: string; response_id: string; time_spent_minutes: number; last_accessed: string }>;
     courseTitles: { [key: string]: string };
 }
@@ -77,27 +78,38 @@ export default function DashboardPage() {
 
                     <div className="bg-white rounded-lg shadow-md p-6">
                         <h2 className="text-xl font-semibold mb-4">Individual Grades</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {data.AllGrades.map((grade) => (
-                                <div key={grade.id} className="border p-4 rounded">
-                                    <p>Quiz ID: {grade.id}</p>
-                                    <p>Score: {grade.score}%</p>
-                                </div>
-                            ))}
-                        </div>
+                        <ResponsiveContainer width="100%" height={400}>
+                            <BarChart data={data.AllGrades}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="id" />
+                                <YAxis />
+                                <Tooltip />
+                                <Legend />
+                                <Bar dataKey="score" fill="#8884d8" />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
 
                     <div className="bg-white rounded-lg shadow-md p-6">
                         <h2 className="text-xl font-semibold mb-4">Course Progress</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {data.ProgressPercent.map((progress, idx) => (
-                                <div key={idx} className="border p-4 rounded">
-                                    <p>Completion: {progress.completionPercentage}%</p>
-                                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                                        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress.completionPercentage}%` }}></div>
+                            {data.ProgressPercent.map((progress, idx) => {
+                                const courseTitle = data.courseTitles[progress.course_id] || "Unknown Course";
+                                return (
+                                    <div key={idx} className="border p-4 rounded">
+                                        <div className="mb-4">
+                                            <p className="text-lg font-bold">{courseTitle}</p>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div
+                                                className="bg-blue-600 h-2.5 rounded-full"
+                                                style={{width: `${progress.completionPercentage}%`}}
+                                            ></div>
+                                        </div>
+                                        <p className="mt-2 text-sm">Completion: {progress.completionPercentage}%</p>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 

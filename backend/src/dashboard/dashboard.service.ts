@@ -26,8 +26,12 @@ export class DashboardService {
   ) {}
 
   async getStudentDashboard(user_id: string): Promise<{ AverageQuizScores: number; AllGrades: any[], ProgressPercent: any, interaction: any, courseTitles: any }> {
+    // Fetch user interactions
     const user = await this.userInteractionModel.find({ user_id: user_id }).lean().exec();
     if (!user) throw new NotFoundException('User not found');
+    console.log('User Interactions:', user);
+
+    // Extract response IDs
     const responseIds = user.map((interaction) => interaction.response_id);
 
     const responses = await this.responseModel.find({ _id: { $in: responseIds } }).select("score").lean().exec();
@@ -39,23 +43,32 @@ export class DashboardService {
     const averageScore = totalScore / responses.length;
     const allGrades = responses.map((response) => ({ id: response._id, score: response.score }));
 
-    const progress = await this.progressModel.find({ user_id: user_id }).select("completionPercentage");
+    // Fetch progress
+    const progress = await this.progressModel.find({ user_id: user_id }).select("completionPercentage course_id").lean().exec();
+    console.log('Progress Data:', progress);
 
+    // Fetch course titles
     const courseIds = user.map((interaction) => interaction.course_id);
+    console.log('Course IDs:', courseIds);
+
     const courses = await this.courseModel.find({ _id: { $in: courseIds } }).select("title").lean().exec();
+    console.log('Courses:', courses);
+
     const courseTitles = courses.reduce((acc, course) => {
-      acc[course._id.toString()] = course.title;
+      acc[course._id.toString()] = course.title; // Ensure consistent string format
       return acc;
     }, {});
+    console.log('Course Titles:', courseTitles);
 
     return {
       AverageQuizScores: averageScore,
       AllGrades: allGrades,
       ProgressPercent: progress,
       interaction: user,
-      courseTitles: courseTitles
+      courseTitles: courseTitles,
     };
   }
+
 
 
   // for Instructor

@@ -47,7 +47,7 @@ dotenv.config();
     MessagesModule,
     MfaModule, 
     DashboardModule,
-    MongooseModule.forRoot('mongodb+srv://AhmedKhadrawy:9g3bcGpd2Ay9v0LR@database.r38ac.mongodb.net/test')
+    MongooseModule.forRoot('mongodb+srv://AhmedKhadrawy:9g3bcGpd2Ay9v0LR@database.r38ac.mongodb.net/E-Learning-Platform')
     // MongooseModule.forRoot(
     //   'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
   ],
