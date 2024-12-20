@@ -25,44 +25,37 @@ export class DashboardService {
     @InjectModel(Module.name) private moduleModel: Model<ModuleDocument>,
   ) {}
 
-  async getStudentDashboard(user_id: string): Promise<{ AverageQuizScores: number; AllGrades: any[],ProgressPercent:any
-  ,interaction:any}>{
-    // Fetch user details with courses
-    const user=await this.userInteractionModel.find({user_id:user_id}).lean().exec();
-    if(!user) throw new NotFoundException('User not found');
+  async getStudentDashboard(user_id: string): Promise<{ AverageQuizScores: number; AllGrades: any[], ProgressPercent: any, interaction: any, courseTitles: any }> {
+    const user = await this.userInteractionModel.find({ user_id: user_id }).lean().exec();
+    if (!user) throw new NotFoundException('User not found');
     const responseIds = user.map((interaction) => interaction.response_id);
 
-    // Step 2: Fetch the scores for the responses
-    const responses = await this.responseModel
-      .find({ _id: { $in: responseIds } })
-      .select("score")
-      .lean()
-      .exec();
-
+    const responses = await this.responseModel.find({ _id: { $in: responseIds } }).select("score").lean().exec();
     if (!responses || responses.length === 0) {
       throw new NotFoundException(`No response scores found for the interactions.`);
     }
 
-    // Step 3: Calculate the average quiz scores
     const totalScore = responses.reduce((sum, response) => sum + response.score, 0);
     const averageScore = totalScore / responses.length;
-
-    // Step 4: Prepare a list of all grades
     const allGrades = responses.map((response) => ({ id: response._id, score: response.score }));
 
-    // Step 5: Generate a download link for analytics (dummy link for now)
+    const progress = await this.progressModel.find({ user_id: user_id }).select("completionPercentage");
 
-    const progress= await this.progressModel.find({user_id:user_id}).select("completionPercentage");
-    // Step 6: Return the data
+    const courseIds = user.map((interaction) => interaction.course_id);
+    const courses = await this.courseModel.find({ _id: { $in: courseIds } }).select("title").lean().exec();
+    const courseTitles = courses.reduce((acc, course) => {
+      acc[course._id.toString()] = course.title;
+      return acc;
+    }, {});
+
     return {
-
       AverageQuizScores: averageScore,
       AllGrades: allGrades,
       ProgressPercent: progress,
-      interaction:user
-
+      interaction: user,
+      courseTitles: courseTitles
     };
-}
+  }
 
 
   // for Instructor
