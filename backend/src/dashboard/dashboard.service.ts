@@ -30,7 +30,6 @@ export class DashboardService {
     // Fetch user details with courses
     const user=await this.userInteractionModel.find({user_id:user_id}).lean().exec();
     if(!user) throw new NotFoundException('User not found');
-    console.log(user);
     const responseIds = user.map((interaction) => interaction.response_id);
 
     // Step 2: Fetch the scores for the responses
@@ -82,7 +81,6 @@ export class DashboardService {
 
     // Get all quiz responses for the courses
     const quizzes = await this.QuizModel.find({ course_id: courseID }).lean().exec();
-    console.log(quizzes);
     const quizResponses = await this.responseModel.find({ quiz_id: { $in: quizzes.map(q => q._id) } }).select('-answers').exec();
 
     // Calculate the average quiz score for all students in these courses

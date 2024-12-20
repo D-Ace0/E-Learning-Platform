@@ -27,21 +27,28 @@ const Header = () => {
                 Courses
               </Link>
             </li>
+            <li>
+              <Link href="/dashboard" className="hover:underline">
+                dashboard
+              </Link>
+            </li>
+
             {!session ? (
-              <li>
-                <Link href="/signin" className="hover:underline">
-                  Sign In
-                </Link>
-              </li>
+                <li>
+                  <Link href="/signin" className="hover:underline">
+                    Sign In
+                  </Link>
+                </li>
+
             ) : (
-              <li>
-                <button 
-                  onClick={() => signOut()} 
-                  className="hover:underline"
-                >
-                  Sign Out
-                </button>
-              </li>
+                <li>
+                  <button
+                      onClick={() => signOut()}
+                      className="hover:underline"
+                  >
+                    Sign Out
+                  </button>
+                </li>
             )}
           </ul>
         </nav>

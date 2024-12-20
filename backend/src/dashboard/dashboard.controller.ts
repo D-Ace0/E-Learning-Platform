@@ -7,7 +7,7 @@ import { ResourceAccessGuard } from 'src/guards/resource-access.guard';
 
 
 
-@UseGuards(AuthenticationGuard, AuthorizationGuard, ResourceAccessGuard)
+@UseGuards(AuthenticationGuard, AuthorizationGuard)
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
