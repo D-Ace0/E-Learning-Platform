@@ -63,6 +63,14 @@ export class UsersController {
         return this.userService.deleteUser(id)
     }
 
+    @Roles(['student'])
+    @Get(':id/courses')
+    async getMyCoursesTitles(@Param("id") studentId: string, @Request() req: any){
+        if(studentId !== req.user.user_id ){
+            throw new ForbiddenException("You can't view courses of another user ")
+        }
+        return this.userService.getCourses(studentId)
+    }
     
 
 

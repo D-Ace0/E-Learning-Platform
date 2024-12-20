@@ -2,9 +2,10 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 interface Course {
-    _id:string,
+    _id: string;
     title: string;
     description: string;
     category: string;
@@ -12,6 +13,9 @@ interface Course {
     video: string;
     pdf: string;
     created_at: string;
+    Thread: string[];
+    enrolledStudents: string[];
+    parentVersion: string[];
 }
 
 export default function Courses() {
@@ -24,6 +28,58 @@ export default function Courses() {
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
+    };
+
+    const enrollCourse = async (courseId: string) => {
+        console.log(courseId);
+        if (!session) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'You need to be logged in to enroll!',
+            });
+            return;
+        }
+        try {
+            const response = await fetch(`http://localhost:5000/courses/students/${courseId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session.accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Enrollment Failed',
+                    text: errorData.message || 'Failed to enroll',
+                });
+                throw new Error(errorData.message || 'Failed to enroll');
+            }
+
+            const updatedCourses = courses.map((course) =>
+                course._id === courseId
+                    ? { ...course, enrolledStudents: [...course.enrolledStudents, session.user_id] }
+                    : course
+            );
+            setCourses(updatedCourses); // Update the local state with the new enrollment
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Congratulations!',
+                text: 'You have successfully enrolled in the course!',
+            });
+        } catch (error: any) {
+            setError(error.message || 'Failed to enroll in course');
+            console.error('Error enrolling in course:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Failed to enroll in course',
+            });
+        }
     };
 
     useEffect(() => {
@@ -90,15 +146,23 @@ export default function Courses() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                 {session ? (
                     courses.map((course) => (
-                        <div key={course.title} className="bg-white shadow-md rounded-lg p-6 text-center">
+                        <div key={course._id} className="bg-white shadow-md rounded-lg p-6 text-center">
                             <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
                             <p className="text-gray-700 mb-4">{course.description}</p>
+                            <p className="text-sm text-blue-500 mb-2"><strong>Number of Enrolled Students: </strong> {course.enrolledStudents?.length ? course.enrolledStudents.length : '0'}</p>
                             <p className="text-sm text-blue-500 mb-2"><strong>Category:</strong> {course.category}</p>
                             <p className="text-sm text-red-500 mb-2"><strong>Id:</strong> {course._id}</p>
                             <p className="text-sm text-green-500 mb-2"><strong>Difficulty Level:</strong> {course.difficulty_level}</p>
                             <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
                             <a href={course.video} className="text-blue-600 hover:underline mb-2 block">Watch Video</a>
                             <a href={course.pdf} className="text-blue-600 hover:underline">Download PDF</a>
+                            <br></br>
+                            <button
+                                onClick={() => enrollCourse(course._id)}
+                                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                            >
+                                Enroll Course
+                            </button>
                         </div>
                     ))
                 ) : (

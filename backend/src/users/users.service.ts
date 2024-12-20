@@ -11,10 +11,23 @@ import { Model } from 'mongoose';
 
 import { UpdateProfileDto } from './dto/UpdateProfile.dto';
 import { User, UserDocument, UserRole } from 'src/schemas/user.schema';
+import { Course } from 'src/schemas/course.schema';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>,
+                @InjectModel(Course.name) private courseModel: Model<Course>) {}
+
+  async getCourses(studentId: string) {
+    const coursesObjectIds = (await this.userModel.findById(studentId)).courses
+    const couseTitles = (await this.courseModel.find({_id: coursesObjectIds}))
+    return couseTitles.map(c => ({
+      _id: c._id,
+      title: c.title,
+      description: c.description
+    }))
+  }
 
   async getAllUsers(): Promise<User[]> {
     try {

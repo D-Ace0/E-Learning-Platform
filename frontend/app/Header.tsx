@@ -27,6 +27,13 @@ const Header = () => {
                 Courses
               </Link>
             </li>
+            {session && (
+              <li>
+                <Link href="/my-courses" className="hover:underline">
+                  My Courses
+                </Link>
+              </li>
+            )}
             {!session ? (
               <li>
                 <Link href="/signin" className="hover:underline">
@@ -35,10 +42,7 @@ const Header = () => {
               </li>
             ) : (
               <li>
-                <button 
-                  onClick={() => signOut()} 
-                  className="hover:underline"
-                >
+                <button onClick={() => signOut()} className="hover:underline">
                   Sign Out
                 </button>
               </li>
