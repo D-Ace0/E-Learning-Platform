@@ -69,7 +69,7 @@ export class AuthService {
     });
 
     await this.logAuthenticationAttempt(user._id, email, 'Login', AuthenticationStatus.SUCCESS, 'Login successful');
-    return response.status(200).json({ message: 'Login successful' });
+    return response.status(200).json({ message: 'Login successful', token: token.accessToken });
   }
 
 

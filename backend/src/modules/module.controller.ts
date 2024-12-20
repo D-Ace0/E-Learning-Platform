@@ -27,6 +27,7 @@ export class ModuleController {
 
 
   //Get all modules
+  @Roles(['admin', 'instructor', 'student'])
   @Get()
   async getAllModules(): Promise<Module[]> {
     return await this.moduleService.findAll();
