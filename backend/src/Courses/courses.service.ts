@@ -113,9 +113,11 @@ export class CoursesService {
 
 
 
-
-
-
+// .select('-Attribute you wanna hide')
+async getAll(){
+  const courses = await this.courseModel.find({}).select('-_id -Thread -parentVersion -enrolledStudents').exec()
+  return courses
+}
 
 
 
