@@ -6,10 +6,15 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
- @Injectable()
+import * as dotenv from 'dotenv'
+
+dotenv.config()
+
+@Injectable()
 export class AuthenticationGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
-   async canActivate(context: ExecutionContext): Promise<boolean> {
+   
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
