@@ -8,6 +8,10 @@ interface User {
  name: string;
  email: string;
  role: string;
+ mfa_enabled:string;
+ age:number;
+ courses: string[]
+ created_at: string
 }
 export default function AdminPage() {
  const { data: session } = useSession();
@@ -17,6 +21,9 @@ export default function AdminPage() {
  const [selectedUser, setSelectedUser] = useState<User | null>(null);
  const [editedUser, setEditedUser] = useState<User | null>(null);
  const [loading, setLoading] = useState(false);
+ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+ const [viewedUser, setViewedUser] = useState<User | null>(null);
+
   useEffect(() => {
    const fetchUsers = async () => {
      setLoading(true);
@@ -49,6 +56,14 @@ export default function AdminPage() {
    setEditedUser({ ...user });
    setIsModalOpen(true);
  };
+ const openViewModal = (user: User) => {
+    setViewedUser(user);
+    setIsViewModalOpen(true);
+  };
+  const closeViewModal = () => {
+    setIsViewModalOpen(false);
+    setViewedUser(null);
+  };
   const closeModal = () => {
    setIsModalOpen(false);
    setSelectedUser(null);
@@ -149,12 +164,66 @@ export default function AdminPage() {
                  <button onClick={() => handleDelete(user._id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
                    Delete
                  </button>
+                 <button onClick={() => openViewModal(user)} className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">
+                    View
+                  </button>
                </td>
              </tr>
            ))}
          </tbody>
        </table>
      </div>
+
+     {isViewModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
+          <div className="bg-white p-8 rounded shadow-lg w-96">
+            <h2 className="text-2xl font-bold mb-4">User Profile</h2>
+            {viewedUser && (
+              <div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">Name:</label>
+                  <p className="text-gray-700">{viewedUser.name}</p>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                  <p className="text-gray-700">{viewedUser.email}</p>
+                </div>
+                 <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">Role:</label>
+                  <p className="text-gray-700">{viewedUser.role}</p>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">age:</label>
+                  <p className="text-gray-700">{viewedUser.age}</p>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">courses:</label>
+                  <ul className="list-disc list-inside">
+                    {viewedUser.courses.map((course, index) => (
+                      <li key={index} className="text-gray-700">{course}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">mfa_enabled:</label>
+                  <p className="text-gray-700">{viewedUser.mfa_enabled}</p>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">created_at:</label>
+                  <p className="text-gray-700">{viewedUser.created_at}</p>
+                </div>
+                <div className="flex justify-end">
+                  <button type="button" onClick={closeViewModal} className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded">
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+
       {isModalOpen && (
        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
          <div className="bg-white p-8 rounded shadow-lg w-96">
