@@ -1,8 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 interface Course {
+    _id:string,
     title: string;
     description: string;
     category: string;
@@ -92,7 +94,9 @@ export default function Courses() {
                             <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
                             <p className="text-gray-700 mb-4">{course.description}</p>
                             <p className="text-sm text-blue-500 mb-2"><strong>Category:</strong> {course.category}</p>
+                            <p className="text-sm text-red-500 mb-2"><strong>Id:</strong> {course._id}</p>
                             <p className="text-sm text-green-500 mb-2"><strong>Difficulty Level:</strong> {course.difficulty_level}</p>
+                            <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
                             <a href={course.video} className="text-blue-600 hover:underline mb-2 block">Watch Video</a>
                             <a href={course.pdf} className="text-blue-600 hover:underline">Download PDF</a>
                         </div>

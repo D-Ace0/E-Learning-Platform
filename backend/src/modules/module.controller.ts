@@ -41,6 +41,11 @@ export class ModuleController {
     const module = await this.moduleService.findById(module_id);
     return module;
   }
+  @Roles(['admin', 'instructor', 'student'])
+  @Get('course/:course_id')
+  findByCourseId(@Param('course_id') course_id: string): Promise<Module[]> {
+    return this.moduleService.findByCourseId(new mongoose.Types.ObjectId(course_id));
+  }
 
   @Post()
   @Roles(['instructor'])
