@@ -27,6 +27,7 @@ export class ModuleController {
 
 
   //Get all modules
+  @Roles(['admin', 'instructor', 'student'])
   @Get()
   async getAllModules(): Promise<Module[]> {
     return await this.moduleService.findAll();
@@ -39,6 +40,11 @@ export class ModuleController {
     // Get the module ID from the route parameters
     const module = await this.moduleService.findById(module_id);
     return module;
+  }
+  @Roles(['admin', 'instructor', 'student'])
+  @Get('course/:course_id')
+  findByCourseId(@Param('course_id') course_id: string): Promise<Module[]> {
+    return this.moduleService.findByCourseId(new mongoose.Types.ObjectId(course_id));
   }
 
   @Post()

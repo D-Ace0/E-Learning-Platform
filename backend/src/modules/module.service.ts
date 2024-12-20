@@ -35,6 +35,11 @@ export class ModuleService {
     // return module
   }
 
+   // New method to find modules by course_id
+ async findByCourseId(course_id: mongoose.Types.ObjectId): Promise<Module[]> {
+  return await this.moduleModel.find({ course_id: course_id }).exec();
+}
+
   // updates
   async update(module_id: mongoose.Types.ObjectId, updateData: updateModuleDto): Promise<Module> {
     return await this.moduleModel.findByIdAndUpdate(module_id, updateData, { new: true });

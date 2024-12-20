@@ -1,94 +1,110 @@
-// // pages/course.js
-// 'use client';
+'use client';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
-// import { useSession } from 'next-auth/react';
-// import { useRouter } from 'next/navigation';
-// import { useEffect } from 'react';
+interface Course {
+    _id:string,
+    title: string;
+    description: string;
+    category: string;
+    difficulty_level: string;
+    video: string;
+    pdf: string;
+    created_at: string;
+}
 
-// export default function Course() {
-//     const { data: session, status } = useSession();
-//     const router = useRouter();
+export default function Courses() {
+    const { data: session, status } = useSession();
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [notFound, setNotFound] = useState(false);
 
-//     useEffect(() => {
-//         if (status === 'unauthenticated') {
-//             router.push('/signin');
-//         }
-//     }, [status, router]);
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(event.target.value);
+    };
 
-//     if (status === 'loading') {
-//         return (
-//             <div className="flex items-center justify-center min-h-screen">
-//                 <div className="text-center">
-//                     <div className="text-2xl font-semibold mb-2">Loading...</div>
-//                     <div className="text-gray-500">Please wait while we verify your session</div>
-//                 </div>
-//             </div>
-//         );
-//     }
+    useEffect(() => {
+        const fetchCourses = async () => {
+            if (!session) return;
+            setLoading(true);
+            setError(null);
+            setNotFound(false);
+            try {
+                let url = 'http://localhost:5000/courses';
+                if (searchTerm) {
+                    url = `http://localhost:5000/courses/${searchTerm}`;
+                }
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${session.accessToken}`,
+                    },
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch courses');
+                }
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    setCourses(data);
+                    setNotFound(data.length === 0);
+                } else if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+                    setCourses([data]);
+                    setNotFound(false);
+                } else {
+                    setCourses([]);
+                    setNotFound(true);
+                    console.error('Expected an array or a single course object, but got:', data);
+                }
+            } catch (err: any) {
+                setError(err.message || 'Failed to fetch courses');
+                setCourses([]);
+                setNotFound(true);
+                console.error('Error fetching courses:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-//     if (status === 'authenticated') {
-//         return (
-//             <div className="container mx-auto px-4 py-8">
-//                 <h1 className="text-3xl font-bold mb-8">Welcome to the Course</h1>
-//                 <div className="grid gap-8">
-//                     <section className="bg-white p-6 rounded-lg shadow">
-//                         <h2 className="text-2xl font-semibold mb-4">Course Modules</h2>
-//                         <ul className="space-y-4">
-//                             <li className="flex items-center space-x-2">
-//                                 <span className="text-indigo-600">•</span>
-//                                 <span>Module 1: Introduction</span>
-//                             </li>
-//                             <li className="flex items-center space-x-2">
-//                                 <span className="text-indigo-600">•</span>
-//                                 <span>Module 2: Advanced Topics</span>
-//                             </li>
-//                             <li className="flex items-center space-x-2">
-//                                 <span className="text-indigo-600">•</span>
-//                                 <span>Module 3: Practical Applications</span>
-//                             </li>
-//                         </ul>
-//                     </section>
+        fetchCourses();
+    }, [session, searchTerm]);
 
-//                     <section className="bg-white p-6 rounded-lg shadow">
-//                         <h2 className="text-2xl font-semibold mb-4">Instructor</h2>
-//                         <div className="space-y-2">
-//                             <p><span className="font-medium">Name:</span> John Doe</p>
-//                             <p><span className="font-medium">Bio:</span> John is an expert in the field with over 10 years of experience.</p>
-//                         </div>
-//                     </section>
-//                 </div>
-//             </div>
-//         );
-//     }
+    if (status === 'loading' || loading) {
+        return <p>Loading...</p>;
+    }
 
-//     return null;
-// }
-// pages/course.js
-import Head from 'next/head';
-
-export default function Course() {
     return (
-        <div>
-            <Head>
-                <title>Course Page</title>
-            </Head>
-            <main>
-                <h1>Welcome to the Course</h1>
-                <p>This is the course description. Here you can provide detailed information about the course.</p>
-                <section>
-                    <h2>Course Modules</h2>
-                    <ul>
-                        <li>Module 1: Introduction</li>
-                        <li>Module 2: Advanced Topics</li>
-                        <li>Module 3: Practical Applications</li>
-                    </ul>
-                </section>
-                <section>
-                    <h2>Instructor</h2>
-                    <p>Instructor Name: John Doe</p>
-                    <p>Instructor Bio: John is an expert in the field with over 10 years of experience.</p>
-                </section>
-            </main>
+        <div className="container mx-auto p-8">
+            <h1 className="text-4xl font-bold text-center mb-8">Course List</h1>
+            <input
+                type="text"
+                placeholder="Search courses..."
+                className="border p-2 mb-4 w-full"
+                value={searchTerm}
+                onChange={handleSearchChange}
+            />
+            {error && <p className="text-red-500 text-center mb-4">Error: {error}</p>}
+            {notFound && <p className="text-gray-500 text-center mb-4">No courses found.</p>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                {session ? (
+                    courses.map((course) => (
+                        <div key={course.title} className="bg-white shadow-md rounded-lg p-6 text-center">
+                            <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
+                            <p className="text-gray-700 mb-4">{course.description}</p>
+                            <p className="text-sm text-blue-500 mb-2"><strong>Category:</strong> {course.category}</p>
+                            <p className="text-sm text-red-500 mb-2"><strong>Id:</strong> {course._id}</p>
+                            <p className="text-sm text-green-500 mb-2"><strong>Difficulty Level:</strong> {course.difficulty_level}</p>
+                            <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
+                            <a href={course.video} className="text-blue-600 hover:underline mb-2 block">Watch Video</a>
+                            <a href={course.pdf} className="text-blue-600 hover:underline">Download PDF</a>
+                        </div>
+                    ))
+                ) : (
+                    <h2 className="text-3xl font-bold text-red-500 text-center">You Shall Not Pass!</h2>
+                )}
+            </div>
         </div>
     );
 }

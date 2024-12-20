@@ -11,6 +11,8 @@ import {
   Request,
   Req,
   BadRequestException,
+  NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/createCourse.dto';
@@ -73,7 +75,20 @@ export class CoursesController {
     return this.coursesService.searchInstructor(InstructorId)
   }
 
-
+  @Get()
+  @Roles(['student', 'instructor', 'admin'])
+  async getAllCourses(){
+    try {
+      const courses= this.coursesService.getAll()
+      if(!courses){
+        throw new NotFoundException('No Courses found in DB')
+      }
+      return courses
+    } catch (error) {
+      throw new InternalServerErrorException(error)
+    }
+    
+  }
 
 
 
