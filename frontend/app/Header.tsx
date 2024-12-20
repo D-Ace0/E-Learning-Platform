@@ -17,6 +17,13 @@ const Header = () => {
                 Home
               </Link>
             </li>
+            {session?.role === 'admin' && (
+             <li>
+               <Link href="/admin" className="hover:underline">
+                 Admin
+               </Link>
+             </li>
+           )}
             <li>
               <Link href="/about" className="hover:underline">
                 About
