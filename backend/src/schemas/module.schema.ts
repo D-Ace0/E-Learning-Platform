@@ -24,3 +24,4 @@ export class Module {
 }
 
 export const ModuleSchema = SchemaFactory.createForClass(Module)
+
