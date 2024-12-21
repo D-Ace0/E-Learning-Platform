@@ -67,59 +67,81 @@ export class DashboardService {
 
 
 
-  async getCourseAnalytics(courseID: string): Promise<{ downloadLink: string, averageQuizScore: number, allGrades: any[] }> {
-    const UPLOAD_DIR = join(process.cwd(), 'uploads'); // Create an 'uploads' folder in the project root
+  async getCourseAnalytics(courseID: string): Promise<{
+    downloadLink: string;
+    completedStudentsCount: number;
+    performanceCategories: Record<string, number>;
+    allGrades: any[];
+  }> {
+    const DIST_DIR = join(process.cwd(), 'dist'); // Create a 'dist' folder for file storage
+    await fs.mkdir(DIST_DIR, { recursive: true });
 
-    // Fetch user interactions for the given user_id
-    const interactions = await this.userInteractionModel.find({ course_id: courseID }).lean().exec();
-    if (!interactions) {
-      throw new NotFoundException(`No interactions found for course ID ${courseID}`);
-    }
+    // Fetch students with 100% completion
+    const completedStudents = await this.progressModel
+        .find({ course_id: courseID, completionPercentage: 100 })
+        .lean()
+        .exec();
+    const completedStudentsCount = completedStudents.length;
 
-    // Get all quiz responses for the courses
+    // Fetch quiz responses and categorize performance
     const quizzes = await this.QuizModel.find({ course_id: courseID }).lean().exec();
-    const quizResponses = await this.responseModel.find({ quiz_id: { $in: quizzes.map(q => q._id) } }).select('-answers').exec();
+    const quizResponses = await this.responseModel
+        .find({ quiz_id: { $in: quizzes.map((q) => q._id) } })
+        .select('score')
+        .lean()
+        .exec();
 
-    // Calculate the average quiz score for all students in these courses
-    const totalQuizScore = quizResponses.reduce((sum, response) => sum + response.score, 0);
-    const averageQuizScore = quizResponses.length > 0 ? totalQuizScore / quizResponses.length : 0;
+    const allGrades = quizResponses.map((response) => ({ id: response._id, score: response.score }));
 
-    // Prepare CSV writer
+    const performanceCategories = {
+      'below average': 0,
+      average: 0,
+      'above average': 0,
+      excellent: 0,
+    };
+
+    quizResponses.forEach((response) => {
+      if (response.score < 50) performanceCategories['below average']++;
+      else if (response.score < 70) performanceCategories['average']++;
+      else if (response.score < 90) performanceCategories['above average']++;
+      else performanceCategories['excellent']++;
+    });
+
+    // Generate CSV file
+    const fileName = `course_analytics_${courseID}.csv`;
+    const filePath = join(DIST_DIR, fileName);
+
     const csvWriter = createObjectCsvWriter({
-      path: join(__dirname, `course_analytics_${courseID}.csv`),
+      path: filePath,
       header: [
         { id: 'courseID', title: 'Course ID' },
-        { id: 'averageScore', title: 'Average Score' },
-        { id: 'averageTimeSpent', title: 'Average Time Spent (minutes)' },
-        { id: 'averageQuizScore', title: 'Average Quiz Score' },
-        { id: 'quizScore', title: 'Quiz Score' },
+        { id: 'completedStudentsCount', title: 'Completed Students' },
+        { id: 'belowAverage', title: 'Below Average' },
+        { id: 'average', title: 'Average' },
+        { id: 'aboveAverage', title: 'Above Average' },
+        { id: 'excellent', title: 'Excellent' },
       ],
     });
 
-    // Records to be written to the CSV
-    const records = [
+    await csvWriter.writeRecords([
       {
-        courseID: courseID,
-        averageScore: averageQuizScore,
-        averageTimeSpent: interactions.reduce((sum, interaction) => sum + interaction.time_spent_minutes, 0) / interactions.length,
-        averageQuizScore: averageQuizScore,
-        quizScore: quizResponses.map(response => response.score),
+        courseID,
+        completedStudentsCount,
+        belowAverage: performanceCategories['below average'],
+        average: performanceCategories['average'],
+        aboveAverage: performanceCategories['above average'],
+        excellent: performanceCategories['excellent'],
       },
-    ];
+    ]);
 
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
-
-    const fileName = `course_analytics_${courseID}.csv`;
-    const filePath = join(UPLOAD_DIR, fileName); // Save in the 'uploads' folder
-    await csvWriter.writeRecords(records); // Write the CSV file
-
-    const downloadLink = `/files/course-analytics/${fileName}`; // Relative link
     return {
-      downloadLink,
-      averageQuizScore: averageQuizScore,
-      allGrades: quizResponses.map((response) => ({ id: response._id, score: response.score })),
+      downloadLink: filePath, // Return the file path for the front-end
+      completedStudentsCount,
+      performanceCategories,
+      allGrades,
     };
   }
+
 
   async calculateTotalScore(interactions: UserInteractionDocument[]) {
       const responses = await this.responseModel.find({ _id: { $in: interactions.map(i => i.response_id) } });

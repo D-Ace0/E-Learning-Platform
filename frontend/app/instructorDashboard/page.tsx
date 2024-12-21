@@ -14,7 +14,13 @@ interface Course {
 interface Analytics {
     courseId: string;
     downloadLink: string;
-    averageQuizScore: number;
+    completedStudentsCount: number;
+    performanceCategories: {
+        'below average': number;
+        average: number;
+        'above average': number;
+        excellent: number;
+    };
     allGrades: Array<{ id: string; score: number }>;
 }
 
@@ -56,20 +62,28 @@ export default function InstructorDashboard() {
             if (!response.ok) throw new Error('Failed to fetch analytics');
             const data = await response.json();
 
-            // Use the relative download link
-            const link = document.createElement('a');
-            link.href = data.downloadLink;
-            link.download = `Course_Analytics_${courseId}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            setAnalytics({ ...data, courseId }); // Save analytics data to state
         } catch (err) {
             setError((err as Error).message);
         }
     };
 
+    const handleDownload = () => {
+        if (analytics) {
+            const link = document.createElement('a');
+            link.href = analytics.downloadLink;
+            link.download = `Course_Analytics_${analytics.courseId}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
-
+            Swal.fire({
+                title: 'Download Started',
+                text: `File saved at: ${analytics.downloadLink}`,
+                icon: 'success',
+            });
+        }
+    };
 
     if (status === 'loading') return <p>Loading...</p>;
     if (error) return <p className="text-red-500">{error}</p>;
@@ -92,12 +106,25 @@ export default function InstructorDashboard() {
                                 >
                                     View Analytics
                                 </button>
-                                {/* Inline analytics rendering */}
+
+                                {/* Show analytics if available */}
                                 {analytics && analytics.courseId === course.courseId && (
                                     <div className="bg-gray-100 p-4 rounded mt-4">
-                                        <a href={analytics.downloadLink} className="text-blue-500 underline" target="_blank">
-                                            Download CSV
-                                        </a>
+                                        <h4 className="text-lg font-bold">Analytics Overview</h4>
+                                        <p>Students who completed the course: {analytics.completedStudentsCount}</p>
+                                        <p>Quiz performance students categories:</p>
+                                        <ul>
+                                            <li>Below Average: {analytics.performanceCategories['below average']}</li>
+                                            <li>Average: {analytics.performanceCategories.average}</li>
+                                            <li>Above Average: {analytics.performanceCategories['above average']}</li>
+                                            <li>Excellent: {analytics.performanceCategories.excellent}</li>
+                                        </ul>
+                                        <button
+                                            onClick={handleDownload}
+                                            className="mt-4 bg-green-500 text-white p-2 rounded"
+                                        >
+                                            Download Analytics
+                                        </button>
                                     </div>
                                 )}
                             </div>
