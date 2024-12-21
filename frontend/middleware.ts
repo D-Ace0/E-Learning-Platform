@@ -25,5 +25,7 @@ export const config = {
       matcher: [
         "/courses/:path*", // Protect all routes under /courses
         "/profile/:path*", // Protect all routes under /profile
+        "/admin/:path*", // Protect all routes under /admin
+        
       ]
     }
