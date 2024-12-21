@@ -8,7 +8,7 @@ interface Course {
   title: string;
   description: string;
 }
-
+//aaaaa
 interface MyCoursesProps {
   courses: Course[];
   error: string | null;
