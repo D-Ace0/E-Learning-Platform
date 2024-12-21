@@ -7,7 +7,7 @@ export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @Post()
-  async recommend(@Body() userData: { userId: string; courses: string[] }) {
+  async recommend(@Body() userData: { userId: ObjectId; courses: ObjectId[] }) {
     // Validate and convert userId and courses to ObjectId
     try {
       const userId = new ObjectId(userData.userId); // Convert userId to ObjectId
