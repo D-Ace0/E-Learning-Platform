@@ -108,7 +108,7 @@ export default function Courses() {
                 throw new Error(errorData.message || 'Failed to enroll');
             }
 
-            const updatedCourses = courses.map((course) =>
+            const updatedCourses:any = courses.map((course) =>
                 course._id === courseId
                     ? { ...course, enrolledStudents: [...course.enrolledStudents, session.user_id] }
                     : course
