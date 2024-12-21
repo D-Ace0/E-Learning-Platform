@@ -51,6 +51,16 @@ export default function DashboardPage() {
 
                 const responseText = await response.text();
                 const data = JSON.parse(responseText);
+
+                // Check for missing course titles
+                if (data.ProgressPercent) {
+                    data.ProgressPercent.forEach((progress: any) => {
+                        if (!data.courseTitles[progress.course_id]) {
+                            console.warn(`Missing title for course ID: ${progress.course_id}`);
+                        }
+                    });
+                }
+
                 setDashboardData([data]);
             } catch (err: any) {
                 setError(err.message || 'Failed to fetch data');
@@ -94,7 +104,7 @@ export default function DashboardPage() {
                         <h2 className="text-xl font-semibold mb-4">Course Progress</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {data.ProgressPercent.map((progress, idx) => {
-                                const courseTitle = data.courseTitles[progress.course_id] || "Unknown Course";
+                                const courseTitle = data.courseTitles[progress.course_id] || `Course ID: ${progress.course_id}`;
                                 return (
                                     <div key={idx} className="border p-4 rounded">
                                         <div className="mb-4">
@@ -103,7 +113,7 @@ export default function DashboardPage() {
                                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                                             <div
                                                 className="bg-blue-600 h-2.5 rounded-full"
-                                                style={{width: `${progress.completionPercentage}%`}}
+                                                style={{ width: `${progress.completionPercentage}%` }}
                                             ></div>
                                         </div>
                                         <p className="mt-2 text-sm">Completion: {progress.completionPercentage}%</p>
@@ -118,7 +128,7 @@ export default function DashboardPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {data.interaction.map((interaction) => (
                                 <div key={interaction._id} className="border p-4 rounded">
-                                    <p>Course Title: {data.courseTitles[interaction.course_id]}</p>
+                                    <p>Course Title: {data.courseTitles[interaction.course_id] || `Course ID: ${interaction.course_id}`}</p>
                                     <p>Time Spent: {interaction.time_spent_minutes} minutes</p>
                                     <p>Last Accessed: {new Date(interaction.last_accessed).toLocaleDateString()}</p>
                                 </div>
