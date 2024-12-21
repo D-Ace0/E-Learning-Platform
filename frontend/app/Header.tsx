@@ -25,6 +25,11 @@ const Header = () => {
              </li>
             )}
             <li>
+              <Link href="/users" className="hover:underline">
+                Users
+              </Link>
+            </li>
+            <li>
               <Link href="/about" className="hover:underline">
                 About
               </Link>

@@ -70,7 +70,7 @@ export class CoursesController {
   }
 
   @Get('/instructors/:id')
-  @Roles(['student', 'admin'])
+  @Roles(['student', 'admin', 'instructor'])
   async searchInstructor(@Param('id') InstructorId){
     return this.coursesService.searchInstructor(InstructorId)
   }

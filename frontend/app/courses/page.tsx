@@ -210,12 +210,15 @@ export default function Courses() {
                             >
                                 View Instructor Details
                             </button>
+                            {session.role === 'student' && (
                             <button
                                 onClick={() => enrollCourse(course._id)}
                                 className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
                             >
                                 Enroll Course
                             </button>
+                            )}
+                            
                         </div>
                     ))
                 ) : (

@@ -18,13 +18,13 @@ export class UsersController {
         console.log(user)
         return this.userService.getAllUsers()
     }
-    @Roles(['admin'])
+    @Roles(['admin', 'instructor'])
     @Get('allStudents')
     async getAllStudents(){
         return this.userService.getAllStudents()
     }
 
-    @Roles(['admin'])
+    @Roles(['admin', 'student'])
     @Get ('/allInstructors')
     async getAllInstructors(){
         return this.userService.getAllInstructors()
