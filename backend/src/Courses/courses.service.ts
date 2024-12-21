@@ -98,7 +98,7 @@ export class CoursesService {
     if(instructor.role.toString() !== "instructor") throw new ForbiddenException()
 
     const plainInstructor = instructor.toObject()
-    const {password_hash, created_at, role, ...InstructorData} = plainInstructor
+    const {password_hash, created_at, role, mfa_enabled, ...InstructorData} = plainInstructor
 
     return InstructorData
   }
@@ -115,7 +115,7 @@ export class CoursesService {
 
 // .select('-Attribute you wanna hide')
 async getAll(){
-  const courses = await this.courseModel.find({}).select(' -Thread -parentVersion -enrolledStudents').exec()
+  const courses = await this.courseModel.find({}).exec()
   return courses
 }
 

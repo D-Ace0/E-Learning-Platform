@@ -43,10 +43,13 @@ export class UsersController {
     @Roles(['admin', 'instructor', 'student'])
     @Put('editProfile/:id')
     async updateProfile(@Param('id') id: string, @Body() updateUserDto: Partial<User>,  @Request() req: any): Promise<User> {
-        if(req.user.role === 'admin' && id !== req.user.user_id ){
-            throw new ForbiddenException("You can't update another admin ")
+        
+        if(req.user.role === 'admin' && req.user.user_id !== id){
+            const user = await this.userService.getProfile(id);
+            if(user.role === 'admin'){
+                throw new ForbiddenException("You can't edit another admin ")
+            }
         }
-
         const update = await this.userService.updateProfile(id, updateUserDto);
         if (!update) {
             throw new HttpException('User not Found', HttpStatus.NOT_FOUND);
@@ -57,12 +60,23 @@ export class UsersController {
     @Roles(['admin', 'instructor', 'student'])
     @Delete('delete/:id')
     async deleteUser(@Param('id') id: string,  @Request() req: any):  Promise<{ message: string }>  {
-        if(req.user.role === 'admin' && id !== req.user.user_id ){
-            throw new ForbiddenException("You can't delete another admin ")
+        if(req.user.role === 'admin' && req.user.user_id !== id){
+            const user = await this.userService.getProfile(id);
+            if(user.role === 'admin'){
+                throw new ForbiddenException("You can't edit another admin ")
+            }
         }
         return this.userService.deleteUser(id)
     }
 
+    @Roles(['student'])
+    @Get(':id/courses')
+    async getMyCoursesTitles(@Param("id") studentId: string, @Request() req: any){
+        if(studentId !== req.user.user_id ){
+            throw new ForbiddenException("You can't view courses of another user ")
+        }
+        return this.userService.getCourses(studentId)
+    }
     
 
 

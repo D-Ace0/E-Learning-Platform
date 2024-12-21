@@ -17,6 +17,13 @@ const Header = () => {
                 Home
               </Link>
             </li>
+            {session?.role === 'admin' && (
+             <li>
+               <Link href="/admin" className="hover:underline">
+                 Admin
+               </Link>
+             </li>
+           )}
             <li>
               <Link href="/about" className="hover:underline">
                 About
@@ -27,34 +34,34 @@ const Header = () => {
                 Courses
               </Link>
             </li>
-
-            {session && session.role === 'instructor' && (<li>
-              <Link href="/instructorDashboard" className="hover:underline">
-                dashboard
+            {session && (
+              <>
+              <li>
+                <Link href="/my-courses" className="hover:underline">
+                  My Courses
+                </Link>
+              </li>
+              <li>
+              <Link href="/profile" className="hover:underline">
+                Profile
               </Link>
-            </li>)}
-            {session && session.role === 'student' && (<li>
-              <Link href="/studentDashboard" className="hover:underline">
-                dashboard
-              </Link>
-            </li>)}
-            {!session ? (
-                <li>
-                  <Link href="/signin" className="hover:underline">
-                    Sign In
-                  </Link>
-                </li>
-
-            ) : (
-                <li>
-                  <button
-                      onClick={() => signOut()}
-                      className="hover:underline"
-                  >
-                    Sign Out
-                  </button>
-                </li>
+            </li>
+            </>
             )}
+            {!session ? (
+              <li>
+                <Link href="/signin" className="hover:underline">
+                  Sign In
+                </Link>
+              </li>
+            ) : (
+              <li>
+                <button onClick={() => signOut()} className="hover:underline">
+                  Sign Out
+                </button>
+              </li>
+            )}
+            
           </ul>
         </nav>
       </div>
