@@ -1,6 +1,6 @@
 'use client'
 
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import {
    EnvelopeIcon,
@@ -13,6 +13,8 @@ import {
    FingerPrintIcon,
    PencilIcon
 }from '@heroicons/react/24/outline';
+
+import  { useRouter } from "next/navigation";
 interface User {
    _id: string;
    name: string;
@@ -24,6 +26,7 @@ interface User {
    created_at: string;
 }
 export default function ProfilePage() {
+    const router = useRouter();
    const { data: session } = useSession();
    const [profileData, setProfile] = useState<User | null>(null);
    const [error, setError] = useState<string | null>(null);
@@ -150,10 +153,48 @@ const handleSaveAllChanges = async () => {
 };
 
 
+
    const handleCancelClick = () => {
        setEditingField(null);
        setEditedValue('');
    };
+
+
+   const handledeleteProfile = async () => {
+    const confirmDelete = window.confirm("Are you sure you wanna Delete this user?")
+    if(!confirmDelete) return
+   setLoading(true);
+    try {
+        const response = await fetch(`http://localhost:5000/users/delete/${session?.user_id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization' : `Bearer ${session?.accessToken}`
+            }
+        })
+        if(!response.ok){
+            const errorData = await response.json()
+            throw new Error(errorData.message || 'Failed to delete user profile')
+        }
+        setProfile(null)
+        setError('Profile deleted successfully')
+        signUserOut(router)
+    } catch (error: any) {
+        setError(error.message || 'Failed to delete user profile')
+        console.error('Error deleting user profile:', error)
+    }  finally {
+        setLoading(false);
+      }
+   }
+
+   const signUserOut = async (router: any) => {
+    
+    try {
+        await signOut({  });
+        router.replace('/signin');
+      } catch (error) {
+        setError('An error occurred during logout');
+      }
+   }
 
    return (
        <div className={`min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 text-white py-12 relative ${isModalOpen ? 'overflow-hidden' : ''}`}>
@@ -331,6 +372,9 @@ const handleSaveAllChanges = async () => {
                                </div>
                                <button onClick={handleSaveAllChanges} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4" type="button">
                                    Save All Changes
+                               </button>
+                               <button onClick={handledeleteProfile} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4" type="button">
+                                   Delete Profile
                                </button>
                            </div>
                        ) : (
