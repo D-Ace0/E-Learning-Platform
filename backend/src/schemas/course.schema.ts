@@ -45,7 +45,7 @@ export class Course {
   @Prop({default: [], type: [mongoose.Schema.Types.ObjectId], ref: () => Thread})
   Thread: mongoose.Schema.Types.ObjectId[];
 
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }], default: [] })
+  @Prop({default: [], type: [mongoose.Schema.Types.ObjectId], ref: () => User })
   enrolledStudents: mongoose.Schema.Types.ObjectId[];
 }
 
