@@ -8,11 +8,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { isValidObjectId, Types } from 'mongoose';
 import { User } from 'src/schemas/user.schema';
 import { Course } from 'src/schemas/course.schema';
+import { Progress } from 'src/schemas/progress.schema';
 
 
 @Injectable()
 export class CoursesService {
-  constructor(@InjectModel(Course.name) private courseModel: Model<Course>, @InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(@InjectModel(Course.name) private courseModel: Model<Course>,
+   @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Progress.name) private progressModel: Model<Progress>) {}
 
 
   async create(createCourseDto: CreateCourseDto, userid: string) {
@@ -64,6 +67,13 @@ export class CoursesService {
     const courseId_ObjectId = new Types.ObjectId(courseId)
     user.courses.push(courseId_ObjectId as any)
     await user.save()
+
+    const newProgress = new this.progressModel({
+      user_id: studentId_ObjectId,
+      course_id: courseId_ObjectId,
+      completionPercentage: 0
+     })
+    await newProgress.save()
 
     return await course.save()
   }
