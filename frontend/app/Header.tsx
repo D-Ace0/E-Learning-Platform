@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+import {router} from "next/client";
 
 const Header = () => {
   const { data: session } = useSession();
@@ -35,33 +36,49 @@ const Header = () => {
               </Link>
             </li>
             {session && (
-              <>
-              <li>
-                <Link href="/my-courses" className="hover:underline">
-                  My Courses
-                </Link>
-              </li>
-              <li>
-              <Link href="/profile" className="hover:underline">
-                Profile
-              </Link>
-            </li>
-            </>
+                <>
+                  <li>
+                    <Link href="/my-courses" className="hover:underline">
+                      My Courses
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                        href={
+                          session.role === 'student'
+                              ? '/studentDashboard'
+                              : session.role === 'instructor'
+                                  ? '/instructorDashboard'
+                                  : session.role === 'admin'
+                                      ? '/admin'
+                                      : '/'
+                        }
+                        className="hover:underline"
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/profile" className="hover:underline">
+                      Profile
+                    </Link>
+                  </li>
+                </>
             )}
             {!session ? (
-              <li>
-                <Link href="/signin" className="hover:underline">
-                  Sign In
-                </Link>
-              </li>
+                <li>
+                  <Link href="/signin" className="hover:underline">
+                    Sign In
+                  </Link>
+                </li>
             ) : (
-              <li>
-                <button onClick={() => signOut()} className="hover:underline">
+                <li>
+                  <button onClick={() => signOut()} className="hover:underline">
                   Sign Out
-                </button>
-              </li>
+                  </button>
+                </li>
             )}
-            
+
           </ul>
         </nav>
       </div>
