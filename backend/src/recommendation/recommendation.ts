@@ -1,16 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class RecommendationService {
-  private flaskApiUrl = 'http://localhost:5000/recommend'; // Flask endpoint
+  private flaskApiUrl = 'http://localhost:6000/recommend'; // Flask endpoint
 
-  async getRecommendations(userData: { userId: string; courses: string[] }) {
+  async getRecommendations(userData: { userId: ObjectId; courses: ObjectId[] }) {
     try {
-      const response = await axios.post(this.flaskApiUrl, userData);
+      // Convert ObjectId values to strings before sending to Flask
+      const payload = {
+        userId: userData.userId.toString(),
+        courses: userData.courses.map((course) => course.toString()),
+      };
+
+      const response = await axios.post(this.flaskApiUrl, payload);
       return response.data; // Recommended courses
     } catch (error) {
-      throw new Error(`Failed to get recommendations: ${error.message}`);
+      if (error.response) {
+        // Flask returned an error response
+        throw new Error(
+            `Failed to get recommendations: ${error.response.data?.error || 'Unknown error'}`
+        );
+      }
+      // Other errors
+      throw new Error(`Failed to connect to Flask API: ${error.message}`);
     }
   }
 }
