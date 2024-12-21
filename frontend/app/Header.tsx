@@ -35,11 +35,18 @@ const Header = () => {
               </Link>
             </li>
             {session && (
+              <>
               <li>
                 <Link href="/my-courses" className="hover:underline">
                   My Courses
                 </Link>
               </li>
+              <li>
+              <Link href="/profile" className="hover:underline">
+                Profile
+              </Link>
+            </li>
+            </>
             )}
             {!session ? (
               <li>
@@ -54,6 +61,7 @@ const Header = () => {
                 </button>
               </li>
             )}
+            
           </ul>
         </nav>
       </div>
