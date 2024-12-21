@@ -17,13 +17,28 @@ export class CoursesService {
 
   async create(createCourseDto: CreateCourseDto, userid: string) {
     const newCourse = new this.courseModel({
-      ...createCourseDto,
-      created_by: userid
+        ...createCourseDto,
+        created_by: userid
     });
-    if(await this.courseModel.findOne({title: newCourse.title})) throw new BadRequestException("Course with this title already exists!")
 
+    if (await this.courseModel.findOne({ title: newCourse.title })) {
+        throw new BadRequestException("Course with this title already exists!");
+    }
+
+    const user = await this.userModel.findById(userid);
+    if (!user) {
+        throw new NotFoundException("User not found");
+    }
+
+    // Add the new course to the user's courses array
+    user.courses.push(newCourse);
+
+    // Save the user document
+    await user.save();
+
+    // Save the new course
     return newCourse.save();
-  }
+}
 
 
   async updateCourse(id: string, updateCourseDto: UpdateCourseDto, instructor_id: string){

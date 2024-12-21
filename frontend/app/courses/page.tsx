@@ -110,7 +110,7 @@ export default function Courses() {
 
             const updatedCourses = courses.map((course) =>
                 course._id === courseId
-                    ? { ...course, enrolledStudents: [...course.enrolledStudents, session.user_id] }
+                    ? { ...course, enrolledStudents: [...course.enrolledStudents, session.user_id].filter((student): student is string => !!student) }
                     : course
             );
             setCourses(updatedCourses); // Update the local state with the new enrollment

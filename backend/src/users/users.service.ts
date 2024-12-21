@@ -29,6 +29,11 @@ export class UsersService {
     }))
   }
 
+  async getCoursesInstructor(instructorId: string){
+    const coursesObjectIds = (await this.userModel.findById(instructorId)).courses
+    return coursesObjectIds;
+  }
+
   async getAllUsers(): Promise<User[]> {
     try {
       return await this.userModel.find().exec();

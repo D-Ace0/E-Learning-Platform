@@ -29,7 +29,7 @@ const MyCourses = async () => {
   try {
     const userId = session.user_id; // Assuming user ID is stored in the session
 
-    const response = await fetch(`http://localhost:5000/users/${userId}/courses`, {
+    const response = await fetch(`http://localhost:5000/users/${userId}/instructor/courses`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
       },

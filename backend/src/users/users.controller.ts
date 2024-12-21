@@ -77,7 +77,12 @@ export class UsersController {
         }
         return this.userService.getCourses(studentId)
     }
-    
+
+    @Roles(['instructor'])
+    @Get(':id/instructor/courses')
+    async getInstructorCourseTitles(@Param("id") instructorId: string){
+        return this.userService.getCourses(instructorId)
+    }    
 
 
 }
