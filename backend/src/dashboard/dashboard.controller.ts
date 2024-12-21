@@ -21,7 +21,7 @@ export class DashboardController {
 //123 << instructor id
 //1234 << user id
   //instructor
-  // it takes data from user_interaction schema..
+  // it takes data from user_interaction schema
   @Roles(['instructor'])
   @Get('/course/:id')
   async getCourseAnalytics(@Param('id')id:string ){ {
@@ -35,4 +35,10 @@ export class DashboardController {
   ) {
     return this.dashboardService.getCourseForStudentAnalytics(courseId, userId); // Pass both params to the service
   }
+    @Roles(['instructor'])
+    @Get('/instructor/:id')
+    async getInstructorDashboard(@Param('id') id: string) {
+        return this.dashboardService.getInstructorDashboard(id);
+    }
+
 }

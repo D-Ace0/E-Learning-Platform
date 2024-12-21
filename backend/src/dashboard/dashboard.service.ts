@@ -8,8 +8,8 @@ import { ResponseDocument } from '../schemas/response.schema';
 import { Quiz, QuizDocument } from '../schemas/quiz.schema';
 import { UserInteraction, UserInteractionDocument } from '../schemas/user_interaction';
 import { createObjectCsvWriter } from 'csv-writer';
-import { promises as fs } from 'fs';
 import { join } from 'path';
+import { promises as fs } from 'fs';
 import { Module, ModuleDocument } from '../schemas/module.schema';
 
 
@@ -25,11 +25,11 @@ export class DashboardService {
     @InjectModel(Module.name) private moduleModel: Model<ModuleDocument>,
   ) {}
 
+
   async getStudentDashboard(user_id: string): Promise<{ AverageQuizScores: number; AllGrades: any[], ProgressPercent: any, interaction: any, courseTitles: any }> {
     // Fetch user interactions
     const user = await this.userInteractionModel.find({ user_id: user_id }).lean().exec();
     if (!user) throw new NotFoundException('User not found');
-    console.log('User Interactions:', user);
 
     // Extract response IDs
     const responseIds = user.map((interaction) => interaction.response_id);
@@ -45,20 +45,16 @@ export class DashboardService {
 
     // Fetch progress
     const progress = await this.progressModel.find({ user_id: user_id }).select("completionPercentage course_id").lean().exec();
-    console.log('Progress Data:', progress);
 
     // Fetch course titles
     const courseIds = user.map((interaction) => interaction.course_id);
-    console.log('Course IDs:', courseIds);
 
     const courses = await this.courseModel.find({ _id: { $in: courseIds } }).select("title").lean().exec();
-    console.log('Courses:', courses);
 
     const courseTitles = courses.reduce((acc, course) => {
       acc[course._id.toString()] = course.title; // Ensure consistent string format
       return acc;
     }, {});
-    console.log('Course Titles:', courseTitles);
 
     return {
       AverageQuizScores: averageScore,
@@ -71,19 +67,14 @@ export class DashboardService {
 
 
 
-  // for Instructor
+  async getCourseAnalytics(courseID: string): Promise<{ downloadLink: string, averageQuizScore: number, allGrades: any[] }> {
+    const UPLOAD_DIR = join(process.cwd(), 'uploads'); // Create an 'uploads' folder in the project root
 
-  // for Instructor
-  async getCourseAnalytics(courseID: string): Promise<{ downloadLink: string, AverageQuizScores: any, AllGrades: any }> {
     // Fetch user interactions for the given user_id
-    const interactions = await this.userInteractionModel.find({ course_id:courseID }).lean().exec();
+    const interactions = await this.userInteractionModel.find({ course_id: courseID }).lean().exec();
     if (!interactions) {
-        throw new NotFoundException(`No interactions found for course ID ${courseID}`);
+      throw new NotFoundException(`No interactions found for course ID ${courseID}`);
     }
-
-
-    // Get all course IDs from the interactions
-
 
     // Get all quiz responses for the courses
     const quizzes = await this.QuizModel.find({ course_id: courseID }).lean().exec();
@@ -93,42 +84,41 @@ export class DashboardService {
     const totalQuizScore = quizResponses.reduce((sum, response) => sum + response.score, 0);
     const averageQuizScore = quizResponses.length > 0 ? totalQuizScore / quizResponses.length : 0;
 
-    // Calculate total score and total time spent from interactions
-    const totalScore = await this.calculateTotalScore(interactions as UserInteractionDocument[]);
-    const totalTimeSpent = interactions.reduce((sum, interaction) => sum + interaction.time_spent_minutes, 0);
-    const averageScore = totalScore / interactions.length;
-    const averageTimeSpent = totalTimeSpent / interactions.length;
-
     // Prepare CSV writer
     const csvWriter = createObjectCsvWriter({
-        path: join(__dirname, `course_analytics_${courseID}.csv`),
-        header: [
-            { id: 'courseID', title: 'course ID' },
-            { id: 'average_score', title: 'Average Score' },
-            { id: 'average_time_spent', title: 'Average Time Spent (minutes)' },
-            { id: 'average_quiz_score', title: 'Average Quiz Score' },
-          { id: 'quiz_score', title: ' Quiz Score' },
-        ],
+      path: join(__dirname, `course_analytics_${courseID}.csv`),
+      header: [
+        { id: 'courseID', title: 'Course ID' },
+        { id: 'averageScore', title: 'Average Score' },
+        { id: 'averageTimeSpent', title: 'Average Time Spent (minutes)' },
+        { id: 'averageQuizScore', title: 'Average Quiz Score' },
+        { id: 'quizScore', title: 'Quiz Score' },
+      ],
     });
 
     // Records to be written to the CSV
     const records = [
-        {
-          courseID: courseID,
-            average_score: averageScore,
-            average_time_spent: averageTimeSpent,
-            average_quiz_score: quizResponses,
-        },
+      {
+        courseID: courseID,
+        averageScore: averageQuizScore,
+        averageTimeSpent: interactions.reduce((sum, interaction) => sum + interaction.time_spent_minutes, 0) / interactions.length,
+        averageQuizScore: averageQuizScore,
+        quizScore: quizResponses.map(response => response.score),
+      },
     ];
 
-    // Write to CSV
-    await csvWriter.writeRecords(records);
+    await fs.mkdir(UPLOAD_DIR, { recursive: true });
 
-    // Path to the generated CSV file
-    const filePath = join(__dirname, `course_analytics_${courseID}.csv`);
+    const fileName = `course_analytics_${courseID}.csv`;
+    const filePath = join(UPLOAD_DIR, fileName); // Save in the 'uploads' folder
+    await csvWriter.writeRecords(records); // Write the CSV file
 
-    // Return the download link and record details
-    return { downloadLink: filePath, AverageQuizScores: averageQuizScore, AllGrades: [quizResponses] };
+    const downloadLink = `/files/course-analytics/${fileName}`; // Relative link
+    return {
+      downloadLink,
+      averageQuizScore: averageQuizScore,
+      allGrades: quizResponses.map((response) => ({ id: response._id, score: response.score })),
+    };
   }
 
   async calculateTotalScore(interactions: UserInteractionDocument[]) {
@@ -189,5 +179,23 @@ export class DashboardService {
     };
   }
 
+  async getInstructorDashboard(instructorId: string): Promise<any> {
+    // Fetch courses created by the instructor
+    const courses = await this.courseModel.find({ created_by: instructorId }).select('_id title description created_at').lean().exec();
+
+    if (!courses || courses.length === 0) {
+      throw new NotFoundException(`No courses found for instructor ID ${instructorId}`);
+    }
+
+    // Include course details without analytics for the dashboard
+    const instructorCourses = courses.map((course) => ({
+      courseId: course._id,
+      courseTitle: course.title,
+      description: course.description,
+      createdAt: course.created_at,
+    }));
+
+    return instructorCourses;
+  }
 
 }

@@ -27,12 +27,17 @@ const Header = () => {
                 Courses
               </Link>
             </li>
-            <li>
-              <Link href="/dashboard" className="hover:underline">
+
+            {session && session.role === 'instructor' && (<li>
+              <Link href="/instructorDashboard" className="hover:underline">
                 dashboard
               </Link>
-            </li>
-
+            </li>)}
+            {session && session.role === 'student' && (<li>
+              <Link href="/studentDashboard" className="hover:underline">
+                dashboard
+              </Link>
+            </li>)}
             {!session ? (
                 <li>
                   <Link href="/signin" className="hover:underline">

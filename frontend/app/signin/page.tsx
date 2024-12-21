@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 const Signin = () => {
@@ -18,16 +18,26 @@ const Signin = () => {
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: false, // Prevent automatic redirect to use custom logic
+        redirect: false,
       });
 
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push('/dashboard'); // Redirect to the dashboard after successful login
+        router.push('/');
+        router.refresh(); // Force a refresh to update the session
       }
     } catch (error) {
       setError('An error occurred during login');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut({ redirect: false });
+      router.push('/signin');
+    } catch (error) {
+      setError('An error occurred during logout');
     }
   };
 
@@ -98,7 +108,7 @@ const Signin = () => {
             </div>
           </form>
 
-          <p className="mt-10 text-center text-sm text-gray-500">
+          <p className="mt-10 text-center text-sm/6 text-gray-500">
             Not a member?{' '}
             <a href="signup" className="font-semibold text-indigo-600 hover:text-indigo-500">
               Sign Up
