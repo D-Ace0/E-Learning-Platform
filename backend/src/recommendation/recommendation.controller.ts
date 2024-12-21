@@ -9,12 +9,11 @@ export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @Post()
-  async recommend(@Body() userData: { userId: ObjectId; courses: ObjectId[] }) {
+  async recommend(@Body('userId')  userId: ObjectId ) {
     // Validate and convert userId and courses to ObjectId
     try {
-      const userId = new ObjectId(userData.userId); // Convert userId to ObjectId
-      const courses = userData.courses.map((course) => new ObjectId(course)); // Convert course IDs to ObjectId
-      return this.recommendationService.getRecommendations({ userId, courses });
+       // Convert course IDs to ObjectId
+      return this.recommendationService.getRecommendations( userId);
     } catch (error) {
       throw new BadRequestException('Invalid ObjectId format');
     }

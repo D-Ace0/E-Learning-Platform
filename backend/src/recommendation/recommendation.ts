@@ -20,7 +20,10 @@ export class RecommendationService {
   ) {
   }
 
-  async getRecommendations(userData: { userId: ObjectId; courses: ObjectId[] }) {
+  async getRecommendations(userId: ObjectId) {
+    const courses=await this.userModel.findOne({_id:userId}).select("courses");
+
+    const userData={userId:userId,courses:courses.courses};
     try {
       console.log('Sending payload to Flask API:', userData);
 
@@ -164,6 +167,9 @@ export class RecommendationService {
       difficulty_level: course.difficulty_level,
       created_by: course.created_by,
       category: course.category,
+      video_url: course.video,
+      pdf_url: course.pdf,
+
     }));
 
     return courseDetails;
