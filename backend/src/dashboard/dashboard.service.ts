@@ -71,35 +71,37 @@ export class DashboardService {
     downloadLink: string;
     completedStudentsCount: number;
     performanceCategories: Record<string, number>;
-    allGrades: any[];
+    contentEffectiveness: string;
+    allGrades: { userId: string; quizId: string; score: number }[];
   }> {
-    const DIST_DIR = join(process.cwd(), 'dist'); // Create a 'dist' folder for file storage
+    const DIST_DIR = join(process.cwd(), 'dist');
     await fs.mkdir(DIST_DIR, { recursive: true });
 
-    // Fetch students with 100% completion
-    const completedStudents = await this.progressModel
-        .find({ course_id: courseID, completionPercentage: 100 })
-        .lean()
-        .exec();
+    // Fetch modules, quizzes, and responses
+    const modules = await this.moduleModel.find({ course_id: courseID }).lean().exec();
+    const moduleIds = modules.map((module) => module._id);
+
+    const quizzes = await this.QuizModel.find({ module_id: { $in: moduleIds } }).lean().exec();
+    const quizIds = quizzes.map((quiz) => quiz._id);
+
+    const quizResponses = await this.responseModel.find({ quiz_id: { $in: quizIds } }).lean().exec();
+
+    // Count completed students
+    const completedStudents = await this.progressModel.find({
+      course_id: courseID,
+      completionPercentage: 100,
+    }).lean().exec();
     const completedStudentsCount = completedStudents.length;
 
-    // Fetch quiz responses and categorize performance
-    const quizzes = await this.QuizModel.find({ course_id: courseID }).lean().exec();
-    const quizResponses = await this.responseModel
-        .find({ quiz_id: { $in: quizzes.map((q) => q._id) } })
-        .select('score')
-        .lean()
-        .exec();
+    // Map grades
+    const allGrades = quizResponses.map((response) => ({
+      userId: response.user_id ? response.user_id.toString() : 'Unknown User',
+      quizId: response.quiz_id ? response.quiz_id.toString() : 'Unknown Quiz',
+      score: response.score ?? 0,
+    }));
 
-    const allGrades = quizResponses.map((response) => ({ id: response._id, score: response.score }));
-
-    const performanceCategories = {
-      'below average': 0,
-      average: 0,
-      'above average': 0,
-      excellent: 0,
-    };
-
+    // Categorize performance
+    const performanceCategories = { 'below average': 0, average: 0, 'above average': 0, excellent: 0 };
     quizResponses.forEach((response) => {
       if (response.score < 50) performanceCategories['below average']++;
       else if (response.score < 70) performanceCategories['average']++;
@@ -107,97 +109,32 @@ export class DashboardService {
       else performanceCategories['excellent']++;
     });
 
+    // Determine content effectiveness
+    const maxCategoryCount = Math.max(...Object.values(performanceCategories));
+    const mostCommonCategories = Object.entries(performanceCategories).filter(([, count]) => count === maxCategoryCount);
+    const effectivenessMap = { 'below average': 'Not Effective', average: 'Slightly Effective', 'above average': 'Effective', excellent: 'Highly Effective' };
+    const contentEffectiveness = mostCommonCategories.length > 1 ? 'Effective' : effectivenessMap[mostCommonCategories[0][0]];
+
     // Generate CSV file
     const fileName = `course_analytics_${courseID}.csv`;
     const filePath = join(DIST_DIR, fileName);
-
     const csvWriter = createObjectCsvWriter({
       path: filePath,
       header: [
-        { id: 'courseID', title: 'Course ID' },
-        { id: 'completedStudentsCount', title: 'Completed Students' },
-        { id: 'belowAverage', title: 'Below Average' },
-        { id: 'average', title: 'Average' },
-        { id: 'aboveAverage', title: 'Above Average' },
-        { id: 'excellent', title: 'Excellent' },
+        { id: 'userId', title: 'User ID' },
+        { id: 'quizId', title: 'Quiz ID' },
+        { id: 'score', title: 'Score' },
       ],
     });
 
-    await csvWriter.writeRecords([
-      {
-        courseID,
-        completedStudentsCount,
-        belowAverage: performanceCategories['below average'],
-        average: performanceCategories['average'],
-        aboveAverage: performanceCategories['above average'],
-        excellent: performanceCategories['excellent'],
-      },
-    ]);
+    await csvWriter.writeRecords(allGrades);
 
     return {
-      downloadLink: filePath, // Return the file path for the front-end
+      downloadLink: filePath,
       completedStudentsCount,
       performanceCategories,
+      contentEffectiveness,
       allGrades,
-    };
-  }
-
-
-  async calculateTotalScore(interactions: UserInteractionDocument[]) {
-      const responses = await this.responseModel.find({ _id: { $in: interactions.map(i => i.response_id) } });
-
-      const totalScore = responses.reduce((sum, response) => sum + response.score, 0);
-      return totalScore;
-    }
-
-
-  async getCourseForStudentAnalytics(
-
-    courseId: string,
-    user_id: string,
-  ): Promise<{ AverageQuizScores: number; AllGrades: any[],ProgressPercent:any }> {
-    // Step 1: Find user interactions for the specified course
-    const interactionResponses = await this.userInteractionModel
-      .find({ user_id: user_id,course_id: courseId })
-      .select("response_id")
-      .lean()
-      .exec();
-
-    if (!interactionResponses || interactionResponses.length === 0) {
-      throw new NotFoundException(`No interactions found for user ID ${user_id} and course ${courseId}`);
-    }
-
-    // Extract response IDs
-    const responseIds = interactionResponses.map((interaction) => interaction.response_id);
-
-    // Step 2: Fetch the scores for the responses
-    const responses = await this.responseModel
-      .find({ _id: { $in: responseIds } })
-      .select("score")
-      .lean()
-      .exec();
-
-    if (!responses || responses.length === 0) {
-      throw new NotFoundException(`No response scores found for the interactions.`);
-    }
-
-    // Step 3: Calculate the average quiz scores
-    const totalScore = responses.reduce((sum, response) => sum + response.score, 0);
-    const averageScore = totalScore / responses.length;
-
-    // Step 4: Prepare a list of all grades
-    const allGrades = responses.map((response) => ({ id: response._id, score: response.score }));
-
-    // Step 5: Generate a download link for analytics (dummy link for now)
-
-    const progress= await this.progressModel.find({user_id:user_id,course_id:courseId}).select("completionPercentage");
-    // Step 6: Return the data
-    return {
-
-      AverageQuizScores: averageScore,
-      AllGrades: allGrades,
-      ProgressPercent: progress,
-
     };
   }
 

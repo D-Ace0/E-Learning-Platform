@@ -28,13 +28,7 @@ export class DashboardController {
     return this.dashboardService.getCourseAnalytics(id);
    }
 }
-  @Get('/course/:courseId/user') // Updated route to include both userId and courseId
-  async getCourseForStudentAnalytics(
-    @Param('courseId') courseId: string,
-    @Body('userId') userId: string // Extract userId from the request body
-  ) {
-    return this.dashboardService.getCourseForStudentAnalytics(courseId, userId); // Pass both params to the service
-  }
+ 
     @Roles(['instructor'])
     @Get('/instructor/:id')
     async getInstructorDashboard(@Param('id') id: string) {

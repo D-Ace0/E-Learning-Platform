@@ -21,7 +21,8 @@ interface Analytics {
         'above average': number;
         excellent: number;
     };
-    allGrades: Array<{ id: string; score: number }>;
+    contentEffectiveness: string;
+    allGrades: Array<{ userId: string; quizId: string; score: number; submittedAt: string }>;
 }
 
 export default function InstructorDashboard() {
@@ -85,6 +86,56 @@ export default function InstructorDashboard() {
         }
     };
 
+    const showAllGrades = () => {
+        if (analytics) {
+            if (analytics.allGrades.length > 0) {
+                const tableRows = analytics.allGrades
+                    .map(
+                        (grade) =>
+                            `<tr>
+              <td>${grade.userId}</td>
+              <td>${grade.quizId}</td>
+              <td>${grade.score}</td>
+            </tr>`
+                    )
+                    .join('');
+
+                Swal.fire({
+                    title: 'All Grades',
+                    html: `
+          <table border="1" style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Quiz ID</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+        `,
+                    width: 800,
+                    icon: 'info',
+                    confirmButtonText: 'Close',
+                });
+            } else {
+                Swal.fire({
+                    title: 'No Grades Found',
+                    text: 'There are no grades available for this course.',
+                    icon: 'info',
+                    confirmButtonText: 'Close',
+                });
+            }
+        }
+    };
+
+
+
+
+
+
     if (status === 'loading') return <p>Loading...</p>;
     if (error) return <p className="text-red-500">{error}</p>;
 
@@ -111,20 +162,29 @@ export default function InstructorDashboard() {
                                 {analytics && analytics.courseId === course.courseId && (
                                     <div className="bg-gray-100 p-4 rounded mt-4">
                                         <h4 className="text-lg font-bold">Analytics Overview</h4>
-                                        <p>Students who completed the course: {analytics.completedStudentsCount}</p>
-                                        <p>Quiz performance students categories:</p>
+                                        <p>Completed Students: {analytics.completedStudentsCount}</p>
+                                        <p>Performance Categories:</p>
                                         <ul>
                                             <li>Below Average: {analytics.performanceCategories['below average']}</li>
                                             <li>Average: {analytics.performanceCategories.average}</li>
                                             <li>Above Average: {analytics.performanceCategories['above average']}</li>
                                             <li>Excellent: {analytics.performanceCategories.excellent}</li>
                                         </ul>
-                                        <button
-                                            onClick={handleDownload}
-                                            className="mt-4 bg-green-500 text-white p-2 rounded"
-                                        >
-                                            Download Analytics
-                                        </button>
+                                        <p>Content Effectiveness: {analytics.contentEffectiveness}</p>
+                                        <div className="flex space-x-4 mt-4">
+                                            <button
+                                                onClick={handleDownload}
+                                                className="bg-green-500 text-white p-2 rounded"
+                                            >
+                                                Download Analytics
+                                            </button>
+                                            <button
+                                                onClick={showAllGrades}
+                                                className="bg-blue-500 text-white p-2 rounded"
+                                            >
+                                                Show All Grades
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
