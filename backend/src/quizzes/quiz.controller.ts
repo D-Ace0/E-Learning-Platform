@@ -33,6 +33,11 @@ export class QuizController {
     return await this.quizService.findAll();
   }
 
+  @Get('module/:module_id')
+  async getQuizzesByModuleId(@Param('module_id') module_id: string): Promise<Quiz[]> {
+    return await this.quizService.findByModuleId(module_id);
+  }
+
   //get quiz by id
   @Get(':quiz_id')
   async getQuizById(@Param('quiz_id') quiz_id: string) {
