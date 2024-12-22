@@ -17,12 +17,18 @@ export class UpdateCourseDto {
   @IsOptional()
   newContent?: string;
 
+  @IsOptional()
   @IsEnum(['beginner', 'intermediate', 'advanced'])
   difficulty_level?: string
 
+  @IsOptional()
   @IsString()
   video?: string
 
+  @IsOptional()
   @IsString()
   pdf?: string
+
+  @IsOptional()
+  isOutdated: boolean;
 }

@@ -35,6 +35,7 @@ export class ModuleController {
 
   //get module by id
   @Get(':module_id')
+  @Roles(['student'])
   async getModuleById(@Param('module_id') module_id: mongoose.Types.ObjectId) {
     if(!isValidObjectId(module_id)) throw new BadRequestException()
     // Get the module ID from the route parameters
