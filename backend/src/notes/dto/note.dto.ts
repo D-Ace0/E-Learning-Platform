@@ -1,23 +1,17 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty } from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreateNoteDTO {
   @IsString()
   @IsNotEmpty()
-  module_id: string;
+  module_id: Types.ObjectId;
 
   @IsString()
   @IsNotEmpty()
   content: string;
-
-  @IsNotEmpty()
-  user_id: Types.ObjectId;
-
-  @IsOptional()
-  course_id?: Types.ObjectId;
 }
 
 export class UpdateNoteDTO {
   @IsString()
-  readonly content: string;
+  content: string;
 }

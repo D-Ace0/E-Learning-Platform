@@ -17,6 +17,7 @@
     "clsx": "^2.1.1",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
+    "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.468.0",
     "next": "15.0.4",
     "next-auth": "^4.24.11",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
     "@types/jsonwebtoken": "^9.0.7",
+    "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

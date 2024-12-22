@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Param,
-  Body,
-  Delete,
-  Put, Patch
-} from "@nestjs/common";
+import { Controller, Post, Get, Param, Body, Delete, Patch } from '@nestjs/common';
 import { NotesService } from './notes.service';
 import { CreateNoteDTO, UpdateNoteDTO } from './dto/note.dto';
 
@@ -16,23 +8,23 @@ export class NotesController {
 
   @Post()
   async createNote(@Body() createNoteDTO: CreateNoteDTO) {
-    return this.notesService.create(createNoteDTO);
+    try {
+      return await this.notesService.create(createNoteDTO);
+    } catch (error) {
+      console.error('Error creating note:', error);
+      throw error;
+    }
   }
 
-  @Get(':id')
-  async getNoteById(@Param('id') id: string) {
-    return this.notesService.findById(id);
+  @Get('module/:moduleId')
+  async getNotesByModule(@Param('moduleId') moduleId: string) {
+    return this.notesService.findByModuleId(moduleId);
   }
 
-  @Get()
-  async getAllNotes() {
-    return this.notesService.findAll();
-  }
-
-  @Put(':id')
+  @Patch(':id')
   async updateNote(
-    @Param('id') id: string,
-    @Body() updateNoteDTO: UpdateNoteDTO,
+      @Param('id') id: string,
+      @Body() updateNoteDTO: Partial<UpdateNoteDTO>,
   ) {
     return this.notesService.update(id, updateNoteDTO);
   }
@@ -41,12 +33,4 @@ export class NotesController {
   async deleteNoteById(@Param('id') id: string) {
     return this.notesService.delete(id);
   }
-  @Patch(':id')
-  async patchNote(
-    @Param('id') id: string,
-    @Body() updateNoteDTO: Partial<UpdateNoteDTO>,
-  ) {
-    return this.notesService.update(id, updateNoteDTO);
-  }
-
 }
