@@ -28,24 +28,32 @@ const Header = () => {
               </Link>
             </li>
             {session && (
-              <li>
-                <Link href="/my-courses" className="hover:underline">
-                  My Courses
-                </Link>
-              </li>
+                <li>
+                  <Link href="/my-courses" className="hover:underline">
+                    My Courses
+                  </Link>
+                </li>
+            )}
+            {/* Show the recommendation link for "student" role only */}
+            {session?.role === 'student' && (
+                <li>
+                  <Link href="/recommendations" className="hover:underline">
+                    Recommendations
+                  </Link>
+                </li>
             )}
             {!session ? (
-              <li>
-                <Link href="/signin" className="hover:underline">
-                  Sign In
-                </Link>
-              </li>
+                <li>
+                  <Link href="/signin" className="hover:underline">
+                    Sign In
+                  </Link>
+                </li>
             ) : (
-              <li>
-                <button onClick={() => signOut()} className="hover:underline">
-                  Sign Out
-                </button>
-              </li>
+                <li>
+                  <button onClick={() => signOut()} className="hover:underline">
+                    Sign Out
+                  </button>
+                </li>
             )}
           </ul>
         </nav>

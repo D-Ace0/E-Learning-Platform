@@ -9,7 +9,7 @@ export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @Post()
-  async recommend(@Body('userId')  userId: ObjectId ) {
+  async recommend(@Body('userId')  userId:  ObjectId ) {
     // Validate and convert userId and courses to ObjectId
     try {
        // Convert course IDs to ObjectId

@@ -20,7 +20,7 @@ export class RecommendationService {
   ) {
   }
 
-  async getRecommendations(userId: ObjectId) {
+  async getRecommendations(userId:ObjectId) {
     const courses=await this.userModel.findOne({_id:userId}).select("courses");
 
     const userData={userId:userId,courses:courses.courses};
