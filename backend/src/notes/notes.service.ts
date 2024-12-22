@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Note, NoteDocument } from '../schemas/notes.schema';
 import { Module, ModuleDocument } from '../schemas/module.schema';
 import { CreateNoteDTO, UpdateNoteDTO } from './dto/note.dto';
@@ -12,44 +12,66 @@ export class NotesService {
       @InjectModel(Module.name) private readonly moduleModel: Model<ModuleDocument>,
   ) {}
 
+  // Create a new note
   async create(createNoteDTO: CreateNoteDTO): Promise<Note> {
-    const createdNote = new this.noteModel(createNoteDTO);
-    const savedNote = await createdNote.save();
+    const { user_id, module_id, content } = createNoteDTO;
 
-    // Update the module's notes array
-    const updatedModule = await this.moduleModel.findByIdAndUpdate(
-        createNoteDTO.module_id,
-        { $push: { notes: savedNote._id } },
-        { new: true },
-    );
-    if (!updatedModule) {
+    // Check if module exists
+    const moduleExists = await this.moduleModel.findById(module_id).exec();
+    if (!moduleExists) {
       throw new NotFoundException('Module not found');
     }
+
+    // Create and save the note
+    const createdNote = new this.noteModel({ user_id, module_id, content });
+    const savedNote = await createdNote.save();
 
     return savedNote;
   }
 
-  async findByModuleId(moduleId: string): Promise<Note[]> {
-    return this.noteModel.find({ module_id: moduleId }).exec();
+  /**
+   * Get notes by moduleId and userId
+   * @param moduleId - The ID of the module
+   * @param userId - The ID of the user
+   * @returns An array of notes
+   */
+  async findByModuleAndUser(moduleId: string, userId: string): Promise<Note[]> {
+    // Convert moduleId and userId to ObjectId for MongoDB compatibility
+    const moduleObjectId = new Types.ObjectId(moduleId);
+    const userObjectId = new Types.ObjectId(userId);
+
+    // Fetch notes from the database
+    const notes = await this.noteModel.find({
+      module_id: moduleObjectId,
+      user_id: userObjectId,
+    }).exec();
+
+    // If no notes are found, throw a NotFoundException
+    if (!notes || notes.length === 0) {
+      throw new NotFoundException('No notes found for the given module and user');
+    }
+
+    return notes;
   }
 
-  async update(id: string, updateNoteDTO: Partial<UpdateNoteDTO>): Promise<Note> {
-    const updatedNote = await this.noteModel
-        .findByIdAndUpdate(id, updateNoteDTO, { new: true })
-        .exec();
-    if (!updatedNote) {
-      throw new NotFoundException('Note not found');
+  // Update a note
+  async update(id: string, updateNoteDTO: Partial<UpdateNoteDTO>, userId: string): Promise<Note> {
+    const note = await this.noteModel.findById(id).exec();
+    if (!note || note.user_id.toString() !== userId) {
+      throw new NotFoundException('Note not found or unauthorized');
     }
+
+    const updatedNote = await this.noteModel.findByIdAndUpdate(id, updateNoteDTO, { new: true }).exec();
     return updatedNote;
   }
 
-  async delete(id: string): Promise<void> {
+  // Delete a note
+  async delete(id: string, userId: string): Promise<void> {
     const note = await this.noteModel.findById(id).exec();
-    if (!note) {
-      throw new NotFoundException('Note not found');
+    if (!note || note.user_id.toString() !== userId) {
+      throw new NotFoundException('Note not found or unauthorized');
     }
 
-    // Remove the note from the module's notes array
     await this.moduleModel.findByIdAndUpdate(note.module_id, {
       $pull: { notes: id },
     });

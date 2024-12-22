@@ -1,15 +1,22 @@
-import { IsString, IsNotEmpty } from 'class-validator';
 import { Types } from 'mongoose';
+import { IsMongoId, IsString, IsNotEmpty } from 'class-validator';
+
 
 export class CreateNoteDTO {
-  @IsString()
+  @IsMongoId()
   @IsNotEmpty()
-  module_id: Types.ObjectId;
+  user_id: string; // Add this field to represent the user
+
+  @IsMongoId()
+  @IsNotEmpty()
+  module_id: string;
 
   @IsString()
   @IsNotEmpty()
   content: string;
 }
+
+
 
 export class UpdateNoteDTO {
   @IsString()
