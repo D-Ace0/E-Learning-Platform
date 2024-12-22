@@ -63,13 +63,11 @@ export class DashboardService {
         .lean()
         .exec();
 
-    // Convert ObjectId to string for course_id
-    const formattedProgress = progress.map(p => ({
-        completionPercentage: p.completionPercentage,
-        course_id: p.course_id.toString()
-    }));
-
-    const courseIds = userInteractions.map((interaction) => interaction.course_id);
+    // Get all course IDs from both progress and interactions
+    const courseIds = [...new Set([
+        ...progress.map(p => p.course_id),
+        ...userInteractions.map(i => i.course_id)
+    ])];
 
     const courses = await this.courseModel
         .find({ _id: { $in: courseIds } })
@@ -78,9 +76,14 @@ export class DashboardService {
         .exec();
 
     const courseTitles = courses.reduce((acc, course) => {
-      acc[course._id.toString()] = course.title;
-      return acc;
-    }, {});
+        acc[course._id.toString()] = course.title;
+        return acc;
+    }, {} as Record<string, string>);
+
+    const formattedProgress = progress.map(p => ({
+        completionPercentage: p.completionPercentage,
+        course_id: p.course_id.toString()
+    }));
 
     return {
       AverageQuizScores: averageScore,

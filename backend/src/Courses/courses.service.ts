@@ -79,11 +79,12 @@ export class CoursesService {
     });
     await interaction.save();
 
-    // Optionally initialize progress with 0 for the course
+    // Initialize progress with 0 for the course
     const progress = new this.progressModel({
       user_id: studentId_ObjectId,
       course_id: courseId_ObjectId,
-      completionPercentage: 0, // Default to 0
+      completionPercentage: 0,
+      lastAccessed: new Date()
     });
     await progress.save();
 
