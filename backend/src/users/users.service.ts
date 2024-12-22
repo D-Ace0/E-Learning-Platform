@@ -28,11 +28,24 @@ export class UsersService {
       description: c.description
     }))
   }
-
-  async getCoursesInstructor(instructorId: string){
-    const coursesObjectIds = (await this.userModel.findById(instructorId)).courses
-    return coursesObjectIds;
-  }
+async getCoursesInstructor(instructorId: string) {
+  const coursesObjectIds = (await this.userModel.findById(instructorId)).courses;
+  const coursesData = await this.courseModel.find({ _id: coursesObjectIds });
+  return coursesData.map(c => ({
+    _id: c._id,
+    title: c.title,
+    description: c.description,
+    category: c.category,
+    difficulty_level: c.difficulty_level,
+    video: c.video,
+    pdf: c.pdf,
+    created_at: c.created_at,
+    created_by: c.created_by,
+    Thread: c.Thread,
+    enrolledStudents: c.enrolledStudents,
+    parentVersion: c.parentVersion
+  }));
+}
 
   async getAllUsers(): Promise<User[]> {
     try {

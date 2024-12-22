@@ -81,7 +81,7 @@ export class UsersController {
     @Roles(['instructor'])
     @Get(':id/instructor/courses')
     async getInstructorCourseTitles(@Param("id") instructorId: string){
-        return this.userService.getCourses(instructorId)
+        return this.userService.getCoursesInstructor(instructorId)
     }    
 
 
