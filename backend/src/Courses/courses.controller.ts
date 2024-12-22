@@ -3,6 +3,7 @@ import {
   Post,
   Put,
   Body,
+  Delete,
   Param,
   UseInterceptors,
   UploadedFile,
@@ -32,7 +33,13 @@ export class CoursesController {
     private readonly coursesService: CoursesService
   ) {}
 
-  
+  @Get('/courseID/:id')
+  @Roles(['student', 'instructor', 'admin'])
+  async getCourse(@Param('id') id: string) {
+    return this.coursesService.findById(id);
+  }
+
+
   @Post()
   @Roles(['instructor'])
   async create(@Body() createCourseDto: CreateCourseDto, @Request() req: any) {
@@ -46,6 +53,13 @@ export class CoursesController {
   async update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto, @Request() req: any) {
     const userId = req.user.user_id
     return this.coursesService.updateCourse(id, updateCourseDto, userId);
+  }
+
+  @Delete(':id')
+  @Roles(['instructor'])
+  async delete(@Param('id') id: string, @Request() req: any) {
+    const userId = req.user.user_id;
+    return this.coursesService.deleteCourse(id, userId);
   }
 
   @Get(':name')
@@ -70,7 +84,7 @@ export class CoursesController {
   }
 
   @Get('/instructors/:id')
-  @Roles(['student', 'admin'])
+  @Roles(['student', 'admin', 'instructor'])
   async searchInstructor(@Param('id') InstructorId){
     return this.coursesService.searchInstructor(InstructorId)
   }

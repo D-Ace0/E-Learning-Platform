@@ -24,7 +24,12 @@ const Header = () => {
                  Admin
                </Link>
              </li>
-           )}
+            )}
+            <li>
+              <Link href="/users" className="hover:underline">
+                Users
+              </Link>
+            </li>
             <li>
               <Link href="/about" className="hover:underline">
                 About
@@ -35,6 +40,20 @@ const Header = () => {
                 Courses
               </Link>
             </li>
+            {session?.role === 'student' && (
+              <li>
+                <Link href="/my-courses" className="hover:underline">
+                  My Courses
+                </Link>
+              </li>
+            )}
+            {session?.role === 'instructor' && (
+              <li>
+                <Link href="/instructor-courses" className="hover:underline">
+                  Instructor Courses
+                </Link>
+              </li>
+            )}
             {session && (
                 <>
                   <li>
@@ -95,7 +114,6 @@ const Header = () => {
                   </button>
                 </li>
             )}
-            
           </ul>
         </nav>
       </div>

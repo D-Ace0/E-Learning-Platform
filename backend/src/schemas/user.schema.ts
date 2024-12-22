@@ -33,7 +33,7 @@ export class User {
   @Prop({required: true})
   age: number
 
-  @Prop({ type: [{ type:  mongoose.Schema.Types.ObjectId, ref: 'course' }] })
+  @Prop({default: [], type: [mongoose.Schema.Types.ObjectId], ref: () => Course})
   courses: Course[];
 
   @Prop({ required: true, type: Date, default: Date.now })

@@ -20,6 +20,10 @@ export class QuizService {
     @InjectModel(Question.name) private questionModel: Model<Question>
   ) {}
 
+
+  async findByModuleId(module_id: string): Promise<Quiz[]> {
+    return await this.quizModel.find({ module_id });
+  }
   // Create a quiz
   async create(quizData: createQuizDto): Promise<Quiz> {
     const newQuiz = new this.quizModel(quizData);
