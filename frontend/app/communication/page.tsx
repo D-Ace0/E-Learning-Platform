@@ -3,32 +3,33 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { io, Socket } from 'socket.io-client';
+import { useSession } from 'next-auth/react';
 
 const Communication = () => {
+    const { data: session } = useSession(); // Fetch the logged-in user's session
     const [socket, setSocket] = useState<Socket | null>(null);
     const [rooms, setRooms] = useState<
         { _id: string; name: string }[]
     >([]);
     const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-    const [studentId, setStudentId] = useState('');
     const [messages, setMessages] = useState<
         { id: string; sender: { name: string; email: string; role: string }; content: string; timestamp: string }[]
     >([]);
     const [error, setError] = useState<string | null>(null);
+    const [newMessage, setNewMessage] = useState('');
 
-    // Initialize WebSocket connection
     useEffect(() => {
+        // Initialize WebSocket connection
         const socketIo = io('http://localhost:5000'); // WebSocket backend URL
         setSocket(socketIo);
 
-        // Cleanup
         return () => {
             socketIo.disconnect();
         };
     }, []);
 
-    // Fetch all rooms from the backend
     useEffect(() => {
+        // Fetch all rooms from the backend
         const fetchRooms = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/rooms');
@@ -42,11 +43,13 @@ const Communication = () => {
         fetchRooms();
     }, []);
 
-    // Join a room
     const handleJoinRoom = (roomName: string) => {
         if (!socket) return;
+
+        // Ensure the user is logged in and has a student ID
+        const studentId = session?.user_id;
         if (!studentId) {
-            setError('Please enter your student ID.');
+            setError('User is not authenticated. Cannot join room.');
             return;
         }
 
@@ -56,7 +59,7 @@ const Communication = () => {
         // Emit "joinRoom" to WebSocket
         socket.emit('joinRoom', { roomName, studentId });
 
-        // Listen for "roomJoined" and messages
+        // Listen for room events
         socket.on('roomJoined', (data) => {
             setMessages(data.messages);
             console.log(`Joined room ${data.room.name} with messages:`, data.messages);
@@ -71,31 +74,40 @@ const Communication = () => {
         });
     };
 
-    // Handle sending a message
-    const handleSendMessage = (messageContent: string) => {
-        if (!socket || !selectedRoom || !studentId) return;
+    const handleSendMessage = () => {
+        if (!socket || !selectedRoom) {
+            setError('Please join a room before sending a message.');
+            return;
+        }
 
+        const studentId = session?.user_id;
+        if (!studentId) {
+            setError('User is not authenticated. Cannot send message.');
+            return;
+        }
+
+        // Emit the message to the WebSocket
         socket.emit('sendMessage', {
             roomName: selectedRoom,
             studentId,
-            content: messageContent,
+            content: newMessage,
         });
+
+        setNewMessage(''); // Clear the input field
+    };
+
+    const handleLeaveRoom = () => {
+        if (!socket || !selectedRoom) return;
+
+        // Emit "leaveRoom" to WebSocket
+        socket.emit('leaveRoom', { roomName: selectedRoom });
+        setSelectedRoom(null); // Clear the selected room
+        setMessages([]); // Clear the chat messages
     };
 
     return (
         <div className="p-4">
             <h1 className="text-2xl font-bold">Rooms and Chat</h1>
-
-            {/* Student ID Input */}
-            <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700">Your Student ID:</label>
-                <input
-                    type="text"
-                    value={studentId}
-                    onChange={(e) => setStudentId(e.target.value)}
-                    className="mt-2 p-2 border rounded w-full"
-                />
-            </div>
 
             {/* Room List */}
             <div className="mt-4">
@@ -123,6 +135,12 @@ const Communication = () => {
             {selectedRoom && (
                 <div className="mt-6">
                     <h2 className="text-xl font-semibold">Chat in Room: {selectedRoom}</h2>
+                    <button
+                        onClick={handleLeaveRoom}
+                        className="mb-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                        Leave Room
+                    </button>
                     <div className="border rounded p-4 h-64 overflow-y-scroll bg-gray-100">
                         {messages.map((msg) => (
                             <div key={msg.id} className="mb-2">
@@ -137,16 +155,12 @@ const Communication = () => {
                         <input
                             type="text"
                             placeholder="Type a message"
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
                             className="p-2 border rounded w-full mr-2"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleSendMessage(e.currentTarget.value);
-                                    e.currentTarget.value = '';
-                                }
-                            }}
                         />
                         <button
-                            onClick={() => handleSendMessage('Test Message')} // Replace with dynamic input
+                            onClick={handleSendMessage}
                             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                         >
                             Send
