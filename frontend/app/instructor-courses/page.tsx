@@ -63,53 +63,98 @@ export default function Courses() {
       fetchInstructorCourses();
     }
   }, [session?.accessToken]);
+  const handleCreateCourse = async () => {
+    const { value:formValues } = await Swal.fire({
+     title: 'Create New Course',
+     html:
+       `<p>Title</p><input id="swal-input1" class="swal2-input" placeholder="Title" />` +
+       `<p>Description</p><input id="swal-input2" class="swal2-input" placeholder="Description" />` +
+       `<p>Category</p><input id="swal-input3" class="swal2-input" placeholder="Category" />` +
+       `<p>Difficulty(beginner, intermediate, advanced)</p><input id="swal-input4" class="swal2-input" placeholder="Difficulty Level" />` +
+       `<p>Video</p><input id="swal-input5" class="swal2-input" placeholder="Video URL" />` +
+       `<p>PDF</p><input id="swal-input6" class="swal2-input" placeholder="PDF URL" />`,
+     focusConfirm: false,
+     preConfirm: () => {
+       return [
+         (document.getElementById('swal-input1') as HTMLInputElement).value,
+         (document.getElementById('swal-input2') as HTMLInputElement).value,
+         (document.getElementById('swal-input3') as HTMLInputElement).value,
+         (document.getElementById('swal-input4') as HTMLInputElement).value,
+         (document.getElementById('swal-input5') as HTMLInputElement).value,
+         (document.getElementById('swal-input6') as HTMLInputElement).value,
+       ];
+     },
+   });
+    if (formValues) {
+     const [title, description, category, difficulty_level, video, pdf] = formValues;
+     try {
+       const response = await fetch('http://localhost:5000/courses', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+           Authorization: `Bearer ${session?.accessToken}`,
+         },
+         body: JSON.stringify({ title, description, category, difficulty_level, video, pdf }),
+       });
+       if (!response.ok) {
+         const errorData = await response.json();
+         throw new Error(errorData.message || 'Failed to create course');
+       }
+       Swal.fire('Created!', 'Course has been created.', 'success');
+       const newCourse = await response.json()
+       setCourses([...courses, newCourse]);
+     } catch (error) {
+       console.error('Error creating course:', error);
+       Swal.fire('Error!', 'Failed to create course.', 'error');
+     }
+   }
+ };
+  const handleUpdateCourse = async (course: Course) => {
+    const { value: formValues } = await Swal.fire({
+      title: 'Update Course',
+      html:
+        `<p>Title</p><input id="swal-input1" class="swal2-input" placeholder="Title" value="${course.title}" />` +
+        `<p>Description</p><input id="swal-input2" class="swal2-input" placeholder="Description" value="${course.description}" />` +
+        `<p>Category</p><input id="swal-input3" class="swal2-input" placeholder="Category" value="${course.category}" />` +
+        `<p>Difficulty(beginner, intermediate, advanced)</p><input id="swal-input4" class="swal2-input" placeholder="Difficulty Level" value="${course.difficulty_level}" />` +
+        `<p>Video</p><input id="swal-input5" class="swal2-input" placeholder="Video URL" value="${course.video}" />` +
+        `<p>PDF</p><input id="swal-input6" class="swal2-input" placeholder="PDF URL" value="${course.pdf}" />`,
+      focusConfirm: false,
+      preConfirm: () => {
+        return [
+          (document.getElementById('swal-input1') as HTMLInputElement).value,
+          (document.getElementById('swal-input2') as HTMLInputElement).value,
+          (document.getElementById('swal-input3') as HTMLInputElement).value,
+          (document.getElementById('swal-input4') as HTMLInputElement).value,
+          (document.getElementById('swal-input5') as HTMLInputElement).value,
+          (document.getElementById('swal-input6') as HTMLInputElement).value,
+        ];
+      },
+    });
 
- // ... existing code ...
- const handleUpdateCourse = async (course: Course) => {
-  const { value: formValues } = await Swal.fire({
-    title: 'Update Course',
-    html:
-      `<input id="swal-input1" class="swal2-input" placeholder="Title" value="${course.title}" />` +
-      `<input id="swal-input2" class="swal2-input" placeholder="Description" value="${course.description}" />` +
-      `<input id="swal-input3" class="swal2-input" placeholder="Category" value="${course.category}" />` +
-      `<input id="swal-input4" class="swal2-input" placeholder="Difficulty Level" value="${course.difficulty_level}" />` +
-      `<input id="swal-input5" class="swal2-input" placeholder="Video URL" value="${course.video}" />` +
-      `<input id="swal-input6" class="swal2-input" placeholder="PDF URL" value="${course.pdf}" />`,
-    focusConfirm: false,
-    preConfirm: () => {
-      return [
-        (document.getElementById('swal-input1') as HTMLInputElement).value,
-        (document.getElementById('swal-input2') as HTMLInputElement).value,
-        (document.getElementById('swal-input3') as HTMLInputElement).value,
-        (document.getElementById('swal-input4') as HTMLInputElement).value,
-        (document.getElementById('swal-input5') as HTMLInputElement).value,
-        (document.getElementById('swal-input6') as HTMLInputElement).value,
-      ];
-    },
-  });
-   if (formValues) {
-    const [title, description, category, difficulty_level, video, pdf] = formValues;
-    try {
-      const response = await fetch(`http://localhost:5000/courses/${course._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
-        },
-        body: JSON.stringify({ title, description, category, difficulty_level, video, pdf }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update course');
+    if (formValues) {
+      const [title, description, category, difficulty_level, video, pdf] = formValues;
+      try {
+        const response = await fetch(`http://localhost:5000/courses/${course._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+          body: JSON.stringify({ title, description, category, difficulty_level, video, pdf }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to update course');
+        }
+        Swal.fire('Updated!', 'Course has been updated.', 'success');
+        setCourses(courses.map(c => (c._id === course._id ? { ...c, title, description, category, difficulty_level, video, pdf } : c)));
+      } catch (error) {
+        console.error('Error updating course:', error);
+        Swal.fire('Error!', 'Failed to update course.', 'error');
       }
-      Swal.fire('Updated!', 'Course has been updated.', 'success');
-      setCourses(courses.map(c => (c._id === course._id ? { ...c, title, description, category, difficulty_level, video, pdf } : c)));
-    } catch (error) {
-      console.error('Error updating course:', error);
-      Swal.fire('Error!', 'Failed to update course.', 'error');
     }
-  }
-};
+  };
 
   const handleDeleteCourse = async (courseId: string) => {
     const result = await Swal.fire({
@@ -145,32 +190,33 @@ export default function Courses() {
 
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <input
-        type="text"
-        placeholder="Search courses"
-        value={searchTerm}
-        onChange={handleSearchChange}
-        style={{ width: '100%', padding: '10px', marginBottom: '20px', border: '1px solid #ccc', borderRadius: '4px' }}
-      />
+    <input
+      type="text"
+      placeholder="Search courses"
+      value={searchTerm}
+      onChange={handleSearchChange}
+      style={{ width: '100%', padding: '10px', marginBottom: '20px', border: '1px solid #ccc', borderRadius: '4px' }}
+    />
+    <button onClick={handleCreateCourse} style={{ marginBottom: '20px', padding: '10px 15px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#5cb85c', color: 'white' }}>Create New Course</button>
       {loading && <p>Loading...</p>}
       {error && <p>{error}</p>}
       {courses.length === 0 && !loading && <p>No courses found.</p>}
       
-      <ul style={{ listStyleType: 'none', padding: '0' }}>        {courses.map(course => (
-         <li key={course._id} style={{ backgroundColor: '#f9f9f9', marginBottom: '10px', padding: '15px', border: '1px solid #ddd', borderRadius: '4px' }}>
-           <h3 style={{ margin: '0 0 10px' }}>{course.title}</h3>
-           <p style={{ margin: '0 0 5px', color: '#666' }}>Created at: {new Date(course.created_at).toLocaleDateString()}</p>
-           <p style={{ margin: '0 0 5px', color: '#666' }}>Description: {course.description}</p>
-           <p style={{ margin: '0 0 5px', color: '#666' }}>Category: {course.category}</p>
-           <p style={{ margin: '0 0 5px', color: '#666' }}>Difficulty Level: {course.difficulty_level}</p>
+      <ul style={{ listStyleType: 'none', padding: '0' }}>
+        {courses.map(course => (
+          <li key={course._id} style={{ backgroundColor: '#f9f9f9', marginBottom: '10px', padding: '15px', border: '1px solid #ddd', borderRadius: '4px' }}>
+            <h3 style={{ margin: '0 0 10px' }}>{course.title}</h3>
+            <p style={{ margin: '0 0 5px', color: '#666' }}>Created at: {new Date(course.created_at).toLocaleDateString()}</p>
+            <p style={{ margin: '0 0 5px', color: '#666' }}>Description: {course.description}</p>
+            <p style={{ margin: '0 0 5px', color: '#666' }}>Category: {course.category}</p>
+            <p style={{ margin: '0 0 5px', color: '#666' }}>Difficulty Level: {course.difficulty_level}</p>
             <p style={{ margin: '0 0 5px', color: '#666' }}>Video URL: {course.video}</p>
-           <p style={{ margin: '0 0 10px', color: '#666' }}>PDF URL: {course.pdf}</p>
-           <button onClick={() => handleUpdateCourse(course)} style={{ marginRight: '10px', padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#4CAF50', color: 'white' }}>Update</button>
-           <button onClick={() => handleDeleteCourse(course._id)} style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#f44336', color: 'white' }}>Delete</button>
-         </li>
-       ))}
-     </ul>
-
+            <p style={{ margin: '0 0 10px', color: '#666' }}>PDF URL: {course.pdf}</p>
+            <button onClick={() => handleUpdateCourse(course)} style={{ marginRight: '10px', padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#4CAF50', color: 'white' }}>Update</button>
+            <button onClick={() => handleDeleteCourse(course._id)} style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#f44336', color: 'white' }}>Delete</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
