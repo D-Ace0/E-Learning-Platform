@@ -54,6 +54,19 @@ export class CoursesService {
     return await this.courseModel.findByIdAndUpdate(id, updateCourseDto, {new: true}).exec()
   }
 
+  async deleteCourse(id: string, instructor_id: string) {
+    if (!isValidObjectId(id)) throw new BadRequestException('Invalid course ID');
+
+    const course = await this.courseModel.findById(id).exec();
+    if (!course) throw new NotFoundException('Course does not exist');
+
+    const instructor_id_AS_ObjectId = new Types.ObjectId(instructor_id);
+    if (course.created_by.toString() !== instructor_id_AS_ObjectId.toString()) throw new ForbiddenException('You cannot delete this course');
+
+    await this.courseModel.findByIdAndDelete(id).exec();
+    return { message: 'Course deleted successfully' };
+  }
+
 
   async searchCourse(courseName: string){
     const course = await this.courseModel.findOne({title: courseName})

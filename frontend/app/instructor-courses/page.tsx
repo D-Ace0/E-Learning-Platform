@@ -82,6 +82,7 @@ export default function Courses() {
     if (formValues) {
       const [title, description] = formValues;
       try {
+        console.log('Updating course:', course._id, { title, description });
         const response = await fetch(`http://localhost:5000/courses/${course._id}`, {
           method: 'PUT',
           headers: {
@@ -91,11 +92,13 @@ export default function Courses() {
           body: JSON.stringify({ title, description }),
         });
         if (!response.ok) {
-          throw new Error('Failed to update course');
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to update course');
         }
         Swal.fire('Updated!', 'Course has been updated.', 'success');
         setCourses(courses.map(c => (c._id === course._id ? { ...c, title, description } : c)));
       } catch (error) {
+        console.error('Error updating course:', error);
         Swal.fire('Error!', 'Failed to update course.', 'error');
       }
     }
@@ -113,6 +116,7 @@ export default function Courses() {
 
     if (result.isConfirmed) {
       try {
+        console.log('Deleting course:', courseId);
         const response = await fetch(`http://localhost:5000/courses/${courseId}`, {
           method: 'DELETE',
           headers: {
@@ -120,11 +124,13 @@ export default function Courses() {
           },
         });
         if (!response.ok) {
-          throw new Error('Failed to delete course');
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to delete course');
         }
         Swal.fire('Deleted!', 'Course has been deleted.', 'success');
         setCourses(courses.filter(course => course._id !== courseId));
       } catch (error) {
+        console.error('Error deleting course:', error);
         Swal.fire('Error!', 'Failed to delete course.', 'error');
       }
     }
