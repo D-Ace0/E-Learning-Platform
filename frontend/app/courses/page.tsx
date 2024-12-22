@@ -29,10 +29,10 @@ export default function Courses() {
     const [notFound, setNotFound] = useState(false);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-    const categories = ['History', 'Science', 'Engineering', 'Art', 'Computer Science','Mathematics', 'Literature'];
+    const categories = ['History', 'Science', 'Engineering', 'Art', 'Computer Science', 'Mathematics', 'Literature'];
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(event.target.value);
+        setSearchTerm(event.target.value.toLowerCase());
     };
 
     const handleCategoryChange = (category: string) => {
@@ -50,103 +50,6 @@ export default function Courses() {
         return createdDate < fiveDaysAgo;
     };
 
-    const viewInstructorDetails = async (instructorId: string) => {
-        if (!session) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'You need to be logged in to view instructor details!',
-            });
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const response = await fetch(`http://localhost:5000/courses/instructors/${instructorId}`, {
-                headers: {
-                    'Authorization': `Bearer ${session.accessToken}`,
-                },
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: errorData.message || 'Failed to fetch instructor details',
-                });
-                throw new Error(errorData.message || 'Failed to fetch instructor details');
-            }
-
-            const instructor = await response.json();
-            const instructorDetails = `
-                <strong>Name:</strong> ${instructor.name}<br>
-                <strong>Email:</strong> ${instructor.email}<br>
-                <strong>Phone:</strong> ${instructor.phone || 'N/A'}<br>
-                <strong>Bio:</strong> ${instructor.bio || 'N/A'}
-            `;
-
-            Swal.fire({
-                icon: 'info',
-                title: 'Instructor Details',
-                html: instructorDetails,
-            });
-        } catch (error: any) {
-            console.error('Error fetching instructor details:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const enrollCourse = async (courseId: string) => {
-        if (!session) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'You need to be logged in to enroll!',
-            });
-            return;
-        }
-        setLoading(true);
-        try {
-            const response = await fetch(`http://localhost:5000/courses/students/${courseId}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${session.accessToken}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Enrollment Failed',
-                    text: errorData.message || 'Failed to enroll',
-                });
-                throw new Error(errorData.message || 'Failed to enroll');
-            }
-
-            const updatedCourses:any = courses.map((course) =>
-                course._id === courseId
-                    ? { ...course, enrolledStudents: [...course.enrolledStudents, session.user_id].filter((student): student is string => !!student) }
-                    : course
-            );
-            setCourses(updatedCourses);
-
-            Swal.fire({
-                icon: 'success',
-                title: 'Congratulations!',
-                text: 'You have successfully enrolled in the course!',
-            });
-        } catch (error: any) {
-            setError(error.message || 'Failed to enroll in course');
-            console.error('Error enrolling in course:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
         const fetchCourses = async () => {
             if (!session) return;
@@ -154,13 +57,9 @@ export default function Courses() {
             setError(null);
             setNotFound(false);
             try {
-                let url = 'http://localhost:5000/courses';
-                if (searchTerm) {
-                    url = `http://localhost:5000/courses/${searchTerm}`;
-                }
-                const response = await fetch(url, {
+                const response = await fetch('http://localhost:5000/courses', {
                     headers: {
-                        'Authorization': `Bearer ${session.accessToken}`,
+                        Authorization: `Bearer ${session.accessToken}`,
                     },
                 });
                 if (!response.ok) {
@@ -168,18 +67,11 @@ export default function Courses() {
                     throw new Error(errorData.message || 'Failed to fetch courses');
                 }
                 const data = await response.json();
-                let filteredCourses = data;
-                if (selectedCategories.length > 0) {
-                    filteredCourses = data.filter((course: Course) =>
-                        selectedCategories.includes(course.category)
-                    );
-                }
-                const coursesWithOutdatedStatus = filteredCourses.map((course: Course) => ({
+                const coursesWithOutdatedStatus = data.map((course: Course) => ({
                     ...course,
                     isOutdated: isCourseOutdated(course.created_at),
                 }));
                 setCourses(coursesWithOutdatedStatus);
-                setNotFound(coursesWithOutdatedStatus.length === 0);
             } catch (err: any) {
                 setError(err.message || 'Failed to fetch courses');
                 setCourses([]);
@@ -189,7 +81,17 @@ export default function Courses() {
             }
         };
         fetchCourses();
-    }, [session, searchTerm, selectedCategories]);
+    }, [session]);
+
+    const filteredCourses = courses.filter((course) => {
+        const matchesSearchTerm =
+            course.title.toLowerCase().includes(searchTerm) ||
+            course.description.toLowerCase().includes(searchTerm);
+        const matchesCategory = selectedCategories.length
+            ? selectedCategories.includes(course.category)
+            : true;
+        return matchesSearchTerm && matchesCategory;
+    });
 
     if (status === 'loading') {
         return <p>Loading...</p>;
@@ -224,10 +126,12 @@ export default function Courses() {
                 </div>
             )}
             {error && <p className="text-red-500 text-center mb-4">Error: {error}</p>}
-            {notFound && <p className="text-gray-500 text-center mb-4">No courses found.</p>}
+            {filteredCourses.length === 0 && !loading && (
+                <p className="text-gray-500 text-center mb-4">No courses found.</p>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                 {session ? (
-                    courses.map((course) => (
+                    filteredCourses.map((course) => (
                         (session.role !== 'student' || !course.isOutdated) && (
                             <div key={course._id} className="bg-white shadow-md rounded-lg p-6 text-center">
                                 <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
@@ -238,7 +142,7 @@ export default function Courses() {
                                     <strong>Enrolled Students:</strong> {course.enrolledStudents.length}
                                 </p>
                                 <button
-                                    onClick={() => viewInstructorDetails(course.created_by)}
+                                    onClick={() => Swal.fire('Instructor details to be implemented!')}
                                     className="mt-2 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
                                 >
                                     View Instructor Details
@@ -247,7 +151,7 @@ export default function Courses() {
                                     <>
                                         <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
                                         <button
-                                            onClick={() => enrollCourse(course._id)}
+                                            onClick={() => Swal.fire('Enrollment to be implemented!')}
                                             className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
                                         >
                                             Enroll Course
