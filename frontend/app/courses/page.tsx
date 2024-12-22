@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import Swal from 'sweetalert2';
 
 interface Course {
     _id: string;
@@ -13,11 +13,11 @@ interface Course {
     video: string;
     pdf: string;
     created_at: string;
-    created_by: string; // Add created_by field
+    created_by: string;
     Thread: string[];
     enrolledStudents: string[];
     parentVersion: string[];
-    isOutdated: boolean; // Add isOutdated field
+    isOutdated: boolean;
 }
 
 export default function Courses() {
@@ -27,9 +27,20 @@ export default function Courses() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [notFound, setNotFound] = useState(false);
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+    const categories = ['History', 'Science', 'Engineering', 'Art', 'Computer Science','Mathematics', 'Literature'];
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
+    };
+
+    const handleCategoryChange = (category: string) => {
+        setSelectedCategories((prevSelectedCategories) =>
+            prevSelectedCategories.includes(category)
+                ? prevSelectedCategories.filter((c) => c !== category)
+                : [...prevSelectedCategories, category]
+        );
     };
 
     const isCourseOutdated = (createdAt: string): boolean => {
@@ -37,7 +48,7 @@ export default function Courses() {
         const fiveDaysAgo = new Date();
         fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
         return createdDate < fiveDaysAgo;
-       }
+    };
 
     const viewInstructorDetails = async (instructorId: string) => {
         if (!session) {
@@ -121,7 +132,7 @@ export default function Courses() {
                     ? { ...course, enrolledStudents: [...course.enrolledStudents, session.user_id].filter((student): student is string => !!student) }
                     : course
             );
-            setCourses(updatedCourses); // Update the local state with the new enrollment
+            setCourses(updatedCourses);
 
             Swal.fire({
                 icon: 'success',
@@ -157,24 +168,18 @@ export default function Courses() {
                     throw new Error(errorData.message || 'Failed to fetch courses');
                 }
                 const data = await response.json();
-                if (Array.isArray(data)) {
-                    const coursesWithOutdatedStatus = data.map(course => ({
-                        ...course,
-                        isOutdated: isCourseOutdated(course.created_at)
-                    }));
-                    setCourses(coursesWithOutdatedStatus);
-                    setNotFound(coursesWithOutdatedStatus.length === 0);
-                } else if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-                    const courseWithOutdatedStatus = {
-                        ...data,
-                        isOutdated: isCourseOutdated(data.created_at)
-                    };
-                    setCourses([courseWithOutdatedStatus]);
-                    setNotFound(false);
-                } else {
-                    setCourses([]);
-                    setNotFound(true);
+                let filteredCourses = data;
+                if (selectedCategories.length > 0) {
+                    filteredCourses = data.filter((course: Course) =>
+                        selectedCategories.includes(course.category)
+                    );
                 }
+                const coursesWithOutdatedStatus = filteredCourses.map((course: Course) => ({
+                    ...course,
+                    isOutdated: isCourseOutdated(course.created_at),
+                }));
+                setCourses(coursesWithOutdatedStatus);
+                setNotFound(coursesWithOutdatedStatus.length === 0);
             } catch (err: any) {
                 setError(err.message || 'Failed to fetch courses');
                 setCourses([]);
@@ -183,8 +188,8 @@ export default function Courses() {
                 setLoading(false);
             }
         };
-         fetchCourses();
-    }, [session, searchTerm]);
+        fetchCourses();
+    }, [session, searchTerm, selectedCategories]);
 
     if (status === 'loading') {
         return <p>Loading...</p>;
@@ -193,6 +198,19 @@ export default function Courses() {
     return (
         <div className="container mx-auto p-8">
             <h1 className="text-4xl font-bold text-center mb-8">Course List</h1>
+            <div className="mb-4">
+                {categories.map((category) => (
+                    <label key={category} className="mr-4">
+                        <input
+                            type="checkbox"
+                            value={category}
+                            checked={selectedCategories.includes(category)}
+                            onChange={(e) => handleCategoryChange(e.target.value)}
+                        />
+                        {category}
+                    </label>
+                ))}
+            </div>
             <input
                 type="text"
                 placeholder="Search courses..."
@@ -209,14 +227,13 @@ export default function Courses() {
             {notFound && <p className="text-gray-500 text-center mb-4">No courses found.</p>}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                 {session ? (
-                      courses.map((course) => (
+                    courses.map((course) => (
                         (session.role !== 'student' || !course.isOutdated) && (
                             <div key={course._id} className="bg-white shadow-md rounded-lg p-6 text-center">
                                 <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
                                 <p className="text-gray-700 mb-4">{course.description}</p>
                                 <p className="text-sm text-blue-500 mb-2"><strong>Category:</strong> {course.category}</p>
                                 <p className="text-sm text-green-500 mb-2"><strong>Difficulty Level:</strong> {course.difficulty_level}</p>
-                               
                                 <p className="text-sm text-gray-600 mb-2">
                                     <strong>Enrolled Students:</strong> {course.enrolledStudents.length}
                                 </p>
@@ -228,13 +245,13 @@ export default function Courses() {
                                 </button>
                                 {session.role === 'student' && (
                                     <>
-                                     <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
-                                    <button
-                                        onClick={() => enrollCourse(course._id)}
-                                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                                    >
-                                        Enroll Course
-                                    </button>
+                                        <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
+                                        <button
+                                            onClick={() => enrollCourse(course._id)}
+                                            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                                        >
+                                            Enroll Course
+                                        </button>
                                     </>
                                 )}
                             </div>
