@@ -17,8 +17,22 @@ export default function Users() {
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState<string | null>(null);
    const [notFound, setNotFound] = useState(false);
-    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-       setSearchTerm(event.target.value);
+   const [allUsers, setAllUsers] = useState<User[]>([]);
+
+   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+       const term = event.target.value;
+       setSearchTerm(term);
+       if (term) {
+           const filteredUsers = allUsers.filter(user =>
+               user.name.toLowerCase().includes(term.toLowerCase()) ||
+               user.email.toLowerCase().includes(term.toLowerCase())
+           );
+           setUsers(filteredUsers);
+           setNotFound(filteredUsers.length === 0);
+       } else {
+           setUsers(allUsers);
+           setNotFound(allUsers.length === 0);
+       }
    };
     const viewUserDetails = async (userId: string) => {
        if (!session) {
@@ -70,53 +84,53 @@ export default function Users() {
            setLoading(false);
        }
    };
-    useEffect(() => {
-       const fetchUsers = async () => {
-           if (!session) return;
-           setLoading(true);
-           setError(null);
-           setNotFound(false);
-           try {
-               let url = 'http://localhost:5000/users';
-               if (searchTerm) {
-                   url = `http://localhost:5000/users/search/${searchTerm}`;
-               }
-                // Adjust the URL based on user role
-               if (session.role === 'student') {
-                   url = `http://localhost:5000/users/allInstructors`;
-               } else if (session.role === 'instructor') {
-                   url = `http://localhost:5000/users/allStudents`;
-               }
-                const response = await fetch(url, {
-                   headers: {
-                       'Authorization': `Bearer ${session.accessToken}`,
-                   },
-               });
-                if (!response.ok) {
-                   const errorData = await response.json();
-                   throw new Error(errorData.message || 'Failed to fetch users');
-               }
-                const data = await response.json();
-               if (Array.isArray(data)) {
-                   setUsers(data);
-                   setNotFound(data.length === 0);
-               } else if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-                   setUsers([data]);
-                   setNotFound(false);
-               } else {
-                   setUsers([]);
-                   setNotFound(true);
-               }
-           } catch (err: any) {
-               setError(err.message || 'Failed to fetch users');
-               setUsers([]);
-               setNotFound(true);
-           } finally {
-               setLoading(false);
-           }
-       };
-        fetchUsers();
-   }, [session, searchTerm]);
+   useEffect(() => {
+    const fetchUsers = async () => {
+        if (!session) return;
+        setLoading(true);
+        setError(null);
+        setNotFound(false);
+        try {
+            let url = 'http://localhost:5000/users';
+            // Adjust the URL based on user role
+            if (session.role === 'student') {
+                url = `http://localhost:5000/users/allInstructors`;
+            } else if (session.role === 'instructor') {
+                url = `http://localhost:5000/users/allStudents`;
+            }
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${session.accessToken}`,
+                },
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to fetch users');
+            }
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                setUsers(data);
+                setAllUsers(data);
+                setNotFound(data.length === 0);
+            } else if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+                setUsers([data]);
+                setAllUsers([data]);
+                setNotFound(false);
+            } else {
+                setUsers([]);
+                setAllUsers([]);
+                setNotFound(true);
+            }
+        } catch (err: any) {
+            setError(err.message || 'Failed to fetch users');
+            setUsers([]);
+            setNotFound(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchUsers();
+}, [session]);
     if (status === 'loading') {
        return <p>Loading...</p>;
    }
