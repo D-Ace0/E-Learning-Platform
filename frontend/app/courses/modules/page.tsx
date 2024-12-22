@@ -13,6 +13,8 @@ interface Module {
     created_at: string;
 }
 
+
+
 export default function Modules() {
     const { data: session } = useSession();
     const [modules, setModules] = useState<Module[]>([]);
@@ -23,6 +25,38 @@ export default function Modules() {
     const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
     const searchParams = useSearchParams();
     const courseId = searchParams.get('courseId');
+
+    const isCourseOutdated = (createdAt: string): boolean => {
+        const createdDate = new Date(createdAt);
+        const fiveDaysAgo = new Date();
+        fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+        return createdDate < fiveDaysAgo;
+       }
+       const updateCourseOutdatedStatus = async (courseId: string) => {
+        try {
+            const response = await fetch(`http://localhost:5000/courses/courseID/${courseId}`, { // Fetch the specific course
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${session?.accessToken}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch course details');
+            }
+            const course = await response.json();
+            const isOutdated = isCourseOutdated(course.created_at);
+            await fetch(`http://localhost:5000/courses/${courseId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.accessToken}`,
+                },
+                body: JSON.stringify({ ...course, isOutdated }),
+            });
+        } catch (error) {
+            console.error('Error updating course outdated status:', error);
+        }
+    };
     useEffect(() => {
         const fetchModules = async () => {
             setLoading(true);
@@ -65,9 +99,11 @@ export default function Modules() {
             }
 
             const createdModule = await response.json();
-            setModules((prev) => [...prev, createdModule]);
-            setNewModule({ title: '', content: '', resources: [], course_id: '' }); // Reset form
-            Swal.fire('Success', 'Module created successfully!', 'success');
+           setModules((prev) => [...prev, createdModule]);
+           setNewModule({ title: '', content: '', resources: [], course_id: '' }); // Reset form
+           await updateCourseOutdatedStatus(createdModule.course_id);
+           Swal.fire('Success', 'Module created successfully!', 'success');
+     
         } catch (error: any) {
             Swal.fire('Error', error.message, 'error');
         }
@@ -99,16 +135,16 @@ export default function Modules() {
             }
 
             const updatedModule = await response.json();
-            setModules((prev) => prev.map((module) => (module._id === updatedModule._id ? updatedModule : module)));
-            setIsModalOpen(false); // Close modal
-            setEditingModule(null); // Reset editing state
-            setNewModule({ title: '', content: '', resources: [], course_id: '' }); // Reset form
-            Swal.fire('Success', 'Module updated successfully!', 'success');
-        } catch (error: any) {
+           setModules((prev) => prev.map((module) => (module._id === updatedModule._id ? updatedModule : module)));
+           setIsModalOpen(false); // Close modal
+           setEditingModule(null); // Reset editing state
+           setNewModule({ title: '', content: '', resources: [], course_id: '' }); // Reset form
+           await updateCourseOutdatedStatus(updatedModule.course_id);
+           Swal.fire('Success', 'Module updated successfully!', 'success');
+         } catch (error: any) {
             Swal.fire('Error', error.message, 'error');
         }
     };
-
     const handleDeleteModule = async (moduleId: string) => {
         try {
             const response = await fetch(`http://localhost:5000/module/${moduleId}`, {

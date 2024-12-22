@@ -216,7 +216,7 @@ export default function Courses() {
                                 <p className="text-gray-700 mb-4">{course.description}</p>
                                 <p className="text-sm text-blue-500 mb-2"><strong>Category:</strong> {course.category}</p>
                                 <p className="text-sm text-green-500 mb-2"><strong>Difficulty Level:</strong> {course.difficulty_level}</p>
-                                <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
+                               
                                 <p className="text-sm text-gray-600 mb-2">
                                     <strong>Enrolled Students:</strong> {course.enrolledStudents.length}
                                 </p>
@@ -227,12 +227,15 @@ export default function Courses() {
                                     View Instructor Details
                                 </button>
                                 {session.role === 'student' && (
+                                    <>
+                                     <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
                                     <button
                                         onClick={() => enrollCourse(course._id)}
                                         className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
                                     >
                                         Enroll Course
                                     </button>
+                                    </>
                                 )}
                             </div>
                         )

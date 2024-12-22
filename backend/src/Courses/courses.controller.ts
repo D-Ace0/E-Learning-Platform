@@ -33,7 +33,13 @@ export class CoursesController {
     private readonly coursesService: CoursesService,
   ) {}
 
-  
+  @Get('/courseID/:id')
+  @Roles(['student', 'instructor', 'admin'])
+  async getCourse(@Param('id') id: string) {
+    return this.coursesService.findById(id);
+  }
+
+
   @Post()
   @Roles(['instructor'])
   async create(@Body() createCourseDto: CreateCourseDto, @Request() req: any) {
