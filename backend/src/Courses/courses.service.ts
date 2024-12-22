@@ -8,14 +8,17 @@ import { v4 as uuidv4 } from 'uuid';
 import { isValidObjectId, Types } from 'mongoose';
 import { User } from 'src/schemas/user.schema';
 import { Course } from 'src/schemas/course.schema';
+import { UserInteraction } from 'src/schemas/user_interaction';
 import { Progress } from 'src/schemas/progress.schema';
 
 
 @Injectable()
 export class CoursesService {
   constructor(@InjectModel(Course.name) private courseModel: Model<Course>,
-   @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(Progress.name) private progressModel: Model<Progress>) {}
+              @InjectModel(User.name) private userModel: Model<User>,
+              @InjectModel(UserInteraction.name) private userInteractionModel: Model<UserInteraction>,
+              @InjectModel(Progress.name) private progressModel: Model<Progress>)
+  {}
 
 
   async create(createCourseDto: CreateCourseDto, userid: string) {
@@ -90,32 +93,45 @@ async updateCourse(id: string, updateCourseDto: UpdateCourseDto, userId: string)
 
 
 
-  async studentEnrollCourse(studentId: string, courseId: string){
-    const course = await this.courseModel.findById(courseId)
-    if(!course) throw new NotFoundException('Course not found')
+  async studentEnrollCourse(studentId: string, courseId: string) {
+    const course = await this.courseModel.findById(courseId);
+    if (!course) throw new NotFoundException('Course not found');
 
+    // Add the student to the enrolledStudents in course document
+    const studentId_ObjectId = new Types.ObjectId(studentId);
+    if (course.enrolledStudents.includes(studentId_ObjectId as any)) {
+      throw new BadRequestException('You are already enrolled in this course');
+    }
+    course.enrolledStudents.push(studentId_ObjectId as any);
 
-    // add the student to enrolledStudents in course document
-    const studentId_ObjectId = new Types.ObjectId(studentId)
-    const EnrolledStudentsIds = course.enrolledStudents
-    if(EnrolledStudentsIds.includes(studentId_ObjectId as any)) throw new BadRequestException('You are already enrolled in this course')
-    course.enrolledStudents.push(studentId_ObjectId as any)
+    // Add the course to the student's courses
+    const user = await this.userModel.findById(studentId).exec();
+    const courseId_ObjectId = new Types.ObjectId(courseId);
+    user.courses.push(courseId_ObjectId as any);
+    await user.save();
 
-    // add the course to the courses array of the user document
-    const user = await this.userModel.findById(studentId).exec()
-    const courseId_ObjectId = new Types.ObjectId(courseId)
-    user.courses.push(courseId_ObjectId as any)
-    await user.save()
-
-    const newProgress = new this.progressModel({
+    // Create a UserInteraction record without response_id initially
+    const interaction = new this.userInteractionModel({
       user_id: studentId_ObjectId,
       course_id: courseId_ObjectId,
-      completionPercentage: 0
-     })
-    await newProgress.save()
+      time_spent_minutes: 0, // Default
+      last_accessed: new Date(),
+    });
+    await interaction.save();
 
-    return await course.save()
+    // Initialize progress with 0 for the course
+    const progress = new this.progressModel({
+      user_id: studentId_ObjectId,
+      course_id: courseId_ObjectId,
+      completionPercentage: 0,
+      lastAccessed: new Date()
+    });
+    await progress.save();
+
+    return await course.save();
   }
+
+
 
   async searchStudent(studentId: string, InstructorId: string){
     if(!isValidObjectId(studentId)) throw new BadRequestException()
