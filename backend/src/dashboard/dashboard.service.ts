@@ -26,44 +26,71 @@ export class DashboardService {
   ) {}
 
 
-  async getStudentDashboard(user_id: string): Promise<{ AverageQuizScores: number; AllGrades: any[], ProgressPercent: any, interaction: any, courseTitles: any }> {
-    // Fetch user interactions
-    const user = await this.userInteractionModel.find({ user_id: user_id }).lean().exec();
-    if (!user) throw new NotFoundException('User not found');
+  async getStudentDashboard(user_id: string): Promise<{
+    AverageQuizScores: number;
+    AllGrades: Array<{ id: any; score: number }>;
+    ProgressPercent: Array<{ completionPercentage: number; course_id: string }>;
+    interaction: Array<any>;
+    courseTitles: Record<string, string>;
+  }> {
+    const userInteractions = await this.userInteractionModel
+        .find({ user_id })
+        .lean()
+        .exec();
 
-    // Extract response IDs
-    const responseIds = user.map((interaction) => interaction.response_id);
+    const responseIds = userInteractions
+        .filter((interaction) => interaction.response_id)
+        .map((interaction) => interaction.response_id);
 
-    const responses = await this.responseModel.find({ _id: { $in: responseIds } }).select("score").lean().exec();
-    if (!responses || responses.length === 0) {
-      throw new NotFoundException(`No response scores found for the interactions.`);
-    }
+    const responses = await this.responseModel
+        .find({ _id: { $in: responseIds } })
+        .select('score')
+        .lean()
+        .exec();
 
-    const totalScore = responses.reduce((sum, response) => sum + response.score, 0);
-    const averageScore = totalScore / responses.length;
-    const allGrades = responses.map((response) => ({ id: response._id, score: response.score }));
+    const averageScore = responses.length
+        ? responses.reduce((sum, response) => sum + response.score, 0) / responses.length
+        : 0;
 
-    // Fetch progress
-    const progress = await this.progressModel.find({ user_id: user_id }).select("completionPercentage course_id").lean().exec();
+    const allGrades = responses.map((response) => ({
+      id: response._id,
+      score: response.score,
+    }));
 
-    // Fetch course titles
-    const courseIds = user.map((interaction) => interaction.course_id);
+    const progress = await this.progressModel
+        .find({ user_id })
+        .select('completionPercentage course_id')
+        .lean()
+        .exec();
 
-    const courses = await this.courseModel.find({ _id: { $in: courseIds } }).select("title").lean().exec();
+    // Convert ObjectId to string for course_id
+    const formattedProgress = progress.map(p => ({
+        completionPercentage: p.completionPercentage,
+        course_id: p.course_id.toString()
+    }));
+
+    const courseIds = userInteractions.map((interaction) => interaction.course_id);
+
+    const courses = await this.courseModel
+        .find({ _id: { $in: courseIds } })
+        .select('title')
+        .lean()
+        .exec();
 
     const courseTitles = courses.reduce((acc, course) => {
-      acc[course._id.toString()] = course.title; // Ensure consistent string format
+      acc[course._id.toString()] = course.title;
       return acc;
     }, {});
 
     return {
       AverageQuizScores: averageScore,
       AllGrades: allGrades,
-      ProgressPercent: progress,
-      interaction: user,
+      ProgressPercent: formattedProgress,
+      interaction: userInteractions,
       courseTitles: courseTitles,
     };
   }
+
 
 
 
