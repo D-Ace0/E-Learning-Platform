@@ -40,13 +40,6 @@ const Header = () => {
                 Courses
               </Link>
             </li>
-            {session?.role === 'student' && (
-              <li>
-                <Link href="/my-courses" className="hover:underline">
-                  My Courses
-                </Link>
-              </li>
-            )}
             {session?.role === 'instructor' && (
               <li>
                 <Link href="/instructor-courses" className="hover:underline">
