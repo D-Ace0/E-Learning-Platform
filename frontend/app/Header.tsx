@@ -66,6 +66,14 @@ const Header = () => {
                 </>
             )}
 
+            {session?.role === 'student' && (
+              <li>
+                <Link href="/recommendations" className="hover:underline">
+                  Recommendations
+                </Link>
+              </li>
+            )}
+
             {session ? (
                 <li>
                   <Link href="/quiz" className="hover:underline">
@@ -83,7 +91,7 @@ const Header = () => {
             ) : (
                 <li>
                   <button onClick={() => signOut()} className="hover:underline">
-                  Sign Out
+                    Sign Out
                   </button>
                 </li>
             )}
