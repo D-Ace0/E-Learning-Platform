@@ -50,11 +50,6 @@ const Header = () => {
             {session && (
                 <>
                   <li>
-                    <Link href="/my-courses" className="hover:underline">
-                      My Courses
-                    </Link>
-                  </li>
-                  <li>
                     <Link
                         href={
                           session.role === 'student'
@@ -79,11 +74,18 @@ const Header = () => {
             )}
 
             {session?.role === 'student' && (
+              <>
               <li>
                 <Link href="/recommendations" className="hover:underline">
                   Recommendations
                 </Link>
               </li>
+              <li>
+              <Link href="/my-courses" className="hover:underline">
+                My Courses
+              </Link>
+              </li>
+              </>
             )}
 
             {session ? (
