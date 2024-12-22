@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, mongo } from 'mongoose';
 
@@ -41,18 +41,29 @@ export class CoursesService {
 }
 
 
-  async updateCourse(id: string, updateCourseDto: UpdateCourseDto, instructor_id: string){
-
-    if(!isValidObjectId(id)) throw new BadRequestException('Invalid course ID');
-
-    const course = await this.courseModel.findById(id).exec()
-    if(!course) throw new NotFoundException("Course Does not exist")
-
-    const instructor_id_AS_ObjectId = new Types.ObjectId(instructor_id);
-    if (course.created_by.toString() !== instructor_id_AS_ObjectId.toString()) throw new ForbiddenException('You cannot update this course');
-
-    return await this.courseModel.findByIdAndUpdate(id, updateCourseDto, {new: true}).exec()
-  }
+async updateCourse(id: string, updateCourseDto: UpdateCourseDto, userId: string): Promise<Course> {
+  const course = await this.courseModel.findById(id);
+  if (!course) {
+    throw new NotFoundException(`Course with${id} not found`);
+ }
+ if (course.created_by.toString() !== userId) {
+   throw new UnauthorizedException('You are not authorized to update this course');
+ }
+ try {
+   const { isOutdated, ...rest } = updateCourseDto;
+   const updatedCourse = await this.courseModel.findByIdAndUpdate(
+     id,
+     rest,
+     { new: true }
+   );
+   if (!updatedCourse) {
+     throw new NotFoundException(`Course with ID ${id} not found`);
+   }
+   return updatedCourse;
+ } catch (error) {
+   throw new InternalServerErrorException(error);
+ }
+}
 
   async deleteCourse(id: string, instructor_id: string) {
     if (!isValidObjectId(id)) throw new BadRequestException('Invalid course ID');

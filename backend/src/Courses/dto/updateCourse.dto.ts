@@ -28,4 +28,7 @@ export class UpdateCourseDto {
   @IsOptional()
   @IsString()
   pdf?: string
+
+  @IsOptional()
+  isOutdated: boolean;
 }

@@ -47,6 +47,8 @@ export class Course {
 
   @Prop({default: [], type: [mongoose.Schema.Types.ObjectId], ref: () => User })
   enrolledStudents: mongoose.Schema.Types.ObjectId[];
+  @Prop({ default: false }) // Add isOutdated field with a default value of false
+  isOutdated: boolean;
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
