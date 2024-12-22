@@ -6,6 +6,7 @@ import axios from 'axios';
 import {ObjectId} from "mongodb";
 import {User, UserDocument} from "../schemas/user.schema";
 import{Course,CourseDocument} from "../schemas/course.schema";
+import {Progress, ProgressDocument} from "../schemas/progress.schema";
 
 
 @Injectable()
@@ -17,6 +18,7 @@ export class RecommendationService {
       private readonly recommendationModel: Model<RecommendationDocument>,
       @InjectModel(User.name) private userModel: Model<UserDocument>,
       @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
+      @InjectModel(Progress.name) private progressModel: Model<ProgressDocument>,
   ) {
   }
 
@@ -94,7 +96,7 @@ export class RecommendationService {
         recommended_items: param.title, // Check if the array contains the title
       });
 
-      if (!titleExists||titleExists.length===0) {
+      if (titleExists.length===0) {
         return {message: 'Wrong title'};
       }
 
@@ -136,6 +138,23 @@ export class RecommendationService {
     user.courses.push(course);
     await user.save();
 
+    const existingProgress = await this.progressModel.find({
+      user_Id: param.userId,
+      course_Id: course,
+    });
+
+    if (existingProgress.length!=0) {
+      return { message: `Progress already exists for user and course.` };
+    }
+
+// Create a new progress document if none exists
+    const newProgress = new this.progressModel({
+      user_id: param.userId,
+      course_id: course,
+      completionPercentage: 0,
+      lastAccessed: new Date(),
+    });
+    await newProgress.save();
 
     return { message: 'Course successfully added to user\'s courses' };
 
