@@ -1,5 +1,5 @@
 
-import { IsString, IsNotEmpty, IsEnum, IsUrl, IsMongoId } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsUrl, IsMongoId, IsOptional } from 'class-validator';
 
 export class CreateCourseDto {
 
@@ -30,5 +30,9 @@ export class CreateCourseDto {
   video: string
 
   threads?: string[]
+
+  @IsOptional()
+  isOutdated: boolean;
+  created_at: Date;
 
 }

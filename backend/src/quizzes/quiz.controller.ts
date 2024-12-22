@@ -28,9 +28,15 @@ export class QuizController {
   constructor(private quizService: QuizService) {}
 
   //Get all quizzes
+  @Roles(['student', 'instructor', 'admin'])
   @Get()
   async getAllQuizzes(): Promise<Quiz[]> {
     return await this.quizService.findAll();
+  }
+
+  @Get('module/:module_id')
+  async getQuizzesByModuleId(@Param('module_id') module_id: string): Promise<Quiz[]> {
+    return await this.quizService.findByModuleId(module_id);
   }
 
   //get quiz by id
@@ -74,8 +80,15 @@ export class QuizController {
   @Post('submit/:quizId')
   async submitQuiz(@Request() req: any, @Param('quizId') quizId: string, @Body() submitQuizDto: SubmitQuizDto) {
     const studentId = req.user.user_id;
-    return this.quizService.submitQuiz(studentId, quizId, submitQuizDto);
+    return this.quizService.submitQuiz(studentId, quizId, submitQuizDto.answers);
   }
   
+
+  @Roles(['student'])
+  @Get(':quizId/questions')
+  async getQuizQuestions(@Param("quizId") quizId: string, @Request() req:any){
+    const studentId = req.user_id
+    return this.quizService.getQuizQuestions(quizId, studentId)
+  }
 
 }

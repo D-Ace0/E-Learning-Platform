@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, mongo } from 'mongoose';
 
@@ -8,38 +8,80 @@ import { v4 as uuidv4 } from 'uuid';
 import { isValidObjectId, Types } from 'mongoose';
 import { User } from 'src/schemas/user.schema';
 import { Course } from 'src/schemas/course.schema';
+import { UserInteraction } from 'src/schemas/user_interaction';
 import { Progress } from 'src/schemas/progress.schema';
 
 
 @Injectable()
 export class CoursesService {
   constructor(@InjectModel(Course.name) private courseModel: Model<Course>,
-   @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(Progress.name) private progressModel: Model<Progress>) {}
+              @InjectModel(User.name) private userModel: Model<User>,
+              @InjectModel(UserInteraction.name) private userInteractionModel: Model<UserInteraction>,
+              @InjectModel(Progress.name) private progressModel: Model<Progress>)
+  {}
 
 
   async create(createCourseDto: CreateCourseDto, userid: string) {
     const newCourse = new this.courseModel({
-      ...createCourseDto,
-      created_by: userid
+        ...createCourseDto,
+        created_by: userid
     });
-    if(await this.courseModel.findOne({title: newCourse.title})) throw new BadRequestException("Course with this title already exists!")
 
+    if (await this.courseModel.findOne({ title: newCourse.title })) {
+        throw new BadRequestException("Course with this title already exists!");
+    }
+
+    const user = await this.userModel.findById(userid);
+    if (!user) {
+        throw new NotFoundException("User not found");
+    }
+
+    // Add the new course to the user's courses array
+    user.courses.push(newCourse);
+
+    // Save the user document
+    await user.save();
+
+    // Save the new course
     return newCourse.save();
-  }
+}
 
 
-  async updateCourse(id: string, updateCourseDto: UpdateCourseDto, instructor_id: string){
+async updateCourse(id: string, updateCourseDto: UpdateCourseDto, userId: string): Promise<Course> {
+  const course = await this.courseModel.findById(id);
+  if (!course) {
+    throw new NotFoundException(`Course with${id} not found`);
+ }
+ if (course.created_by.toString() !== userId) {
+   throw new UnauthorizedException('You are not authorized to update this course');
+ }
+ try {
+   const { isOutdated, ...rest } = updateCourseDto;
+   const updatedCourse = await this.courseModel.findByIdAndUpdate(
+     id,
+     rest,
+     { new: true }
+   );
+   if (!updatedCourse) {
+     throw new NotFoundException(`Course with ID ${id} not found`);
+   }
+   return updatedCourse;
+ } catch (error) {
+   throw new InternalServerErrorException(error);
+ }
+}
 
-    if(!isValidObjectId(id)) throw new BadRequestException('Invalid course ID');
+  async deleteCourse(id: string, instructor_id: string) {
+    if (!isValidObjectId(id)) throw new BadRequestException('Invalid course ID');
 
-    const course = await this.courseModel.findById(id).exec()
-    if(!course) throw new NotFoundException("Course Does not exist")
+    const course = await this.courseModel.findById(id).exec();
+    if (!course) throw new NotFoundException('Course does not exist');
 
     const instructor_id_AS_ObjectId = new Types.ObjectId(instructor_id);
-    if (course.created_by.toString() !== instructor_id_AS_ObjectId.toString()) throw new ForbiddenException('You cannot update this course');
+    if (course.created_by.toString() !== instructor_id_AS_ObjectId.toString()) throw new ForbiddenException('You cannot delete this course');
 
-    return await this.courseModel.findByIdAndUpdate(id, updateCourseDto, {new: true}).exec()
+    await this.courseModel.findByIdAndDelete(id).exec();
+    return { message: 'Course deleted successfully' };
   }
 
 
@@ -51,32 +93,45 @@ export class CoursesService {
 
 
 
-  async studentEnrollCourse(studentId: string, courseId: string){
-    const course = await this.courseModel.findById(courseId)
-    if(!course) throw new NotFoundException('Course not found')
+  async studentEnrollCourse(studentId: string, courseId: string) {
+    const course = await this.courseModel.findById(courseId);
+    if (!course) throw new NotFoundException('Course not found');
 
+    // Add the student to the enrolledStudents in course document
+    const studentId_ObjectId = new Types.ObjectId(studentId);
+    if (course.enrolledStudents.includes(studentId_ObjectId as any)) {
+      throw new BadRequestException('You are already enrolled in this course');
+    }
+    course.enrolledStudents.push(studentId_ObjectId as any);
 
-    // add the student to enrolledStudents in course document
-    const studentId_ObjectId = new Types.ObjectId(studentId)
-    const EnrolledStudentsIds = course.enrolledStudents
-    if(EnrolledStudentsIds.includes(studentId_ObjectId as any)) throw new BadRequestException('You are already enrolled in this course')
-    course.enrolledStudents.push(studentId_ObjectId as any)
+    // Add the course to the student's courses
+    const user = await this.userModel.findById(studentId).exec();
+    const courseId_ObjectId = new Types.ObjectId(courseId);
+    user.courses.push(courseId_ObjectId as any);
+    await user.save();
 
-    // add the course to the courses array of the user document
-    const user = await this.userModel.findById(studentId).exec()
-    const courseId_ObjectId = new Types.ObjectId(courseId)
-    user.courses.push(courseId_ObjectId as any)
-    await user.save()
-
-    const newProgress = new this.progressModel({
+    // Create a UserInteraction record without response_id initially
+    const interaction = new this.userInteractionModel({
       user_id: studentId_ObjectId,
       course_id: courseId_ObjectId,
-      completionPercentage: 0
-     })
-    await newProgress.save()
+      time_spent_minutes: 0, // Default
+      last_accessed: new Date(),
+    });
+    await interaction.save();
 
-    return await course.save()
+    // Initialize progress with 0 for the course
+    const progress = new this.progressModel({
+      user_id: studentId_ObjectId,
+      course_id: courseId_ObjectId,
+      completionPercentage: 0,
+      lastAccessed: new Date()
+    });
+    await progress.save();
+
+    return await course.save();
   }
+
+
 
   async searchStudent(studentId: string, InstructorId: string){
     if(!isValidObjectId(studentId)) throw new BadRequestException()
