@@ -19,8 +19,6 @@ export class UserInteraction {
   @Prop({type: mongoose.Schema.Types.ObjectId, ref: () => Response})
   response_id: mongoose.Schema.Types.ObjectId
 
-
-
   @Prop({ type: Number })
   time_spent_minutes: number
 

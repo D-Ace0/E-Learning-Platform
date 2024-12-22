@@ -29,7 +29,7 @@ import mongoose from 'mongoose';
 @UseGuards(AuthenticationGuard, AuthorizationGuard)
 export class CoursesController {
   constructor(
-    private readonly coursesService: CoursesService,
+    private readonly coursesService: CoursesService
   ) {}
 
   
@@ -70,7 +70,7 @@ export class CoursesController {
   }
 
   @Get('/instructors/:id')
-  @Roles(['student'])
+  @Roles(['student', 'admin'])
   async searchInstructor(@Param('id') InstructorId){
     return this.coursesService.searchInstructor(InstructorId)
   }

@@ -9,7 +9,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-8">
       <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">
-        Welcome to your Next.js App
+        Welcome!
       </h1>
       <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
         {session ? (

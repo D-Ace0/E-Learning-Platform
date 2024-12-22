@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+import {router} from "next/client";
 
 const Header = () => {
   const { data: session } = useSession();
@@ -17,6 +18,13 @@ const Header = () => {
                 Home
               </Link>
             </li>
+            {session?.role === 'admin' && (
+             <li>
+               <Link href="/admin" className="hover:underline">
+                 Admin
+               </Link>
+             </li>
+           )}
             <li>
               <Link href="/about" className="hover:underline">
                 About
@@ -28,12 +36,44 @@ const Header = () => {
               </Link>
             </li>
             {session && (
+                <>
+                    <li>
+                      <Link href="/my-courses" className="hover:underline">
+                        My Courses
+                      </Link>
+                    </li>
+                  <li>
+                    <Link
+                        href={
+                          session.role === 'student'
+                              ? '/studentDashboard'
+                              : session.role === 'instructor'
+                                  ? '/instructorDashboard'
+                                  : session.role === 'admin'
+                                      ? '/admin'
+                                      : '/'
+                        }
+                        className="hover:underline"
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/profile" className="hover:underline">
+                      Profile
+                    </Link>
+                  </li>
+                </>
+            )}
+
+            {session ? (
                 <li>
-                  <Link href="/my-courses" className="hover:underline">
-                    My Courses
+                  <Link href="/quiz" className="hover:underline">
+                    Quizzes
                   </Link>
                 </li>
-            )}
+            ) : ""}
+
             {/* Show the recommendation link for "student" role only */}
             {session?.role === 'student' && (
                 <li>
@@ -49,12 +89,13 @@ const Header = () => {
                   </Link>
                 </li>
             ) : (
-                <li>
-                  <button onClick={() => signOut()} className="hover:underline">
+                  <li>
+                    <button onClick={() => signOut()} className="hover:underline">
                     Sign Out
-                  </button>
-                </li>
+                    </button>
+                  </li>
             )}
+            
           </ul>
         </nav>
       </div>

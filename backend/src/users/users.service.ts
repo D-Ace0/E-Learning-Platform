@@ -69,36 +69,15 @@ export class UsersService {
     id: string,
     updateProfileDto: UpdateProfileDto,
   ): Promise<User> {
-    const user = await this.userModel.findById(id).select('-password_hash').exec();
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-
-    const { name, email, profile_picture_url } = updateProfileDto;
-
-    // Check for unspecified attributes
-    // wrbna chatgpt
-    const allowedAttributes = ['name', 'email', 'profile_picture_url'];
-    const updateKeys = Object.keys(updateProfileDto);
-    const invalidKeys = updateKeys.filter(key => !allowedAttributes.includes(key));
-
-    if (invalidKeys.length > 0) {
-      throw new BadRequestException(`You can't edit Invalid attributes: ${invalidKeys.join(', ')}`);
-    }
-
-    if (name) user.name = name;
-    if (email) {
-      const emailExists = await this.userModel.findOne({ email }).exec();
-      if (emailExists && emailExists.id !== id) {
-        throw new ConflictException('Email already in use');
+    try {
+      const updatedUser = await this.userModel.findByIdAndUpdate(id, updateProfileDto, { new: true }).exec();
+      if (!updatedUser) {
+        throw new NotFoundException(`User with ID ${id} not found`);
       }
-      user.email = email;
+      return updatedUser;
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to update user profile');
     }
-    if (profile_picture_url) {
-      user.profile_picture_url = profile_picture_url;
-    }
-
-    return user.save();
   }
 
   // delete user

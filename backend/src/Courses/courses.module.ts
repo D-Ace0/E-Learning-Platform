@@ -5,11 +5,13 @@ import { CoursesService } from './courses.service';
 import { Course, CourseSchema } from 'src/schemas/course.schema';
 import { UploadService } from 'src/Upload Module/upload.module';
 import { User, UserSchema } from 'src/schemas/user.schema';
+import { Progress, ProgressSchema } from 'src/schemas/progress.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Course.name, schema: CourseSchema }]),
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([{name: Progress.name, schema: ProgressSchema}])
   ],
   controllers: [CoursesController],
   providers: [CoursesService],
