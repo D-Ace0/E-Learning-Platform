@@ -87,9 +87,11 @@ const MyQuizzes = async () => {
                 <p className="text-gray-700 mb-2">Questions: {quiz.questions ? quiz.questions.length : 0}</p>
                 <p className="text-gray-700">Created At: {new Date(quiz.created_at).toLocaleString()}</p>
                 {/* Link to access the quiz questions */}
-                <Link href={`/quiz/questions/${quiz._id}`} className="text-green-600 hover:underline mt-4 block">
+                {session?.role === "student" && (
+                  <Link href={`/quiz/questions/${quiz._id}`} className="text-green-600 hover:underline mt-4 block">
                   Take Quiz
                 </Link>
+                )}
               </div>
             ))}
           </div>
