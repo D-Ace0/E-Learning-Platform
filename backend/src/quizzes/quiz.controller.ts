@@ -34,46 +34,50 @@ export class QuizController {
     return await this.quizService.findAll();
   }
 
+  @Roles(['instructor', 'student'])
   @Get('module/:module_id')
-  async getQuizzesByModuleId(@Param('module_id') module_id: string): Promise<Quiz[]> {
+  async getQuizzesByModuleId(@Param('module_id') module_id: string){
     return await this.quizService.findByModuleId(module_id);
   }
 
   //get quiz by id
   @Get(':quiz_id')
-  async getQuizById(@Param('quiz_id') quiz_id: string) {
+  @Roles(['instructor'])
+  async getQuizById(@Param('quiz_id') quiz_id: string, @Request() req:any) {
     // Get the quiz ID from the route parameters
     const quiz = await this.quizService.findById(quiz_id);
     return quiz;
   }
 
-  //Create quiz
   @Post()
   @Roles(['instructor'])
-  async createQuiz(@Body() quizData: createQuizDto) {
-    // Get the new student data from the request body
-    const newQuiz = await this.quizService.create(quizData);
+  async createQuiz(@Body() quizData: createQuizDto, @Request() req: any) {
+    const instructorId = req.user.user_id; // Extract the user ID from the request
+    const newQuiz = await this.quizService.create(quizData, instructorId);
     return newQuiz;
   }
 
-  // Update a quiz's details
+
   @Put(':quiz_id')
   @Roles(['instructor'])
   async updateQuiz(
-    @Param('quiz_id') quiz_id: mongoose.Types.ObjectId,
-    @Body() quizData: updateQuizDto,
+      @Param('quiz_id') quiz_id: mongoose.Types.ObjectId,
+      @Body() quizData: updateQuizDto,
+      @Request() req: any,
   ) {
-    const updatedQuiz = await this.quizService.update(quiz_id, quizData);
-    return updatedQuiz;
+      const instructorId = req.user.user_id;
+      const updatedQuiz = await this.quizService.update(quiz_id, quizData, instructorId);
+      return updatedQuiz;
   }
-
-  // Delete a quiz by id
-  @Roles(['instructor'])
+  
   @Delete(':quiz_id')
-  async deleteQuiz(@Param('quiz_id') quiz_id: mongoose.Types.ObjectId) {
-    const deletedQuiz = await this.quizService.delete(quiz_id);
-    return deletedQuiz;
+  @Roles(['instructor'])
+  async deleteQuiz(@Param('quiz_id') quiz_id: mongoose.Types.ObjectId, @Request() req: any) {
+      const instructorId = req.user.user_id;
+      const deletedQuiz = await this.quizService.delete(quiz_id, instructorId);
+      return deletedQuiz;
   }
+  
 
 
   @Roles(['student'])
@@ -87,7 +91,7 @@ export class QuizController {
   @Roles(['student'])
   @Get(':quizId/questions')
   async getQuizQuestions(@Param("quizId") quizId: string, @Request() req:any){
-    const studentId = req.user_id
+    const studentId = req.user.user_id
     return this.quizService.getQuizQuestions(quizId, studentId)
   }
 

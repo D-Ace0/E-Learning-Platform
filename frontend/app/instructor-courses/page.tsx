@@ -220,6 +220,10 @@ export default function Courses() {
            <p style={{ margin: '0 0 5px', color: '#666' }}>Video URL: {course.video}</p>
            <p style={{ margin: '0 0 10px', color: '#666' }}>PDF URL: {course.pdf}</p>
            <p style={{ margin: '0 0 10px', color: '#666' }}>Outdated: {course.isOutdated ? 'Yes' : 'No'}</p>
+           <Link href={`../courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">
+                  View Module
+            </Link>
+            <br></br>
            <button onClick={() => handleUpdateCourse(course)} style={{ marginRight: '10px', padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#4CAF50', color: 'white' }}>Update</button>
            <button onClick={() => handleDeleteCourse(course._id)} style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#f44336', color: 'white' }}>Delete</button>
            <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
