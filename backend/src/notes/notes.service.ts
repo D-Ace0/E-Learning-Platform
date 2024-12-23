@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Note, NoteDocument } from 'src/schemas/notes.schema';
 import { CreateNoteDTO, UpdateNoteDTO } from './dto/note.dto';
 
+
 @Injectable()
 export class NotesService {
   constructor(@InjectModel(Note.name) private noteModel: Model<NoteDocument>) {}
@@ -23,6 +24,19 @@ export class NotesService {
 
   async findAll(): Promise<Note[]> {
     return this.noteModel.find().exec();
+  }
+  async getMyNotes(userId: string){
+    try{
+   const notes=await this.noteModel.find({user_id:userId}).exec();
+    if(!notes){
+      throw new NotFoundException('Notes not found');
+    }
+    return
+  }
+  catch(err:any){
+    return { statusCode: 500, message: 'Something went wrong', error: err.message };
+  }
+
   }
 
   async update(id: string, updateNoteDTO: Partial<UpdateNoteDTO>): Promise<Note> {
