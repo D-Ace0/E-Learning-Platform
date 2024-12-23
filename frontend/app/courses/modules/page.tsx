@@ -1,288 +1,276 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import Swal from 'sweetalert2'; // Import SweetAlert2
+import Swal from 'sweetalert2';
 import { useSearchParams } from 'next/navigation';
 
 interface Module {
-    _id: string;
-    course_id: string;
-    title: string;
-    content: string;
-    resources: string[];
-    created_at: string;
+  _id: string;
+  course_id: string;
+  title: string;
+  content: string;
+  resources: string[];
+  created_at: string;
 }
 
-
+interface Quiz {
+  _id: string;
+  module_id: string;
+  created_at: string;
+  questions: string[];
+}
 
 export default function Modules() {
-    const { data: session } = useSession();
-    const [modules, setModules] = useState<Module[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [newModule, setNewModule] = useState({ title: '', content: '', resources: [], course_id: '' });
-    const [editingModule, setEditingModule] = useState<Module | null>(null); // State for the module being edited
-    const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
-    const searchParams = useSearchParams();
-    const courseId = searchParams.get('courseId');
+  const { data: session } = useSession();
+  const [modules, setModules] = useState<Module[]>([]);
+  const [quizzes, setQuizzes] = useState<{ [key: string]: Quiz[] }>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [newQuiz, setNewQuiz] = useState<{ module_id: string; questions: string[] }>({
+    module_id: '',
+    questions: [],
+  });
+  const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null); // Quiz being edited
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get('courseId');
 
-    const isCourseOutdated = (createdAt: string): boolean => {
-        const createdDate = new Date(createdAt);
-        const fiveDaysAgo = new Date();
-        fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-        return createdDate < fiveDaysAgo;
-       }
-       const updateCourseOutdatedStatus = async (courseId: string) => {
-        try {
-            const response = await fetch(`http://localhost:5000/courses/courseID/${courseId}`, { // Fetch the specific course
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${session?.accessToken}`,
-                },
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch course details');
-            }
-            const course = await response.json();
-            const isOutdated = isCourseOutdated(course.created_at);
-            await fetch(`http://localhost:5000/courses/${courseId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session?.accessToken}`,
-                },
-                body: JSON.stringify({ ...course, isOutdated }),
-            });
-        } catch (error) {
-            console.error('Error updating course outdated status:', error);
+  useEffect(() => {
+    const fetchModules = async () => {
+      if (!courseId) {
+        setError('Course ID is missing in the URL.');
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`http://localhost:5000/module/course/${courseId}`, {
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch modules');
         }
-    };
-    useEffect(() => {
-        const fetchModules = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await fetch(`http://localhost:5000/module/course/${courseId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${session?.accessToken}`,
-                    },
-                });
-                if (!response.ok) {
-                    throw new Error('Failed to fetch modules');
-                }
-                const data = await response.json();
-                setModules(data);
-            } catch (err: any) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
 
-        fetchModules();
-    }, [session]);
+        const data = await response.json();
+        setModules(data);
 
-    const handleCreateModule = async () => {
-        try {
-            const response = await fetch(`http://localhost:5000/module`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session?.accessToken}`,
-                },
-                body: JSON.stringify(newModule),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to create module');
-            }
-
-            const createdModule = await response.json();
-           setModules((prev) => [...prev, createdModule]);
-           setNewModule({ title: '', content: '', resources: [], course_id: '' }); // Reset form
-           await updateCourseOutdatedStatus(createdModule.course_id);
-           Swal.fire('Success', 'Module created successfully!', 'success');
-     
-        } catch (error: any) {
-            Swal.fire('Error', error.message, 'error');
+        for (const module of data) {
+          await fetchQuizzesByModule(module._id);
         }
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const handleUpdateModule = async () => {
-        if (!editingModule) return;
+    fetchModules();
+  }, [session, courseId]);
 
-        const updatedData = {
-            title: newModule.title,
-            content: newModule.content,
-            resources: newModule.resources,
-            course_id: newModule.course_id,
-        };
+  const fetchQuizzesByModule = async (moduleId: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/quiz/module/${moduleId}`, {
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      });
 
-        try {
-            const response = await fetch(`http://localhost:5000/module/${editingModule._id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session?.accessToken}`,
-                },
-                body: JSON.stringify(updatedData),
-            });
+      if (!response.ok) {
+        throw new Error('Failed to fetch quizzes for module');
+      }
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to update module');
-            }
+      const data = await response.json();
+      setQuizzes((prev) => ({ ...prev, [moduleId]: data }));
+    } catch (err: any) {
+      Swal.fire('Error', err.message, 'error');
+    }
+  };
 
-            const updatedModule = await response.json();
-           setModules((prev) => prev.map((module) => (module._id === updatedModule._id ? updatedModule : module)));
-           setIsModalOpen(false); // Close modal
-           setEditingModule(null); // Reset editing state
-           setNewModule({ title: '', content: '', resources: [], course_id: '' }); // Reset form
-           await updateCourseOutdatedStatus(updatedModule.course_id);
-           Swal.fire('Success', 'Module updated successfully!', 'success');
-         } catch (error: any) {
-            Swal.fire('Error', error.message, 'error');
-        }
-    };
-    const handleDeleteModule = async (moduleId: string) => {
-        try {
-            const response = await fetch(`http://localhost:5000/module/${moduleId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${session?.accessToken}`,
-                },
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to delete module');
-            }
-
-            setModules((prev) => prev.filter((module) => module._id !== moduleId));
-            Swal.fire('Success', 'Module deleted successfully!', 'success');
-        } catch (error: any) {
-            Swal.fire('Error', error.message, 'error');
-        }
+  const handleCreateQuiz = async (moduleId: string) => {
+    const quizData = {
+      module_id: moduleId,
+      questions: [],
     };
 
-    const startEditing = (module: Module) => {
-        setEditingModule(module);
-        setNewModule({ title: module.title, content: module.content, resources: module.resources, course_id: module.course_id });
-        setIsModalOpen(true); // Open modal for editing
-    };
+    try {
+      const response = await fetch(`http://localhost:5000/quiz`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify(quizData),
+      });
 
-    const cancelEditing = () => {
-        setEditingModule(null);
-        setNewModule({ title: '', content: '', resources: [], course_id: '' }); // Reset form
-        setIsModalOpen(false); // Close modal
-    };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create quiz');
+      }
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p className="text-red-500">{error}</p>;
+      const createdQuiz = await response.json();
+      setQuizzes((prev) => ({
+        ...prev,
+        [moduleId]: [...(prev[moduleId] || []), createdQuiz],
+      }));
 
-    return (
-        <div className="container mx-auto p-8">
-            <h1 className="text-4xl font-bold text-center mb-8">Modules List</h1>
+      Swal.fire('Success', 'Quiz created successfully!', 'success');
+    } catch (error: any) {
+      Swal.fire('Error', error.message, 'error');
+    }
+  };
+
+  const handleUpdateQuiz = async () => {
+    if (!editingQuiz) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/quiz/${editingQuiz._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({
+          module_id: editingQuiz.module_id,
+          questions: newQuiz.questions,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update quiz');
+      }
+
+      const updatedQuiz = await response.json();
+      setQuizzes((prev) => ({
+        ...prev,
+        [editingQuiz.module_id]: prev[editingQuiz.module_id].map((quiz) =>
+          quiz._id === updatedQuiz._id ? updatedQuiz : quiz
+        ),
+      }));
+
+      setIsModalOpen(false);
+      setEditingQuiz(null);
+      setNewQuiz({ module_id: '', questions: [] });
+
+      Swal.fire('Success', 'Quiz updated successfully!', 'success');
+    } catch (error: any) {
+      Swal.fire('Error', error.message, 'error');
+    }
+  };
+
+  const handleDeleteQuiz = async (quizId: string, moduleId: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/quiz/${quizId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete quiz');
+      }
+
+      setQuizzes((prev) => ({
+        ...prev,
+        [moduleId]: prev[moduleId].filter((quiz) => quiz._id !== quizId),
+      }));
+
+      Swal.fire('Success', 'Quiz deleted successfully!', 'success');
+    } catch (error: any) {
+      Swal.fire('Error', error.message, 'error');
+    }
+  };
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+
+  return (
+    <div className="container mx-auto p-8">
+      <h1 className="text-4xl font-bold text-center mb-8">Modules for Course</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        {modules.map((module) => (
+          <div key={module._id} className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-lg transition-shadow duration-200">
+            <h2 className="text-xl font-semibold mb-2">{module.title}</h2>
+            <p className="text-gray-700 mb-4">{module.content}</p>
+            <p className="text-sm text-gray-500 mb-2">Created At: {new Date(module.created_at).toLocaleDateString()}</p>
             {session?.role === 'instructor' && (
-                <div className="mb-4">
-                    <h2 className="text-2xl mb-2">Create New Module</h2>
-                    <input
-                        type="text"
-                        placeholder="Title"
-                        value={newModule.title}
-                        onChange={(e) => setNewModule({ ...newModule, title: e.target.value })}
-                        className="border p-2 mb-2 w-full"
-                    />
-                    <textarea
-                        placeholder="Content"
-                        value={newModule.content}
-                        onChange={(e) => setNewModule({ ...newModule, content: e.target.value })}
-                        className="border p-2 mb-2 w-full"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Resources (comma separated)"
-                        value={newModule.resources.join(', ')}
-                        onChange={(e) => setNewModule({ ...newModule, resources: e.target.value.split(',').map(res => res.trim()) })}
-                        className="border p-2 mb-2 w-full"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Course ID"
-                        value={newModule.course_id}
-                        onChange={(e) => setNewModule({ ...newModule, course_id: e.target.value })}
-                        className="border p-2 mb-2 w-full"
-                    />
-                    <button onClick={handleCreateModule} className="bg-blue-500 text-white px-4 py-2 rounded">
-                        Create Module
-                    </button>
-                </div>
+              <div className="mb-4">
+                <button
+                  onClick={() => handleCreateQuiz(module._id)}
+                  className="bg-green-500 text-white px-4 py-2 rounded"
+                >
+                  Create Quiz
+                </button>
+              </div>
             )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                {modules.map((module) => (
-                    <div key={module._id} className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-lg transition-shadow duration-200">
-                        <h2 className="text-xl font-semibold mb-2">{module.title}</h2>
-                        <p className="text-gray-700 mb-4">{module.content}</p>
-                        <p className="text-sm text-gray-500 mb-2">Created At: {new Date(module.created_at).toLocaleDateString()}</p>
-                        {session?.role === 'instructor' && (
-                            <div className="flex justify-between mt-4">
-                                <button onClick={() => startEditing(module)} className="bg-yellow-500 text-white px-2 py-1 rounded">
-                                    Edit
-                                </button>
-                                <button onClick={() => handleDeleteModule(module._id)} className="bg-red-500 text-white px-2 py-1 rounded">
-                                    Delete
-                                </button>
-                            </div>
-                        )}
+            <h3 className="text-lg font-semibold mt-4">Quizzes</h3>
+            <ul>
+              {quizzes[module._id]?.map((quiz) => (
+                <li key={quiz._id} className="mb-2 p-2 border rounded shadow">
+                  <p>Quiz ID: {quiz._id}</p>
+                  <p>Created At: {new Date(quiz.created_at).toLocaleDateString()}</p>
+                  {session?.role === 'instructor' && (
+                    <div className="flex justify-between mt-2">
+                      <button
+                        onClick={() => {
+                          setEditingQuiz(quiz);
+                          setNewQuiz({ module_id: quiz.module_id, questions: quiz.questions });
+                          setIsModalOpen(true);
+                        }}
+                        className="bg-yellow-500 text-white px-4 py-2 rounded"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteQuiz(quiz._id, module._id)}
+                        className="bg-red-500 text-white px-4 py-2 rounded"
+                      >
+                        Delete
+                      </button>
                     </div>
-                ))}
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h2 className="text-2xl mb-4">Edit Quiz</h2>
+            <textarea
+              placeholder="Questions (comma separated)"
+              value={newQuiz.questions.join(', ')}
+              onChange={(e) =>
+                setNewQuiz({ ...newQuiz, questions: e.target.value.split(',').map((q) => q.trim()) })
+              }
+              className="border p-2 mb-2 w-full"
+            />
+            <div className="flex justify-between mt-4">
+              <button onClick={handleUpdateQuiz} className="bg-blue-500 text-white px-4 py-2 rounded">
+                Update Quiz
+              </button>
+              <button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setEditingQuiz(null);
+                }}
+                className="bg-gray-500 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
             </div>
-
-            {/* Modal for Editing Module */}
-            {isModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded shadow-lg">
-                        <h2 className="text-2xl mb-4">Edit Module</h2>
-                        <input
-                            type="text"
-                            placeholder="Title"
-                            value={newModule.title}
-                            onChange={(e) => setNewModule({ ...newModule, title: e.target.value })}
-                            className="border p-2 mb-2 w-full"
-                        />
-                        <textarea
-                            placeholder="Content"
-                            value={newModule.content}
-                            onChange={(e) => setNewModule({ ...newModule, content: e.target.value })}
-                            className="border p-2 mb-2 w-full"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Resources (comma separated)"
-                            value={newModule.resources.join(', ')}
-                            onChange={(e) => setNewModule({ ...newModule, resources: e.target.value.split(',').map(res => res.trim()) })}
-                            className="border p-2 mb-2 w-full"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Course ID"
-                            value={newModule.course_id}
-                            onChange={(e) => setNewModule({ ...newModule, course_id: e.target.value })}
-                            className="border p-2 mb-2 w-full"
-                        />
-                        <div className="flex justify-between mt-4">
-                            <button onClick={handleUpdateModule} className="bg-yellow-500 text-white px-4 py-2 rounded">
-                                Update Module
-                            </button>
-                            <button onClick={cancelEditing} className="bg-gray-500 text-white px-4 py-2 rounded">
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+          </div>
         </div>
-    );
+      )}
+    </div>
+  );
 }

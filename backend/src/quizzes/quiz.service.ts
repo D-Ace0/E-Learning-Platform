@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, Mongoose } from 'mongoose';
 import { Quiz } from 'src/schemas/quiz.schema';
@@ -9,6 +9,8 @@ import { updateQuizDto } from 'src/quizzes/dto/updateQuiz.dto';
 import { response } from 'express';
 import { QuizSelection } from 'src/schemas/quizSelection.schema';
 import { SubmitQuizDto } from './dto/submitQuiz.dto';
+import { Course } from 'src/schemas/course.schema';
+import { Module } from 'src/schemas/module.schema';
 
 @Injectable()
 export class QuizService {
@@ -17,15 +19,35 @@ export class QuizService {
     @InjectModel(Quiz.name) private quizModel: Model<Quiz>,
     @InjectModel(QuizPerformance.name) private performanceModel: Model<QuizPerformance>,
     @InjectModel(QuizSelection.name) private quizSelectionModel: Model<QuizSelection>,
-    @InjectModel(Question.name) private questionModel: Model<Question>
+    @InjectModel(Question.name) private questionModel: Model<Question>,
+    @InjectModel(Course.name) private courseModel: Model<Course>,
+    @InjectModel(Module.name) private moduleModel: Model<Module>,
   ) {}
 
 
-  async findByModuleId(module_id: string): Promise<Quiz[]> {
+  async findByModuleId(module_id: string) {
     return await this.quizModel.find({ module_id });
   }
-  // Create a quiz
-  async create(quizData: createQuizDto): Promise<Quiz> {
+
+
+
+  async create(quizData: createQuizDto, instructorId: string): Promise<Quiz> {
+    const module = await this.moduleModel.findById(quizData.module_id);
+    if (!module) {
+      throw new ForbiddenException('Module not found');
+    }
+
+    const course = await this.courseModel.findById(module.course_id);
+    if (!course) {
+      throw new ForbiddenException('Course not found for this module');
+    }
+
+    if (course.created_by.toString() !== instructorId) {
+      throw new ForbiddenException(
+        'You are not authorized to create a quiz for this module',
+      );
+    }
+
     const newQuiz = new this.quizModel(quizData);
     return await newQuiz.save();
   }
@@ -40,15 +62,52 @@ export class QuizService {
     return await this.quizModel.findById(quiz_id);
   }
 
-  // Update a quiz
-  async update(quiz_id: mongoose.Types.ObjectId, updateData: updateQuizDto): Promise<Quiz> {
-    return await this.quizModel.findByIdAndUpdate(quiz_id, updateData, { new: true });
+  async update(quiz_id: mongoose.Types.ObjectId, quizData: updateQuizDto, instructorId: string): Promise<Quiz> {
+    const quiz = await this.quizModel.findById(quiz_id);
+    if (!quiz) {
+        throw new NotFoundException('Quiz not found');
+    }
+
+    const module = await this.moduleModel.findById(quiz.module_id);
+    if (!module) {
+        throw new NotFoundException('Module not found');
+    }
+
+    const course = await this.courseModel.findById(module.course_id);
+    if (!course) {
+        throw new NotFoundException('Course not found');
+    }
+
+    if (course.created_by.toString() !== instructorId) {
+        throw new ForbiddenException('You are not authorized to update this quiz');
+    }
+
+    return await this.quizModel.findByIdAndUpdate(quiz_id, quizData, { new: true });
+}
+
+
+async delete(quiz_id: mongoose.Types.ObjectId, instructorId: string): Promise<Quiz> {
+  const quiz = await this.quizModel.findById(quiz_id);
+  if (!quiz) {
+      throw new NotFoundException('Quiz not found');
   }
 
-  // Delete a quiz
-  async delete(quiz_id: mongoose.Types.ObjectId): Promise<Quiz> {
-    return await this.quizModel.findByIdAndDelete(quiz_id);
+  const module = await this.moduleModel.findById(quiz.module_id);
+  if (!module) {
+      throw new NotFoundException('Module not found');
   }
+
+  const course = await this.courseModel.findById(module.course_id);
+  if (!course) {
+      throw new NotFoundException('Course not found');
+  }
+
+  if (course.created_by.toString() !== instructorId) {
+      throw new ForbiddenException('You are not authorized to delete this quiz');
+  }
+
+  return await this.quizModel.findByIdAndDelete(quiz_id);
+}
 
 
   async getQuizQuestions(quizId: string, student_id: string) {
@@ -56,21 +115,22 @@ export class QuizService {
     const existingQuizSelection = await this.quizSelectionModel.findOne({ quiz_id: quizId, student_id: student_id });
   
     if (existingQuizSelection) {
-      // Fetch questions using the existing selection
       const questions = await this.questionModel.find({ _id: { $in: existingQuizSelection.questions } });
   
-      // Return the questions in the desired format
       return questions.map((question) => ({
         questionId: question._id,
         questionText: question.question,
       }));
     }
-  
+
     // Determine difficulty based on the user's previous performance
     const lastPerformance = await this.performanceModel.findOne({ quiz_id: quizId, student_id: student_id });
+    // console.log(lastPerformance) //debuging
+
     let difficultyLevel: string | null = null;
     if (lastPerformance) {
       const score = lastPerformance.score;
+      console.log(score)
       if (score < 50) {
         difficultyLevel = 'easy';
       } else if (score >= 50 && score < 74) {
@@ -78,16 +138,17 @@ export class QuizService {
       } else if (score >= 74) {
         difficultyLevel = 'hard';
       }
+      await this.performanceModel.findByIdAndDelete(lastPerformance._id)
     }
   
+  
+    // console.log(difficultyLevel) //debuging
     // Fetch questions based on difficulty or default to all questions
-    const questions = difficultyLevel
-      ? await this.questionModel.find({ difficulty: difficultyLevel })
-      : await this.questionModel.find({});
+    const questions = difficultyLevel ? await this.questionModel.find({ difficulty: difficultyLevel }) : await await this.questionModel.find({}) 
   
     // Select two-thirds of the questions
-    const oneThirds = Math.floor((1 / 3) * questions.length);
-    const selectedQuestionsArray = questions.slice(0, oneThirds);
+    const twoThirds = Math.floor((2 / 3) * questions.length);
+    const selectedQuestionsArray = questions.slice(0, twoThirds);
   
     const selectedQuestionsWithDetails = selectedQuestionsArray.map((question) => ({
       questionId: question._id,
@@ -124,14 +185,6 @@ export class QuizService {
     const quiz = await this.quizModel.findById(quizId);
     if (!quiz) {
       throw new NotFoundException("Quiz not found");
-    }
-  
-    const alreadySubmitted = await this.performanceModel.findOne({
-      quiz_id: quizId,
-      student_id: studentId,
-    });
-    if (alreadySubmitted) {
-      await this.performanceModel.findOneAndDelete(alreadySubmitted._id);
     }
   
     const questionIds = quiz.questions; // Assuming this contains ObjectIds of questions
@@ -185,7 +238,14 @@ export class QuizService {
     });
   
     await newPerformance.save();
-  
+    
+    await this.quizSelectionModel.findOneAndDelete({quiz_id: quizId})
+
+    await this.quizModel.updateOne(
+      { _id: quizId },
+      { $set: { questions: [] } } // Clears the questions array
+    );
+    
     return {
       message,
       scorePercentage,

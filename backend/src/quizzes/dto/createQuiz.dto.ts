@@ -7,10 +7,6 @@ export class createQuizDto{
   @IsMongoId()
   module_id: mongoose.Types.ObjectId
 
-  @IsNotEmpty()
-  @IsArray()
-  questions: mongoose.Schema.Types.ObjectId[]
-
   @IsOptional()
   @IsDate()
   created_at?: Date

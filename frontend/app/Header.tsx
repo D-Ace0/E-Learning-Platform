@@ -47,7 +47,7 @@ const Header = () => {
                 </Link>
               </li>
             )}
-            {session && (
+            {session?.role === 'student' && (
                 <>
                   <li>
                     <Link

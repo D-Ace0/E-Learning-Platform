@@ -7,7 +7,8 @@ import {
   Param,
   Post,
   Put,
-  UseGuards
+  UseGuards,
+  Request
 } from '@nestjs/common';
 import { ModuleService } from './module.service';
 import { Module } from '../schemas/module.schema';
@@ -35,16 +36,18 @@ export class ModuleController {
 
   //get module by id
   @Get(':module_id')
-  @Roles(['student'])
-  async getModuleById(@Param('module_id') module_id: mongoose.Types.ObjectId) {
+  @Roles(['student', 'instructor'])
+  async getModuleById(@Param('module_id') module_id: mongoose.Types.ObjectId, @Request() req:any) {
+    const user_id = req.user.user_id
+    const role = req.user.role
     if(!isValidObjectId(module_id)) throw new BadRequestException()
     // Get the module ID from the route parameters
-    const module = await this.moduleService.findById(module_id);
+    const module = await this.moduleService.findById(module_id, user_id, role);
     return module;
   }
   @Roles(['admin', 'instructor', 'student'])
   @Get('course/:course_id')
-  findByCourseId(@Param('course_id') course_id: string): Promise<Module[]> {
+  findByCourseId(@Param('course_id') course_id: string) {
     return this.moduleService.findByCourseId(new mongoose.Types.ObjectId(course_id));
   }
 
@@ -62,16 +65,22 @@ export class ModuleController {
   async updateModule(
     @Param('module_id') module_id: mongoose.Types.ObjectId,
     @Body() moduleData: updateModuleDto,
+    @Request() req: any, // `req` contains `user` with the role and ID
   ) {
-    const updatedModule = await this.moduleService.update(module_id, moduleData);
+    const user_id = req.user.user_id; // Extract user ID from the request
+    const updatedModule = await this.moduleService.update(module_id, moduleData, user_id);
     return updatedModule;
   }
-
-  // Delete a module by id
+  
   @Delete(':module_id')
   @Roles(['instructor'])
-  async deleteModule(@Param('module_id') module_id: mongoose.Types.ObjectId) {
-    const deletedModule = await this.moduleService.delete(module_id);
+  async deleteModule(
+    @Param('module_id') module_id: mongoose.Types.ObjectId,
+    @Request() req: any, // `req` contains `user` with the role and ID
+  ) {
+    const user_id = req.user.user_id; // Extract user ID from the request
+    const deletedModule = await this.moduleService.delete(module_id, user_id);
     return deletedModule;
   }
+  
 }
