@@ -36,10 +36,10 @@ export class NotesController {
   async getAllNotes() {
     return this.notesService.findAll();
   }
-  @Get('/my-notes')
+  @Get('myNote/:id')
   @Roles(['instructor', 'student'])
-  async getMyNotes(@Body("userId") userId: string) {
-    return this.notesService.getMyNotes(userId);
+  async getMyNotes(@Param('id')id:string) {
+    return this.notesService.getMyNotes(id);
   }
 
   @Put(':id')

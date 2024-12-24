@@ -31,7 +31,7 @@ export class NotesService {
     if(!notes){
       throw new NotFoundException('Notes not found');
     }
-    return
+    return notes;
   }
   catch(err:any){
     return { statusCode: 500, message: 'Something went wrong', error: err.message };

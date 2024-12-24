@@ -77,7 +77,7 @@ const params = useParams(); // To get the `quizId`
         'http://localhost:5000/fingerprint/verify',
         {
           userId: session.user_id,
-          fingerprint,
+          fingerprint:fingerprint,
         },
         {
           headers: {

@@ -16,7 +16,8 @@ export class Note {
 
   @Prop({ required: true, type: String })
   content: string
-
+  @Prop({ required: true, type: String })
+  title: string
   @Prop({ required: false, type: Date, default: Date.now })
   created_at?: Date
 
