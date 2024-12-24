@@ -17,6 +17,8 @@ interface Quiz {
   _id: string;
   module_id: string;
   created_at: string;
+  questionCount: number;
+  questionType: string;
   questions: string[];
 }
 
@@ -26,12 +28,15 @@ export default function Modules() {
   const [quizzes, setQuizzes] = useState<{ [key: string]: Quiz[] }>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [newQuiz, setNewQuiz] = useState<{ module_id: string; questions: string[] }>({
+
+  const [newQuizData, setNewQuizData] = useState({
     module_id: '',
-    questions: [],
+    questionCount: 0,
+    questionType: 'MCQ',
   });
-  const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null); // Quiz being edited
-  const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility
+
+  const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
+
   const searchParams = useSearchParams();
   const courseId = searchParams.get('courseId');
 
@@ -91,9 +96,15 @@ export default function Modules() {
   };
 
   const handleCreateQuiz = async (moduleId: string) => {
+    if (!newQuizData.questionCount || !newQuizData.questionType) {
+      Swal.fire('Error', 'Please specify question count and type.', 'error');
+      return;
+    }
+
     const quizData = {
       module_id: moduleId,
-      questions: [],
+      questionCount: newQuizData.questionCount,
+      questionType: newQuizData.questionType,
     };
 
     try {
@@ -123,8 +134,13 @@ export default function Modules() {
     }
   };
 
-  const handleUpdateQuiz = async () => {
+  const handleEditQuiz = async () => {
     if (!editingQuiz) return;
+
+    const updatedQuizData = {
+      questionCount: newQuizData.questionCount,
+      questionType: newQuizData.questionType,
+    };
 
     try {
       const response = await fetch(`http://localhost:5000/quiz/${editingQuiz._id}`, {
@@ -133,18 +149,16 @@ export default function Modules() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.accessToken}`,
         },
-        body: JSON.stringify({
-          module_id: editingQuiz.module_id,
-          questions: newQuiz.questions,
-        }),
+        body: JSON.stringify(updatedQuizData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update quiz');
+        throw new Error(errorData.message || 'Failed to edit quiz');
       }
 
       const updatedQuiz = await response.json();
+
       setQuizzes((prev) => ({
         ...prev,
         [editingQuiz.module_id]: prev[editingQuiz.module_id].map((quiz) =>
@@ -152,10 +166,7 @@ export default function Modules() {
         ),
       }));
 
-      setIsModalOpen(false);
       setEditingQuiz(null);
-      setNewQuiz({ module_id: '', questions: [] });
-
       Swal.fire('Success', 'Quiz updated successfully!', 'success');
     } catch (error: any) {
       Swal.fire('Error', error.message, 'error');
@@ -195,12 +206,40 @@ export default function Modules() {
       <h1 className="text-4xl font-bold text-center mb-8">Modules for Course</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {modules.map((module) => (
-          <div key={module._id} className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-lg transition-shadow duration-200">
+          <div
+            key={module._id}
+            className="bg-white shadow-md rounded-lg p-6 text-center hover:shadow-lg transition-shadow duration-200"
+          >
             <h2 className="text-xl font-semibold mb-2">{module.title}</h2>
             <p className="text-gray-700 mb-4">{module.content}</p>
-            <p className="text-sm text-gray-500 mb-2">Created At: {new Date(module.created_at).toLocaleDateString()}</p>
+            <p className="text-sm text-gray-500 mb-2">
+              Created At: {new Date(module.created_at).toLocaleDateString()}
+            </p>
             {session?.role === 'instructor' && (
               <div className="mb-4">
+                <label className="block mb-2 font-semibold">Question Count:</label>
+                <input
+                  type="number"
+                  className="border p-2 rounded w-full mb-4"
+                  value={newQuizData.questionCount}
+                  onChange={(e) =>
+                    setNewQuizData({ ...newQuizData, questionCount: Number(e.target.value) })
+                  }
+                  placeholder="Enter the number of questions"
+                />
+
+                <label className="block mb-2 font-semibold">Question Type:</label>
+                <select
+                  className="border p-2 rounded w-full mb-4"
+                  value={newQuizData.questionType}
+                  onChange={(e) =>
+                    setNewQuizData({ ...newQuizData, questionType: e.target.value })
+                  }
+                >
+                  <option value="MCQ">MCQ</option>
+                  <option value="True/False">True/False</option>
+                </select>
+
                 <button
                   onClick={() => handleCreateQuiz(module._id)}
                   className="bg-green-500 text-white px-4 py-2 rounded"
@@ -220,12 +259,15 @@ export default function Modules() {
                       <button
                         onClick={() => {
                           setEditingQuiz(quiz);
-                          setNewQuiz({ module_id: quiz.module_id, questions: quiz.questions });
-                          setIsModalOpen(true);
+                          setNewQuizData({
+                            module_id: quiz.module_id,
+                            questionCount: quiz.questionCount,
+                            questionType: quiz.questionType,
+                          });
                         }}
                         className="bg-yellow-500 text-white px-4 py-2 rounded"
                       >
-                        Edit
+                        Edit Quiz
                       </button>
                       <button
                         onClick={() => handleDeleteQuiz(quiz._id, module._id)}
@@ -242,27 +284,42 @@ export default function Modules() {
         ))}
       </div>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-2xl mb-4">Edit Quiz</h2>
-            <textarea
-              placeholder="Questions (comma separated)"
-              value={newQuiz.questions.join(', ')}
+      {editingQuiz && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded shadow-lg w-1/3">
+            <h2 className="text-2xl font-bold mb-4">Edit Quiz</h2>
+            <label className="block mb-2 font-semibold">Question Count:</label>
+            <input
+              type="number"
+              className="border p-2 rounded w-full mb-4"
+              value={newQuizData.questionCount}
               onChange={(e) =>
-                setNewQuiz({ ...newQuiz, questions: e.target.value.split(',').map((q) => q.trim()) })
+                setNewQuizData({ ...newQuizData, questionCount: Number(e.target.value) })
               }
-              className="border p-2 mb-2 w-full"
+              placeholder="Enter the number of questions"
             />
-            <div className="flex justify-between mt-4">
-              <button onClick={handleUpdateQuiz} className="bg-blue-500 text-white px-4 py-2 rounded">
-                Update Quiz
+
+            <label className="block mb-2 font-semibold">Question Type:</label>
+            <select
+              className="border p-2 rounded w-full mb-4"
+              value={newQuizData.questionType}
+              onChange={(e) =>
+                setNewQuizData({ ...newQuizData, questionType: e.target.value })
+              }
+            >
+              <option value="MCQ">MCQ</option>
+              <option value="True/False">True/False</option>
+            </select>
+
+            <div className="flex justify-between">
+              <button
+                onClick={handleEditQuiz}
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Save Changes
               </button>
               <button
-                onClick={() => {
-                  setIsModalOpen(false);
-                  setEditingQuiz(null);
-                }}
+                onClick={() => setEditingQuiz(null)}
                 className="bg-gray-500 text-white px-4 py-2 rounded"
               >
                 Cancel

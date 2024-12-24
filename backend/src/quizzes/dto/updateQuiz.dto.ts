@@ -1,11 +1,17 @@
-import { IsString, IsOptional, IsDate, IsNotEmpty, IsMongoId, IsArray } from 'class-validator'
-import mongoose from 'mongoose'
+import { IsNotEmpty, IsOptional, IsString, IsNumber, IsIn, IsMongoId } from 'class-validator';
+import mongoose from 'mongoose';
 
-export class updateQuizDto{
+export class updateQuizDto {
+  @IsOptional()
+  @IsMongoId()
+  module_id?: mongoose.Types.ObjectId; // Optional, as it might not always change
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  questions?: string[]
+  @IsNumber()
+  questionCount?: number; // Number of questions to include in the quiz
+
+  @IsOptional()
+  @IsIn(['MCQ', 'True/False'])
+  questionType?: string; // Type of questions for the quiz (MCQ or True/False)
 
 }

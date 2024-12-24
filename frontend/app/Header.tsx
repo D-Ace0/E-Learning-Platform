@@ -47,6 +47,13 @@ const Header = () => {
                 </Link>
               </li>
             )}
+            {session?.role === 'instructor' && (
+              <li>
+                <Link href="/question" className="hover:underline">
+                  QuestionBank
+                </Link>
+              </li>
+            )}
             {session?.role === 'student' && (
                 <>
                   <li>

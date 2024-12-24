@@ -6,6 +6,8 @@ import Link from 'next/link';
 interface Quiz {
   _id: string;
   module_id: string;
+  questionCount: number; // Number of questions
+  questionType: string; // Type of questions (MCQ, True/False)
   questions?: string[]; // Array of ObjectIds as strings (optional)
   created_at: string;
 }
@@ -32,7 +34,8 @@ const MyQuizzes = async () => {
   }
 
   try {
-    const response = await fetch(`http://localhost:5000/quiz`, {
+    // Fetch quizzes based on the user's role
+    const response = await fetch(`http://localhost:5000/quiz/MyQuizzes`, {
       headers: {
         'Authorization': `Bearer ${session.accessToken}`,
       },
@@ -72,7 +75,7 @@ const MyQuizzes = async () => {
 
     return (
       <div className="container mx-auto p-8">
-        <h1 className="text-4xl font-bold text-center mb-8">Available Quizzes</h1>
+        <h1 className="text-4xl font-bold text-center mb-8">My Quizzes</h1>
         {quizzesWithModules.length === 0 ? (
           <p className="text-center">No quizzes are available at the moment.</p>
         ) : (
@@ -84,13 +87,13 @@ const MyQuizzes = async () => {
                 <Link href={`../courses/modules?courseId=${quiz.courseId}`} className="text-blue-600 hover:underline">
                   View Module
                 </Link>
-                <p className="text-gray-700 mb-2">Questions: {quiz.questions ? quiz.questions.length : 0}</p>
+                <p className="text-gray-700 mb-2">Questions: {quiz.questionCount}</p>
+                <p className="text-gray-700 mb-2">Type: {quiz.questionType}</p>
                 <p className="text-gray-700">Created At: {new Date(quiz.created_at).toLocaleString()}</p>
-                {/* Link to access the quiz questions */}
                 {session?.role === "student" && (
                   <Link href={`/quiz/questions/${quiz._id}`} className="text-green-600 hover:underline mt-4 block">
-                  Take Quiz
-                </Link>
+                    Take Quiz
+                  </Link>
                 )}
               </div>
             ))}

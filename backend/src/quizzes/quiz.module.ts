@@ -8,14 +8,18 @@ import { QuestionSchema } from 'src/schemas/question.schema';
 import { QuizSelectionSchema } from 'src/schemas/quizSelection.schema';
 import { CourseSchema } from 'src/schemas/course.schema';
 import { ModuleSchema } from 'src/schemas/module.schema';
+import { ResponseSchema } from 'src/schemas/response.schema';
+import { UserInteractionSchema } from 'src/schemas/user_interaction';
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: 'Quiz', schema: QuizSchema }, 
     {name: 'QuizPerformance', schema: QuizPerformanceSchema},
     {name: 'QuizSelection', schema: QuizSelectionSchema},
-     {name: 'Question', schema: QuestionSchema},
-      {name: 'Course', schema: CourseSchema},
-        {name: 'Module', schema: ModuleSchema},
+    {name: 'Question', schema: QuestionSchema},
+    {name: 'Course', schema: CourseSchema},
+    {name: 'Module', schema: ModuleSchema},
+    {name: 'Response', schema: ResponseSchema},
+    {name: 'UserInteraction', schema: UserInteractionSchema},
     ])],
   providers: [QuizService],
   controllers: [QuizController],
