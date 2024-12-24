@@ -237,6 +237,19 @@ export default function Modules() {
                         <h2 className="text-xl font-semibold mb-2">{module.title}</h2>
                         <p className="text-gray-700 mb-4">{module.content}</p>
                         <p className="text-sm text-gray-500 mb-2">Created At: {new Date(module.created_at).toLocaleDateString()}</p>
+                      
+                        <div>
+                            <h3 className="text-lg font-semibold mb-2">Resources:</h3>
+                            <ul className="list-disc list-inside">
+                                {module.resources.map((resource, index) => (
+                                    <li key={index}>
+                                        <a href={resource} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                            {resource}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                         {session?.role === 'instructor' && (
                             <div className="flex justify-between mt-4">
                                 <button onClick={() => startEditing(module)} className="bg-yellow-500 text-white px-2 py-1 rounded">
