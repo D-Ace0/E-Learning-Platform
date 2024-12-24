@@ -5,6 +5,9 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class RoomService {
+  findByName(roomName: string) {
+    throw new Error('Method not implemented.');
+  }
   constructor(@InjectModel(Room.name) private roomModel: Model<Room>) {}
 
   async createRoom(name: string, createdBy: string): Promise<Room> {
@@ -37,7 +40,7 @@ export class RoomService {
     }
     return room;
   }
-  async getAllRooms(): Promise<RoomDocument[]> {
+  async getAllRooms(): Promise<Room[]> {
     return this.roomModel.find().exec();
   }
 }
