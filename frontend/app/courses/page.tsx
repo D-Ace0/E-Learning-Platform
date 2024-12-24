@@ -30,9 +30,9 @@ export default function Courses() {
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
     const categories = ['History', 'Science', 'Engineering', 'Art', 'Computer Science','Mathematics', 'Literature'];
-
+    
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(event.target.value);
+        setSearchTerm(event.target.value.toLowerCase());
     };
 
     const handleCategoryChange = (category: string) => {
@@ -189,7 +189,16 @@ export default function Courses() {
             }
         };
         fetchCourses();
-    }, [session, searchTerm, selectedCategories]);
+    }, [session]);
+    const filteredCourses = courses.filter((course) => {
+        const matchesSearchTerm =
+            course.title.toLowerCase().includes(searchTerm) ||
+            course.description.toLowerCase().includes(searchTerm);
+        const matchesCategory = selectedCategories.length
+            ? selectedCategories.includes(course.category)
+            : true;
+        return matchesSearchTerm && matchesCategory;
+    });
 
     if (status === 'loading') {
         return <p>Loading...</p>;
@@ -224,10 +233,14 @@ export default function Courses() {
                 </div>
             )}
             {error && <p className="text-red-500 text-center mb-4">Error: {error}</p>}
+            {filteredCourses.length === 0 && !loading && (
+                <p className="text-gray-500 text-center mb-4">No courses found.</p>
+            )}
+            
             {notFound && <p className="text-gray-500 text-center mb-4">No courses found.</p>}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                 {session ? (
-                    courses.map((course) => (
+                    filteredCourses.map((course) => (
                         (session.role !== 'student' || !course.isOutdated) && (
                             <div key={course._id} className="bg-white shadow-md rounded-lg p-6 text-center">
                                 <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
