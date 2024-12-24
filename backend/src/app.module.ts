@@ -17,7 +17,7 @@ import { MailModule } from './mail/mail.module'
 import { ChatGateway } from './communication_handler/WebSocket_Gateway';
 import {RoomModule} from './communication_handler/Communication_Modules/room.module';
 import {MessagesModule} from './communication_handler/Communication_Modules/MessagesModule';
-import { BackupModule } from './backup/backup.module';
+import { BackupModule } from './backup/backup.module'
 import { DashboardModule } from './dashboard/dashboard.module'
 import { ResourceAccessGuard } from './guards/resource-access.guard'
 import { RecommendationModule } from './recommendation/recommendation.module';
@@ -50,7 +50,7 @@ dotenv.config();
     MessagesModule,
     MfaModule, 
     DashboardModule,
-    MongooseModule.forRoot('mongodb+srv://AhmedKhadrawy:9g3bcGpd2Ay9v0LR@database.r38ac.mongodb.net/E-Learning-Platform'),
+    MongooseModule.forRoot(process.env.MONGO_URI),
     QuestionModule
     // MongooseModule.forRoot(
     //   'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),

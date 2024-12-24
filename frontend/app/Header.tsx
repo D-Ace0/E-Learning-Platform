@@ -25,11 +25,13 @@ const Header = () => {
                </Link>
              </li>
             )}
+            {session?.role === 'student' || session?.role === 'instructor' && (
             <li>
               <Link href="/users" className="hover:underline">
                 Users
               </Link>
             </li>
+            )}
             <li>
               <Link href="/about" className="hover:underline">
                 About
@@ -95,14 +97,13 @@ const Header = () => {
               </>
             )}
 
-            {session ? (
+            {session?.role === 'student' ||session?.role === 'instructor' && (
                 <li>
                   <Link href="/quiz" className="hover:underline">
                     Quizzes
                   </Link>
                 </li>
-            ) : ""}
-
+            )}
             {!session ? (
                 <li>
                   <Link href="/signin" className="hover:underline">
