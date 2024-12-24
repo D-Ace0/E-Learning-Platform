@@ -35,7 +35,7 @@ export class NotesService {
   }
   catch(err:any){
     return { statusCode: 500, message: 'Something went wrong', error: err.message };
-  }
+  }   
 
   }
 
