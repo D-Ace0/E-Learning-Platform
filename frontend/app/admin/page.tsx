@@ -14,6 +14,7 @@ interface User {
  courses: string[]
  created_at: string
 }
+
 export default function AdminPage() {
  const { data: session } = useSession();
  const [users, setUsers] = useState<User[]>([]);
@@ -24,6 +25,7 @@ export default function AdminPage() {
  const [loading, setLoading] = useState(false);
  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
  const [viewedUser, setViewedUser] = useState<User | null>(null);
+ const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
    const fetchUsers = async () => {
@@ -52,25 +54,30 @@ export default function AdminPage() {
      fetchUsers();
    }
  }, [session?.accessToken]);
+
   const openModal = (user: User) => {
    setSelectedUser(user);
    setEditedUser({ ...user });
    setIsModalOpen(true);
  };
+
  const openViewModal = (user: User) => {
     setViewedUser(user);
     setIsViewModalOpen(true);
   };
+
   const closeViewModal = () => {
     setIsViewModalOpen(false);
     setViewedUser(null);
   };
+
   const closeModal = () => {
    setIsModalOpen(false);
    setSelectedUser(null);
    setEditedUser(null);
    setError(null);
  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
    const { name, value } = e.target;
    if (editedUser) {
@@ -78,7 +85,6 @@ export default function AdminPage() {
    }
  };
 
- 
   const handleUpdateSubmit = async () => {
    if (!editedUser || !selectedUser) return;
    const confirmUpdate = window.confirm("Are you sure you wanna update?")
@@ -108,6 +114,7 @@ export default function AdminPage() {
      setLoading(false);
    }
  };
+
   const handleDelete = async (userId: string) => {
     const confirmDelete = window.confirm("Are you sure you wanna Delete this user?")
    if(!confirmDelete) return
@@ -134,7 +141,16 @@ export default function AdminPage() {
    }
  };
 
- 
+ const filteredUsers = users.filter(user => {
+   const searchLower = searchTerm.toLowerCase();
+   return (
+     user.name.toLowerCase().includes(searchLower) ||
+     user.email.toLowerCase().includes(searchLower) ||
+     user.role.toLowerCase().includes(searchLower) ||
+     user._id.toLowerCase().includes(searchLower)
+   );
+ });
+
   return (
    <main className="p-4">
      <div className="flex justify-between items-center mb-6">
@@ -146,8 +162,21 @@ export default function AdminPage() {
          View All Authentication Logs
        </Link>
      </div>
+
+     {/* Search Input */}
+     <div className="mb-6">
+       <input
+         type="text"
+         placeholder="Search users by name, email, role, or ID..."
+         value={searchTerm}
+         onChange={(e) => setSearchTerm(e.target.value)}
+         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+       />
+     </div>
+
      {error && <div className="text-red-500 mb-4">{error}</div>}
      {loading && <div className="text-gray-500 mb-4">Loading...</div>}
+     
      <div className="overflow-x-auto">
        <table className="min-w-full bg-white border border-gray-300">
          <thead>
@@ -160,7 +189,7 @@ export default function AdminPage() {
            </tr>
          </thead>
          <tbody>
-           {users.map((user) => (
+           {filteredUsers.map((user) => (
              <tr key={user._id} className="hover:bg-gray-50">
                <td className="py-2 px-4 border-b">{user._id}</td>
                <td className="py-2 px-4 border-b">{user.name}</td>
@@ -170,7 +199,7 @@ export default function AdminPage() {
                  <button onClick={() => openModal(user)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2">
                    Update
                  </button>
-                 <button onClick={() => handleDelete(user._id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+                 <button onClick={() => handleDelete(user._id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded mr-2">
                    Delete
                  </button>
                  <button onClick={() => openViewModal(user)} className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">
@@ -183,6 +212,7 @@ export default function AdminPage() {
        </table>
      </div>
 
+     {/* View Modal */}
      {isViewModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
           <div className="bg-white p-8 rounded shadow-lg w-96">
@@ -240,7 +270,7 @@ export default function AdminPage() {
         </div>
       )}
 
-
+      {/* Edit Modal */}
       {isModalOpen && (
        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
          <div className="bg-white p-8 rounded shadow-lg w-96">
