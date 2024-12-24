@@ -75,7 +75,7 @@ const Header = () => {
                  
                 </>
             )}
- <li>
+                  <li>
                     <Link href="/profile" className="hover:underline">
                       Profile
                     </Link>
