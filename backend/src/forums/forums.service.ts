@@ -26,13 +26,29 @@ export class ForumsService {
     return await newForum.save()
   }
 
-  async findAll(userId: string, role: string) {
-    if(role === "instructor"){
-      const forums = await this.forumsModel.find({instructor_id: userId})
-      return forums
+  async findAll(userId: string, role: string, courseId: string) {
+    if (role === "instructor") {
+      // Fetch forums for the course created by the instructor
+      const forums = await this.forumsModel.find({ course_id: courseId });
+      return forums;
     }
-    return await this.forumsModel.find({createdby: userId})
+  
+    if (role === "student") {
+      // Check if the student is enrolled in the course
+      const course = await this.courseModel.findById(courseId);
+      if (!course) throw new NotFoundException("Course not found");
+  
+      const isEnrolled = course.enrolledStudents.some((s) => s.toString() === userId);
+      if (!isEnrolled) throw new ForbiddenException("You are not enrolled in this course");
+  
+      // Fetch forums for the course
+      return await this.forumsModel.find({ course_id: courseId });
+    }
+  
+    throw new ForbiddenException("Invalid role");
   }
+  
+  
 
   async findOne(id: string, userId: string, role: string) {
     const forum = await this.forumsModel.findById(id);

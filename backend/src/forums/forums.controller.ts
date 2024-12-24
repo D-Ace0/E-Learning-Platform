@@ -19,13 +19,17 @@ export class ForumsController {
     return await this.forumsService.create(createForumDto, instructorId, courseId, role);
   }
 
-  @Get()
+  @Get('course/:courseId')
   @Roles(['instructor', 'student'])
-  async findAll(@Request() req:any) {
-    const userId = req.user.user_id
-    const role = req.user.role
-    return await this.forumsService.findAll(userId, role);
+  async findAll(
+    @Request() req: any,
+    @Param('courseId') courseId: string,
+  ) {
+    const userId = req.user.user_id;
+    const role = req.user.role;
+    return await this.forumsService.findAll(userId, role, courseId);
   }
+  
 
   @Get(':id')
   @Roles(['instructor', 'student'])
