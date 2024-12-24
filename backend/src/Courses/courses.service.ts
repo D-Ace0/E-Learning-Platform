@@ -82,9 +82,6 @@ export class CoursesService {
     const course = await this.courseModel.findById(id).exec();
     if (!course) throw new NotFoundException('Course does not exist');
 
-    const instructor_id_AS_ObjectId = new Types.ObjectId(instructor_id);
-    if (course.created_by.toString() !== instructor_id_AS_ObjectId.toString()) throw new ForbiddenException('You cannot delete this course');
-
     await this.courseModel.findByIdAndDelete(id).exec();
     return { message: 'Course deleted successfully' };
   }

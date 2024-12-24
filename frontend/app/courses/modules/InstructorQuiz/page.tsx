@@ -22,6 +22,15 @@ interface Quiz {
   questions: string[];
 }
 
+interface Question {
+  _id: string;
+  question: string;
+  answer: string;
+  options?: string[];
+  type: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+}
+
 export default function Modules() {
   const { data: session } = useSession();
   const [modules, setModules] = useState<Module[]>([]);
@@ -36,6 +45,15 @@ export default function Modules() {
   });
 
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
+
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [newQuestion, setNewQuestion] = useState({
+    question: '',
+    answer: '',
+    options: [''],
+    type: 'MCQ',
+    difficulty: 'easy',
+  });
 
   const searchParams = useSearchParams();
   const courseId = searchParams.get('courseId');
@@ -198,6 +216,75 @@ export default function Modules() {
     }
   };
 
+  const fetchQuestions = async (moduleId: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/question/module/${moduleId}`, {
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch questions');
+      }
+
+      const data = await response.json();
+      setQuestions(data);
+    } catch (err: any) {
+      Swal.fire('Error', err.message, 'error');
+    }
+  };
+
+  const handleCreateQuestion = async (moduleId: string) => {
+    try {
+      const response = await fetch('http://localhost:5000/question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({ ...newQuestion, module_id: moduleId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create question');
+      }
+
+      const createdQuestion = await response.json();
+      setQuestions([...questions, createdQuestion]);
+      setNewQuestion({
+        question: '',
+        answer: '',
+        options: [''],
+        type: 'MCQ',
+        difficulty: 'easy',
+      });
+      Swal.fire('Success', 'Question created successfully!', 'success');
+    } catch (err: any) {
+      Swal.fire('Error', err.message, 'error');
+    }
+  };
+
+  const handleDeleteQuestion = async (questionId: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/question/${questionId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete question');
+      }
+
+      setQuestions(questions.filter((q) => q._id !== questionId));
+      Swal.fire('Success', 'Question deleted successfully!', 'success');
+    } catch (err: any) {
+      Swal.fire('Error', err.message, 'error');
+    }
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
@@ -280,6 +367,113 @@ export default function Modules() {
                 </li>
               ))}
             </ul>
+
+            {/* Question Bank Section */}
+            <div className="mt-6 border-t pt-4">
+              <h3 className="text-xl font-semibold mb-4">Question Bank</h3>
+              
+              {/* Question Creation Form */}
+              <div className="mb-4 p-4 bg-gray-50 rounded">
+                <input
+                  type="text"
+                  placeholder="Question"
+                  value={newQuestion.question}
+                  onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
+                  className="border p-2 rounded w-full mb-2"
+                />
+                <input
+                  type="text"
+                  placeholder="Answer"
+                  value={newQuestion.answer}
+                  onChange={(e) => setNewQuestion({ ...newQuestion, answer: e.target.value })}
+                  className="border p-2 rounded w-full mb-2"
+                />
+                
+                {newQuestion.type === 'MCQ' && (
+                  <div className="mb-2">
+                    {newQuestion.options.map((option, index) => (
+                      <input
+                        key={index}
+                        type="text"
+                        placeholder={`Option ${index + 1}`}
+                        value={option}
+                        onChange={(e) => {
+                          const newOptions = [...newQuestion.options];
+                          newOptions[index] = e.target.value;
+                          setNewQuestion({ ...newQuestion, options: newOptions });
+                        }}
+                        className="border p-2 rounded w-full mb-2"
+                      />
+                    ))}
+                    <button
+                      onClick={() => setNewQuestion({
+                        ...newQuestion,
+                        options: [...newQuestion.options, '']
+                      })}
+                      className="bg-green-500 text-white px-4 py-2 rounded"
+                    >
+                      Add Option
+                    </button>
+                  </div>
+                )}
+                
+                <select
+                  value={newQuestion.type}
+                  onChange={(e) => setNewQuestion({ ...newQuestion, type: e.target.value })}
+                  className="border p-2 rounded w-full mb-2"
+                >
+                  <option value="MCQ">Multiple Choice</option>
+                  <option value="True/False">True/False</option>
+                </select>
+                
+                <select
+                  value={newQuestion.difficulty}
+                  onChange={(e) => setNewQuestion({ ...newQuestion, difficulty: e.target.value as 'easy' | 'medium' | 'hard' })}
+                  className="border p-2 rounded w-full mb-2"
+                >
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+                
+                <button
+                  onClick={() => handleCreateQuestion(module._id)}
+                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                >
+                  Add Question
+                </button>
+              </div>
+
+              {/* Questions List */}
+              <div className="space-y-4">
+                {questions.map((question) => (
+                  <div key={question._id} className="border p-4 rounded">
+                    <p className="font-semibold">{question.question}</p>
+                    <p className="text-gray-600">Answer: {question.answer}</p>
+                    {question.options && (
+                      <div className="mt-2">
+                        <p className="font-medium">Options:</p>
+                        <ul className="list-disc list-inside">
+                          {question.options.map((option, index) => (
+                            <li key={index}>{option}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div className="mt-2">
+                      <span className="text-sm text-gray-500">Type: {question.type}</span>
+                      <span className="text-sm text-gray-500 ml-4">Difficulty: {question.difficulty}</span>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteQuestion(question._id)}
+                      className="mt-2 bg-red-500 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ))}
       </div>

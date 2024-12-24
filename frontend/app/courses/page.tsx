@@ -203,7 +203,36 @@ export default function Courses() {
     if (status === 'loading') {
         return <p>Loading...</p>;
     }
-
+    const handleDeleteCourse = async (courseId: string) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'You wont be able to revert this!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!',
+        });
+        if (result.isConfirmed) {
+            try {
+                console.log('Deleting course:', courseId);
+                const response = await fetch(`http://localhost:5000/courses/${courseId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${session?.accessToken}`,
+                    },
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to delete course');
+                }
+                Swal.fire('Deleted!', 'Course has been deleted.', 'success');
+                setCourses(courses.filter(course => course._id !== courseId));
+            } catch (error) {
+                console.error('Error deleting course:', error);
+                Swal.fire('Error!', 'Failed to delete course.', 'error');
+            }
+        }
+    };
     return (
         <div className="container mx-auto p-8">
             <h1 className="text-4xl font-bold text-center mb-8">Course List</h1>
@@ -266,6 +295,12 @@ export default function Courses() {
                                             Enroll Course
                                         </button>
                                     </>
+                                )}
+                                {session.role === 'admin'  &&(
+                                   <button onClick={() => handleDeleteCourse(course._id)} style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#f44336', color: 'white' }}>Delete</button> 
+                                )}
+                                 {session.role === 'instructor'  &&(
+                                   <button onClick={() => handleDeleteCourse(course._id)} style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#f44336', color: 'white' }}>Delete</button> 
                                 )}
                             </div>
                         )

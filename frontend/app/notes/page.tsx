@@ -430,10 +430,10 @@ const NotesPage: React.FC = () => {
             </h2>
 
                     <p className="text-gray-500 italic mb-1">
-                      Module: {modules.find((m) => m._id === note.module_id)?.title || 'Unknown'}
+                      Module: {modules.find((m) => m._id === note.module_id)?.title || 'Module'}
                     </p>
                     <p className="text-gray-500 italic mb-4">
-                      Course: {courses.find((c) => c._id === note.course_id)?.title || 'Unknown'}
+                      Course: {courses.find((c) => c._id === note.course_id)?.title || 'Course'}
                     </p>
                     <p
                       contentEditable
