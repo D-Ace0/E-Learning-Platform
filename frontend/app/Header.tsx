@@ -89,6 +89,13 @@ const Header = () => {
               </li>
               </>
             )}
+             {session? (
+                <li>
+                  <Link href="/communications" className="hover:underline">
+                    Chats
+                  </Link>
+                </li>
+            ) : ""}
 
             {session? (
                 <li>
