@@ -20,8 +20,8 @@ export default function Modules() {
     const { data: session } = useSession();
     const [modules, setModules] = useState<Module[]>([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [newModule, setNewModule] = useState({ title: '', content: '', resources: [], course_id: '' });
+    const [error, setError] = useState<string | null>(null);               // Type 'string[]' is not assignable to type 'never[]'. Type 'string' is not assignable to type 'never'.
+    const [newModule, setNewModule] = useState<{ title: string; content: string; resources: string[]; course_id: string }>({ title: '', content: '', resources: [], course_id: '' });
     const [editingModule, setEditingModule] = useState<Module | null>(null); // State for the module being edited
     const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
     const searchParams = useSearchParams();
@@ -85,13 +85,22 @@ export default function Modules() {
 
     const handleCreateModule = async () => {
         try {
+            if (!courseId) {
+                throw new Error('Invalid or missing Course ID');
+            }
+
+            const moduleData = {
+                ...newModule,
+                course_id: courseId // Use courseId from URL params directly
+            };
+
             const response = await fetch(`http://localhost:5000/module`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${session?.accessToken}`,
                 },
-                body: JSON.stringify(newModule),
+                body: JSON.stringify(moduleData),
             });
 
             if (!response.ok) {
@@ -211,7 +220,7 @@ export default function Modules() {
                     <input
                         type="text"
                         placeholder="Course ID"
-                        value={courseId || ""}
+                        value={courseId || ''}
                         onChange={(e) => setNewModule({ ...newModule, course_id: e.target.value })}
                         className="border p-2 mb-2 w-full"
                         readOnly
