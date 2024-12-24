@@ -258,7 +258,7 @@ export default function Courses() {
                                 </button>
                                 {session.role === 'student' && (
                                     <>
-                                        <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
+                                        {/* <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link> */}
                                         <button
                                             onClick={() => enrollCourse(course._id)}
                                             className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
