@@ -1,40 +1,32 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { Room } from '../Communication_schemas/room.schema';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
+import { Room, RoomDocument } from '../Communication_schemas/room.schema';
 
 @Injectable()
 export class RoomService {
-  constructor(@InjectModel(Room.name) private roomModel: Model<Room>) {}
-
-  async createRoom(name: string, createdBy: string): Promise<Room> {
-    const existingRoom = await this.roomModel.findOne({ name });
-    if (existingRoom) {
-      throw new ForbiddenException('Room already exists');
-    }
-
-    const newRoom = new this.roomModel({ name, createdBy, students: [] });
-    return await newRoom.save();
+  constructor(
+    @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>,
+  ) {
   }
 
-  async addStudentToRoom(roomName: string, studentId: string): Promise<Room> {
-    const room = await this.roomModel.findOne({ name: roomName });
-    if (!room) {
-      throw new NotFoundException('Room not found');
-    }
-
-    if (!room.students.includes(studentId)) {
-      room.students.push(studentId);
-      await room.save();
-    }
-    return room;
+  async findByName(name: string): Promise<RoomDocument> {
+    return this.roomModel.findOne({ name }).exec();
   }
 
-  async getRoomDetails(roomName: string): Promise<Room> {
-    const room = await this.roomModel.findOne({ name: roomName }).populate('students');
+  async addStudentToRoom(roomName: string, studentId: string): Promise<RoomDocument> {
+    const room = await this.roomModel.findOne({ name: roomName }).exec();
     if (!room) {
-      throw new NotFoundException('Room not found');
+      throw new NotFoundException(`Room "${roomName}" does not exist`);
     }
+
+    const studentObjectId = new mongoose.Types.ObjectId(studentId);
+
+    if (!room.joined_students.includes(studentObjectId)) {
+      room.joined_students.push(studentObjectId); // Add the student
+      await room.save(); // Save updated room
+    }
+
     return room;
   }
   async getAllRooms(): Promise<RoomDocument[]> {
