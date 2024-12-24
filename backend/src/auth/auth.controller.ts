@@ -42,4 +42,12 @@ export class AuthController {
     const response = await this.authService.disableMFA(user_id);
     return response;
   }
+
+  @Post('verify-mfa')
+  @UseGuards(AuthenticationGuard)
+  async verifyMFA(@Request() req: any, @Body() body: { code: string }) {
+    const user_id = req.user.user_id;
+    const response = await this.authService.verifyMFA(user_id, body.code);
+    return response;
+  }
 }

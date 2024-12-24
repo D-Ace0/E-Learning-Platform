@@ -20,9 +20,9 @@ interface User {
    name: string;
    email: string;
    role: string;
-   mfa_enabled: string;
    age: number;
    courses: string[];
+   mfa_enabled: boolean;
    created_at: string;
 }
 export default function ProfilePage() {
@@ -36,7 +36,50 @@ export default function ProfilePage() {
    const [editedCourses, setEditedCourses] = useState<string[]>([]);
    const [successMessage, setSuccessMessage] = useState<string | null>(null);
    const [loading, setLoading] = useState(false);
-    useEffect(() => {
+   const [mfaCode, setMfaCode] = useState<string>('');
+   const [showMfaInput, setShowMfaInput] = useState(false);
+   const [attempts, setAttempts] = useState(0);
+   const [lockoutEndTime, setLockoutEndTime] = useState<Date | null>(null);
+   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+
+   useEffect(() => {
+       if (error) {
+           const timer = setTimeout(() => {
+               setError(null);
+           }, 10000); // 10 seconds
+
+           return () => clearTimeout(timer);
+       }
+   }, [error]);
+
+   useEffect(() => {
+       if (successMessage) {
+           const timer = setTimeout(() => {
+               setSuccessMessage(null);
+           }, 10000); // 10 seconds
+
+           return () => clearTimeout(timer);
+       }
+   }, [successMessage]);
+
+   useEffect(() => {
+       if (lockoutEndTime) {
+           const interval = setInterval(() => {
+               const now = new Date();
+               if (now >= lockoutEndTime) {
+                   setLockoutEndTime(null);
+                   setAttempts(0);
+                   setTimeRemaining(0);
+               } else {
+                   setTimeRemaining(Math.ceil((lockoutEndTime.getTime() - now.getTime()) / 1000));
+               }
+           }, 1000);
+
+           return () => clearInterval(interval);
+       }
+   }, [lockoutEndTime]);
+
+   useEffect(() => {
        const fetchProfile = async () => {
            setLoading(true);
            try {
@@ -196,6 +239,123 @@ const handleSaveAllChanges = async () => {
       }
    }
 
+   const handleMfaToggle = async () => {
+        if (!profileData) return;
+        if (lockoutEndTime) return;
+
+        setLoading(true);
+        try {
+            const isMfaEnabled = Boolean(profileData.mfa_enabled);
+            
+            if (isMfaEnabled) {
+                const response = await fetch(`http://localhost:5000/auth/disable-mfa`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session?.accessToken}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to disable MFA');
+                }
+
+                setProfile({ ...profileData, mfa_enabled: false });
+                setSuccessMessage('MFA disabled successfully!');
+                setEditingField(null);
+
+                // Fetch fresh profile data
+                const profileResponse = await fetch(`http://localhost:5000/users/${session?.user_id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${session?.accessToken}`
+                    }
+                });
+                if (profileResponse.ok) {
+                    const updatedProfile = await profileResponse.json();
+                    setProfile(updatedProfile);
+                }
+            } else {
+                const response = await fetch(`http://localhost:5000/auth/enable-mfa`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session?.accessToken}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to request MFA code');
+                }
+
+                setShowMfaInput(true);
+                setSuccessMessage('MFA code sent to your email. Please enter it to enable MFA.');
+                setAttempts(0);
+                setLockoutEndTime(null);
+            }
+        } catch (error) {
+            setError(error instanceof Error ? error.message : 'Failed to toggle MFA');
+            console.error('Error toggling MFA:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleMfaCodeSubmit = async () => {
+        if (!profileData || !mfaCode) return;
+        if (lockoutEndTime) return;
+
+        setLoading(true);
+        try {
+            if (attempts >= 3) {
+                const lockoutEnd = new Date(Date.now() + 30 * 1000); // 30 seconds lockout
+                setLockoutEndTime(lockoutEnd);
+                setError('Too many failed attempts. Please try again in 30 seconds.');
+                return;
+            }
+
+            const response = await fetch(`http://localhost:5000/auth/verify-mfa`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session?.accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code: mfaCode })
+            });
+
+            if (!response.ok) {
+                setAttempts(prev => prev + 1);
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to verify MFA code');
+            }
+
+            // Update both the profile state and fetch fresh data
+            setProfile({ ...profileData, mfa_enabled: true });
+            setSuccessMessage('MFA enabled successfully!');
+            setShowMfaInput(false);
+            setMfaCode('');
+            setEditingField(null);
+            setAttempts(0);
+
+            // Fetch fresh profile data to ensure we have the latest state
+            const profileResponse = await fetch(`http://localhost:5000/users/${session?.user_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${session?.accessToken}`
+                }
+            });
+            if (profileResponse.ok) {
+                const updatedProfile = await profileResponse.json();
+                setProfile(updatedProfile);
+            }
+        } catch (error: any) {
+            setError(error.message || 'Failed to verify MFA code');
+            console.error('Error verifying MFA code:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
    return (
        <div className={`min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 text-white py-12 relative ${isModalOpen ? 'overflow-hidden' : ''}`}>
            {loading && (
@@ -277,51 +437,73 @@ const handleSaveAllChanges = async () => {
                                    </div>
                                    <div className="flex items-center mb-2">
                                        <IdentificationIcon className="h-5 w-5 text-purple-300 mr-2" />
-                                       {editingField === 'role' ? (
-                                           <input
-                                               type="text"
-                                               value={editedValue}
-                                               onChange={handleInputChange}
-                                               className="bg-gray-700 text-gray-300 rounded px-2 py-1 ml-2 focus:outline-none"
-                                           />
-                                       ) : (
-                                            <>
-                                            <span className="text-gray-300">Role: </span>
-                                             <span className="text-gray-300">{profileData.role}</span>
-                                            </>
-                                           
-                                       )}
-                                       {editingField === 'role' ? (
-                                           <>
-                                               <button onClick={handleSaveField} className="ml-2 text-green-500 hover:text-green-400 focus:outline-none">Save</button>
-                                               <button onClick={handleCancelClick} className="ml-2 text-red-500 hover:text-red-400 focus:outline-none">Cancel</button>
-                                           </>
-                                       ) : (
-                                           <PencilIcon onClick={() => handleEditClick('role', profileData.role)} className="h-4 w-4 text-gray-400 ml-2 cursor-pointer hover:text-gray-300" />
-                                       )}
+                                       <span className="text-gray-300">Role: </span>
+                                       <span className="text-gray-300">{profileData.role === 'student' ? 'Student' : 
+                                           profileData.role === 'instructor' ? 'Instructor' : 
+                                           profileData.role === 'admin' ? 'Admin' : profileData.role}</span>
                                    </div>
                                    <div className="flex items-center mb-2">
                                        <LockClosedIcon className="h-5 w-5 text-violet-300 mr-2" />
                                        {editingField === 'mfa_enabled' ? (
-                                           <input
-                                               type="text"
-                                               value={editedValue}
-                                               onChange={handleInputChange}
-                                               className="bg-gray-700 text-gray-300 rounded px-2 py-1 ml-2 focus:outline-none"
-                                           />
-                                       ) : (
-                                          <>
-                                          <span className="text-gray-300">MFA Enabled: </span>
-                                           <span className="text-gray-300">{profileData.mfa_enabled}</span>
-                                          </>
-                                       )}
-                                       {editingField === 'mfa_enabled' ? (
                                            <>
-                                               <button onClick={handleSaveField} className="ml-2 text-green-500 hover:text-green-400 focus:outline-none">Save</button>
-                                               <button onClick={handleCancelClick} className="ml-2 text-red-500 hover:text-red-400 focus:outline-none">Cancel</button>
+                                               <span className="text-gray-300">Two-Factor Authentication: </span>
+                                               {showMfaInput ? (
+                                                   <>
+                                                       <input
+                                                           type="text"
+                                                           value={mfaCode}
+                                                           onChange={(e) => setMfaCode(e.target.value)}
+                                                           placeholder="Enter MFA code"
+                                                           className="bg-gray-700 text-gray-300 rounded px-2 py-1 ml-2 focus:outline-none"
+                                                           disabled={!!lockoutEndTime}
+                                                       />
+                                                       {lockoutEndTime ? (
+                                                           <span className="ml-2 text-red-500">
+                                                               Try again in {timeRemaining} seconds
+                                                           </span>
+                                                       ) : (
+                                                           <>
+                                                               <button 
+                                                                   onClick={handleMfaCodeSubmit} 
+                                                                   className="ml-2 text-green-500 hover:text-green-400 focus:outline-none"
+                                                                   disabled={!!lockoutEndTime}
+                                                               >
+                                                                   Verify
+                                                               </button>
+                                                               <button 
+                                                                   onClick={handleMfaToggle} 
+                                                                   className="ml-2 text-blue-500 hover:text-blue-400 focus:outline-none"
+                                                                   disabled={!!lockoutEndTime}
+                                                               >
+                                                                   Resend Code
+                                                               </button>
+                                                           </>
+                                                       )}
+                                                       <span className="ml-2 text-gray-400">
+                                                           {3 - attempts} attempts remaining
+                                                       </span>
+                                                   </>
+                                               ) : (
+                                                   <button onClick={handleMfaToggle} className="ml-2 text-green-500 hover:text-green-400 focus:outline-none">
+                                                       {Boolean(profileData.mfa_enabled) ? 'Disable' : 'Enable'}
+                                                   </button>
+                                               )}
+                                               <button onClick={() => {
+                                                   setShowMfaInput(false);
+                                                   setMfaCode('');
+                                                   handleCancelClick();
+                                               }} className="ml-2 text-red-500 hover:text-red-400 focus:outline-none">
+                                                   Cancel
+                                               </button>
                                            </>
                                        ) : (
-                                           <PencilIcon onClick={() => handleEditClick('mfa_enabled', profileData.mfa_enabled)} className="h-4 w-4 text-gray-400 ml-2 cursor-pointer hover:text-gray-300" />
+                                           <>
+                                               <span className="text-gray-300">Two-Factor Authentication: </span>
+                                               <span className="text-gray-300">
+                                                   {Boolean(profileData.mfa_enabled) ? 'Enabled' : 'Disabled'}
+                                               </span>
+                                               <PencilIcon onClick={() => handleEditClick('mfa_enabled', profileData.mfa_enabled)} className="h-4 w-4 text-gray-400 ml-2 cursor-pointer hover:text-gray-300" />
+                                           </>
                                        )}
                                    </div>
                                    <div className="flex items-center mb-2">
@@ -373,7 +555,7 @@ const handleSaveAllChanges = async () => {
                                <button onClick={handleSaveAllChanges} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4" type="button">
                                    Save All Changes
                                </button>
-                               <button onClick={handledeleteProfile} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4" type="button">
+                               <button onClick={handledeleteProfile} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4 ml-4" type="button">
                                    Delete Profile
                                </button>
                            </div>

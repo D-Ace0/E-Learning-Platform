@@ -96,9 +96,12 @@ export class AuthService {
     }
 
     const secret = this.mfaService.generateSecret();
-    user.mfa_secret = secret;
-    user.mfa_enabled = true;
-    await user.save();
+    await this.userModel.findByIdAndUpdate(user_id, {
+      $set: {
+        mfa_secret: secret,
+        mfa_enabled: true
+      }
+    }, { new: true });
 
     await this.mfaService.sendOtpEmail(secret, user.email, user);
 
@@ -114,12 +117,41 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    user.mfa_secret = undefined;
-    user.mfa_enabled = false;
-    await user.save();
+    await this.userModel.findByIdAndUpdate(user_id, {
+      $set: {
+        mfa_secret: undefined,
+        mfa_enabled: false
+      }
+    }, { new: true });
 
     await this.logAuthenticationAttempt(new mongoose.Types.ObjectId(user_id), user.email, 'Disable MFA', AuthenticationStatus.SUCCESS, 'MFA disabled successfully');
     return { message: 'MFA disabled successfully' };
+  }
+
+  async verifyMFA(user_id: string, code: string) {
+    const user = await this.userModel.findById(user_id);
+    if (!user) {
+      await this.logAuthenticationAttempt(new mongoose.Types.ObjectId(user_id), user?.email || 'N/A', 'Verify MFA', AuthenticationStatus.FAILURE, 'User not found');
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.mfa_secret) {
+      await this.logAuthenticationAttempt(new mongoose.Types.ObjectId(user_id), user.email, 'Verify MFA', AuthenticationStatus.FAILURE, 'MFA not enabled');
+      throw new BadRequestException('MFA not enabled');
+    }
+
+    try {
+      this.mfaService.verifyToken(user.mfa_secret, code);
+      await this.userModel.findByIdAndUpdate(user_id, {
+        $set: { mfa_enabled: true }
+      }, { new: true });
+
+      await this.logAuthenticationAttempt(new mongoose.Types.ObjectId(user_id), user.email, 'Verify MFA', AuthenticationStatus.SUCCESS, 'MFA verified successfully');
+      return { message: 'MFA verified and enabled successfully' };
+    } catch (error) {
+      await this.logAuthenticationAttempt(new mongoose.Types.ObjectId(user_id), user.email, 'Verify MFA', AuthenticationStatus.FAILURE, 'Invalid MFA code');
+      throw new UnauthorizedException('Invalid MFA code');
+    }
   }
 
   // Signup method
