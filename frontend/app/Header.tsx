@@ -72,14 +72,14 @@ const Header = () => {
                       Dashboard
                     </Link>
                   </li>
+                 
+                </>
+            )}
                   <li>
                     <Link href="/profile" className="hover:underline">
                       Profile
                     </Link>
                   </li>
-                </>
-            )}
-
             {session?.role === 'student' && (
               <>
               <li>
