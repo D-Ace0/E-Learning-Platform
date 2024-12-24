@@ -168,8 +168,8 @@ export default function ForumDetailsPage() {
               <div className="text-sm text-gray-600 mb-4">
                 <p>Users in the thread:</p>
                 <ul>
-                  {thread.EnvolvedUsers_ids.map((user) => (
-                    <li key={user._id}>
+                  {thread.EnvolvedUsers_ids.map((user, index) => (
+                    <li key={user._id || `${user.email}-${index}`}>
                       {user.name} - {user.email}
                     </li>
                   ))}
