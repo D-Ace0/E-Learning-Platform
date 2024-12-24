@@ -4,12 +4,14 @@ import React, { useEffect, useState } from 'react';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
+import { useParams } from 'next/navigation';
 
 const FingerPrintPage: React.FC = () => {
   const [visitorId, setVisitorId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+   const params = useParams();
   const { data: session } = useSession();
 
 
