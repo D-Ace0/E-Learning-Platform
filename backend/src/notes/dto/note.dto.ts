@@ -10,6 +10,10 @@ export class CreateNoteDTO {
   @IsNotEmpty()
   content: string;
 
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
   @IsNotEmpty()
   user_id: Types.ObjectId;
 

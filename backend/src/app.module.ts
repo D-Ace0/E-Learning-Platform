@@ -22,6 +22,7 @@ import { DashboardModule } from './dashboard/dashboard.module'
 import { ResourceAccessGuard } from './guards/resource-access.guard'
 import { RecommendationModule } from './recommendation/recommendation.module';
 import { QuestionModule } from './question/question.module';
+import { FingerPrintModule } from './finger-print/finger-print.module'
 dotenv.config();
 
 @Module({
@@ -36,6 +37,7 @@ dotenv.config();
   ],
   imports: [
     RecommendationModule,
+    FingerPrintModule,
     BackupModule,
     MailModule,
     QuizModule,
