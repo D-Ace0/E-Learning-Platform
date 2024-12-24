@@ -126,7 +126,7 @@ const NotesPage: React.FC = () => {
    
 
     const fetchData = async () => {
-      await fetchNotes();
+      
       await fetchMyNotes();
       await fetchModules();
       await fetchCourses();
@@ -142,9 +142,7 @@ const NotesPage: React.FC = () => {
   
     try {
       // Optimistically update the state to remove the note immediately
-      setNotes((prevNotes) => prevNotes.filter((note) => note._id !== noteId));
-      setMyNotes((prevMyNotes) => prevMyNotes.filter((note) => note._id !== noteId));
-  
+     
       const response = await axios.delete(`http://localhost:5000/notes/${noteId}`, {
         headers: {
           Authorization: `Bearer ${session.accessToken}`,
@@ -153,6 +151,9 @@ const NotesPage: React.FC = () => {
   
       if (response?.status === 200) {
         setMessage('Note deleted successfully');
+        setNotes((prevNotes) => prevNotes.filter((note) => note._id !== noteId));
+        setMyNotes((prevMyNotes) => prevMyNotes.filter((note) => note._id !== noteId));
+    
       } else {
         // If backend says "note not found," it means the note was already deleted
         setError('Note not found, but it has already been removed from the ui ');
@@ -279,16 +280,7 @@ const NotesPage: React.FC = () => {
         {/* Tab Navigation */}
         <div className="border-b border-gray-200 mb-8">
           <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`${
-                activeTab === 'all'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-            >
-              All Notes
-            </button>
+        
             <button
               onClick={() => setActiveTab('my')}
               className={`${
@@ -516,7 +508,4 @@ const NotesPage: React.FC = () => {
 };
 
 export default NotesPage;
-
-
-
 

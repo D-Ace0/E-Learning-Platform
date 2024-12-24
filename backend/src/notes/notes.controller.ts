@@ -15,7 +15,7 @@ import { NotesService } from './notes.service';
 import { CreateNoteDTO, UpdateNoteDTO } from './dto/note.dto';
 
 
-@UseGuards(AuthenticationGuard, AuthorizationGuard, ResourceAccessGuard)
+@UseGuards(AuthenticationGuard, AuthorizationGuard)
 @Controller('notes')
 export class NotesController {
   constructor(private readonly notesService: NotesService) {}
@@ -39,7 +39,7 @@ export class NotesController {
   @Get('myNote/:id')
   @Roles(['instructor', 'student'])
   async getMyNotes(@Param('id')id:string) {
-    return this.notesService.getMyNotes(id);
+    return this.notesService.getAllMyNotes(id);
   }
 
   @Put(':id')
