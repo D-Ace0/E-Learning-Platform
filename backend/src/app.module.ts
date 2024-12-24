@@ -22,6 +22,9 @@ import { DashboardModule } from './dashboard/dashboard.module'
 import { ResourceAccessGuard } from './guards/resource-access.guard'
 import { RecommendationModule } from './recommendation/recommendation.module';
 import { QuestionModule } from './question/question.module';
+import { ForumsModule } from './forums/forums.module';
+import { PostsModule } from './posts/posts.module';
+import { ThreadsModule } from './threads/threads.module';
 dotenv.config();
 
 @Module({
@@ -49,7 +52,10 @@ dotenv.config();
     MfaModule, 
     DashboardModule,
     MongooseModule.forRoot('mongodb+srv://AhmedKhadrawy:9g3bcGpd2Ay9v0LR@database.r38ac.mongodb.net/E-Learning-Platform'),
-    QuestionModule
+    QuestionModule,
+    ForumsModule,
+    PostsModule,
+    ThreadsModule
     // MongooseModule.forRoot(
     //   'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
   ],
