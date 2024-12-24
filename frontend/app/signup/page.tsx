@@ -1,5 +1,6 @@
 'use client';
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
@@ -18,17 +19,32 @@ interface ErrorResponse {
   statusCode?: number;
 }
 
-const Signup = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [age, setAge] = useState('');
-  const [role, setRole] = useState('');
+export default function SignupPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    age: '',
+    role: ''
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +53,7 @@ const Signup = () => {
     setLoading(true);
 
     // Validate that the age is a valid number
-    const ageNumber = Number(age);
+    const ageNumber = Number(formData.age);
     if (isNaN(ageNumber) || ageNumber <= 0 || ageNumber > 120) {
       setError("Please enter a valid age between 1 and 120.");
       setLoading(false);
@@ -45,31 +61,32 @@ const Signup = () => {
     }
 
     // Validate password length
-    if (password.length < 6) {
+    if (formData.password.length < 6) {
       setError("Password must be at least 6 characters long.");
       setLoading(false);
       return;
     }
 
     // Validate role
-    if (!role) {
+    if (!formData.role) {
       setError("Please select a role.");
       setLoading(false);
       return;
     }
 
     try {
-      const data = { name, email, password, age: ageNumber, role };
-
-      const response = await axios.post<SignupResponse>('http://localhost:5000/auth/signup', data);
+      const response = await axios.post<SignupResponse>('http://localhost:5000/auth/signup', {
+        ...formData,
+        age: ageNumber
+      });
 
       if (response.status === 201 && response.data.message.includes("Signup successful")) {
         setSuccess(`Signup successful, welcome ${response.data.user.name}`);
         
         // Attempt to login automatically
         const result = await signIn('credentials', {
-          email,
-          password,
+          email: formData.email,
+          password: formData.password,
           redirect: false,
         });
 
@@ -87,7 +104,6 @@ const Signup = () => {
       if (axios.isAxiosError(error) && error.response?.data) {
         const errorData = error.response.data as ErrorResponse;
         setError(errorData.message || 'An error occurred during registration');
-        console.error('Register failed:', errorData);
       } else {
         console.error('Register failed:', error);
         setError('An unexpected error occurred during registration');
@@ -96,6 +112,10 @@ const Signup = () => {
       setLoading(false);
     }
   };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-8 py-14 lg:px-10">
@@ -122,9 +142,8 @@ const Signup = () => {
                 name="name"
                 type="text"
                 required
-                autoComplete="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={formData.name}
+                onChange={handleChange}
                 className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
               />
             </div>
@@ -140,20 +159,17 @@ const Signup = () => {
                 name="email"
                 type="email"
                 required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={handleChange}
                 className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
               />
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between">
-              <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">
-                Password
-              </label>
-            </div>
+            <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">
+              Password
+            </label>
             <div className="mt-2">
               <input
                 id="password"
@@ -161,20 +177,17 @@ const Signup = () => {
                 type="password"
                 required
                 minLength={6}
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
                 className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
               />
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between">
-              <label htmlFor="age" className="block text-sm/6 font-medium text-gray-900">
-                Age
-              </label>
-            </div>
+            <label htmlFor="age" className="block text-sm/6 font-medium text-gray-900">
+              Age
+            </label>
             <div className="mt-2">
               <input
                 id="age"
@@ -183,27 +196,24 @@ const Signup = () => {
                 required
                 min={1}
                 max={120}
-                autoComplete="off"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
+                value={formData.age}
+                onChange={handleChange}
                 className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
               />
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between">
-              <label htmlFor="role" className="block text-sm/6 font-medium text-gray-900">
-                Role
-              </label>
-            </div>
+            <label htmlFor="role" className="block text-sm/6 font-medium text-gray-900">
+              Role
+            </label>
             <div className="mt-2">
               <select
                 id="role"
                 name="role"
                 required
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
+                value={formData.role}
+                onChange={handleChange}
                 className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
               >
                 <option value="">Select Role</option>
@@ -248,13 +258,11 @@ const Signup = () => {
 
         <p className="mt-10 text-center text-sm/6 text-gray-500">
           Already a member?{' '}
-          <a href="signin" className="font-semibold text-indigo-600 hover:text-indigo-500">
+          <a href="/signin" className="font-semibold text-indigo-600 hover:text-indigo-500">
             Sign in now
           </a>
         </p>
       </div>
     </div>
   );
-};
-
-export default Signup;
+}
