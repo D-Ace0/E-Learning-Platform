@@ -7,6 +7,8 @@ import { useParams } from 'next/navigation';
 interface Question {
   questionId: string;
   questionText: string;
+  type: string; // "MCQ" or "True/False"
+  options?: string[]; // Only for MCQ
 }
 
 interface Feedback {
@@ -158,11 +160,7 @@ const QuizQuestionsPage = () => {
     }
   };
 
-  if (status === 'loading') {
-    return <p>Loading...</p>;
-  }
-
-  if (loading) {
+  if (status === 'loading' || loading) {
     return (
       <div className="flex justify-center items-center">
         <div className="spinner"></div>
@@ -172,28 +170,78 @@ const QuizQuestionsPage = () => {
 
   return (
     <div className="container mx-auto p-8">
-      <h1 className="text-4xl font-bold text-center mb-8">Quiz Questions</h1>
-      <ul>
+      <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">Quiz Questions</h1>
+      <div className="space-y-8">
         {questions.map((q, index) => (
-          <li key={q.questionId} className="mb-4">
-            <p>
+          <div
+            key={q.questionId}
+            className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+          >
+            <p className="font-semibold text-lg mb-4">
               {index + 1}. {q.questionText}
             </p>
-            <input
-              type="text"
-              placeholder="Your answer"
-              className="border rounded p-2 mt-2 w-full"
-              onChange={(e) => setAnswers({ ...answers, [q.questionId]: e.target.value })}
-            />
-          </li>
+            {q.type === "MCQ" && q.options ? (
+              <div className="space-y-2">
+                {q.options.map((option, idx) => (
+                  <label
+                    key={idx}
+                    className="block cursor-pointer hover:bg-gray-100 p-2 rounded transition"
+                  >
+                    <input
+                      type="radio"
+                      name={q.questionId}
+                      value={option}
+                      checked={answers[q.questionId] === option}
+                      onChange={(e) =>
+                        setAnswers({ ...answers, [q.questionId]: e.target.value })
+                      }
+                      className="mr-2"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            ) : q.type === "True/False" ? (
+              <div className="space-y-2">
+                <label className="block cursor-pointer hover:bg-gray-100 p-2 rounded transition">
+                  <input
+                    type="radio"
+                    name={q.questionId}
+                    value="True"
+                    checked={answers[q.questionId] === "True"}
+                    onChange={(e) =>
+                      setAnswers({ ...answers, [q.questionId]: e.target.value })
+                    }
+                    className="mr-2"
+                  />
+                  True
+                </label>
+                <label className="block cursor-pointer hover:bg-gray-100 p-2 rounded transition">
+                  <input
+                    type="radio"
+                    name={q.questionId}
+                    value="False"
+                    checked={answers[q.questionId] === "False"}
+                    onChange={(e) =>
+                      setAnswers({ ...answers, [q.questionId]: e.target.value })
+                    }
+                    className="mr-2"
+                  />
+                  False
+                </label>
+              </div>
+            ) : null}
+          </div>
         ))}
-      </ul>
-      <button
-        className="mt-6 bg-blue-500 text-white py-2 px-4 rounded"
-        onClick={handleSubmit}
-      >
-        Submit Quiz
-      </button>
+      </div>
+      <div className="flex justify-center mt-8">
+        <button
+          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md transition-transform transform hover:scale-105"
+          onClick={handleSubmit}
+        >
+          Submit Quiz
+        </button>
+      </div>
     </div>
   );
 };

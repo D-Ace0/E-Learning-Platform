@@ -20,6 +20,12 @@ export class Question {
     @Prop({type: String, required: true})
     answer: string
 
+    @Prop({ required: false, type: [String] }) // Optional for 'MCQ' questions
+    options?: string[];
+
+    @Prop({ required: true, type: String }) // e.g., 'MCQ' or 'True/False'
+    type: string;
+
     @Prop({ type: String, required: true, enum: DifficultyLevel })
     difficulty: DifficultyLevel;
 }

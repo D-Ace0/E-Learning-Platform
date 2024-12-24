@@ -15,6 +15,12 @@ export class Quiz {
   @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: () => Question })
   questions: Question[]
 
+  @Prop({ required: true, type: Number }) // Add questionCount
+  questionCount: number;
+
+  @Prop({ required: true, type: String }) // Add questionType
+  questionType: string;
+
   @Prop({ required: false, type: Date, default: Date.now })
   created_at?: Date
 }

@@ -47,6 +47,13 @@ const Header = () => {
                 </Link>
               </li>
             )}
+            {session?.role === 'instructor' && (
+              <li>
+                <Link href="/question" className="hover:underline">
+                  QuestionBank
+                </Link>
+              </li>
+            )}
             {session?.role === 'student' && (
                 <>
                   <li>
@@ -65,14 +72,14 @@ const Header = () => {
                       Dashboard
                     </Link>
                   </li>
+                 
+                </>
+            )}
                   <li>
                     <Link href="/profile" className="hover:underline">
                       Profile
                     </Link>
                   </li>
-                </>
-            )}
-
             {session?.role === 'student' && (
               <>
               <li>

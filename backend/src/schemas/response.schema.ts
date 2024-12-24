@@ -11,7 +11,7 @@ export class Response {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: () => User })
   user_id: mongoose.Schema.Types.ObjectId
 
-  @Prop({default: [], type: [mongoose.Schema.Types.ObjectId], ref: () => Quiz})
+  @Prop({required:true, type: mongoose.Schema.Types.ObjectId, ref: () => 'Quiz'})
   quiz_id: mongoose.Types.ObjectId
 
   @Prop({ required: true, type: [Object]})
@@ -20,7 +20,7 @@ export class Response {
   @Prop({required: true, type: Number})
   score: number
 
-  @Prop({ required: false, type: Date, default: Date.now })
+  @Prop({ required: true, type: Date, default: Date.now })
   submitted_at?: Date
 }
 
