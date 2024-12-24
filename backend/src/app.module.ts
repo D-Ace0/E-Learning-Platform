@@ -14,7 +14,7 @@ import { QuizModule } from './quizzes/quiz.module'
 import { ModuleModule } from './modules/module.module'
 import { MfaModule } from './mfa/mfa.module'
 import { MailModule } from './mail/mail.module'
-import { ChatGateway } from './communication_handler/WebSocket_Gateway';
+// import { ChatGateway } from './communication_handler/WebSocket_Gateway';
 import {RoomModule} from './communication_handler/Communication_Modules/room.module';
 import {MessagesModule} from './communication_handler/Communication_Modules/MessagesModule';
 import { BackupModule } from './backup/backup.module'
@@ -35,7 +35,7 @@ dotenv.config();
       useClass: JwtService,  // You might want to use the actual AuthGuard or AuthorizationGuard here
     },
     Logger,
-    ChatGateway,
+    // ChatGateway,
     ResourceAccessGuard
   ],
   imports: [
