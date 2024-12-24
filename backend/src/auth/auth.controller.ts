@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post, Request, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Request, Res, UseGuards, Get, Param } from '@nestjs/common';
 import { SignInDTO } from './dto/signin';
 import { AuthService } from './auth.service';
 import { SignupDTO } from './dto/signup.dto';
@@ -49,5 +49,17 @@ export class AuthController {
     const user_id = req.user.user_id;
     const response = await this.authService.verifyMFA(user_id, body.code);
     return response;
+  }
+
+  @Get('logs')
+  @UseGuards(AuthenticationGuard)
+  async getAuthenticationLogs(@Request() req: any) {
+    return this.authService.getAuthenticationLogs(req.user.user_id);
+  }
+
+  @Get('logs/:userId')
+  @UseGuards(AuthenticationGuard)
+  async getUserAuthenticationLogs(@Request() req: any, @Param('userId') userId: string) {
+    return this.authService.getUserAuthenticationLogs(req.user.user_id, userId);
   }
 }

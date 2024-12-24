@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface User {
  _id: string;
@@ -136,7 +137,15 @@ export default function AdminPage() {
  
   return (
    <main className="p-4">
-     <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+     <div className="flex justify-between items-center mb-6">
+       <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+       <Link 
+         href="/admin/auth-logs" 
+         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+       >
+         View All Authentication Logs
+       </Link>
+     </div>
      {error && <div className="text-red-500 mb-4">{error}</div>}
      {loading && <div className="text-gray-500 mb-4">Loading...</div>}
      <div className="overflow-x-auto">
@@ -211,6 +220,14 @@ export default function AdminPage() {
                 <div className="mb-4">
                   <label className="block text-gray-700 text-sm font-bold mb-2">created_at:</label>
                   <p className="text-gray-700">{viewedUser.created_at}</p>
+                </div>
+                <div className="mb-4">
+                  <Link 
+                    href={`/admin/auth-logs?userId=${viewedUser._id}&userName=${encodeURIComponent(viewedUser.name)}`} 
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    View User's Authentication Logs
+                  </Link>
                 </div>
                 <div className="flex justify-end">
                   <button type="button" onClick={closeViewModal} className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded">

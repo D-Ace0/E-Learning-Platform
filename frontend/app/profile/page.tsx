@@ -438,9 +438,7 @@ const handleSaveAllChanges = async () => {
                                    <div className="flex items-center mb-2">
                                        <IdentificationIcon className="h-5 w-5 text-purple-300 mr-2" />
                                        <span className="text-gray-300">Role: </span>
-                                       <span className="text-gray-300">{profileData.role === 'student' ? 'Student' : 
-                                           profileData.role === 'instructor' ? 'Instructor' : 
-                                           profileData.role === 'admin' ? 'Admin' : profileData.role}</span>
+                                       <span className="text-gray-300">{profileData.role}</span>
                                    </div>
                                    <div className="flex items-center mb-2">
                                        <LockClosedIcon className="h-5 w-5 text-violet-300 mr-2" />
