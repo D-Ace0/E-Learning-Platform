@@ -47,38 +47,40 @@ export class CoursesService {
 }
 
 
-async updateCourse(id: string, updateCourseDto: UpdateCourseDto, userId: string): Promise<Course> {
-  const course = await this.courseModel.findById(id);
-  if (!course) {
-    throw new NotFoundException(`Course with${id} not found`);
- }
- if (course.created_by.toString() !== userId) {
-   throw new UnauthorizedException('You are not authorized to update this course');
- }
- try {
-   const { isOutdated, ...rest } = updateCourseDto;
-   const updatedCourse = await this.courseModel.findByIdAndUpdate(
-     id,
-     rest,
-     { new: true }
-   );
-   if (!updatedCourse) {
-     throw new NotFoundException(`Course with ID ${id} not found`);
-   }
-   return updatedCourse;
- } catch (error) {
-   throw new InternalServerErrorException(error);
- }
-}
+  async updateCourse(id: string, updateCourseDto: UpdateCourseDto, userId: string): Promise<Course> {
+    const course = await this.courseModel.findById(id);
+    if (!course) {
+      throw new NotFoundException(`Course with ID ${id} not found`);
+    }
+    if (course.created_by.toString() !== userId) {
+      throw new UnauthorizedException('You are not authorized to update this course');
+    }
+    try {
+      const { isOutdated, ...rest } = updateCourseDto;
+      // Set created_by and created_at to today's date
+      const updatedCourse = await this.courseModel.findByIdAndUpdate(
+          id,
+          {
+            ...rest,
+            created_by: userId, // Update created_by to the current user
+            created_at: new Date().toISOString() // Update created_at to today's date
+          },
+          { new: true }
+      );
+      if (!updatedCourse) {
+        throw new NotFoundException(`Course with ID ${id} not found`);
+      }
+      return updatedCourse;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
 
   async deleteCourse(id: string, instructor_id: string) {
     if (!isValidObjectId(id)) throw new BadRequestException('Invalid course ID');
 
     const course = await this.courseModel.findById(id).exec();
     if (!course) throw new NotFoundException('Course does not exist');
-
-    const instructor_id_AS_ObjectId = new Types.ObjectId(instructor_id);
-    if (course.created_by.toString() !== instructor_id_AS_ObjectId.toString()) throw new ForbiddenException('You cannot delete this course');
 
     await this.courseModel.findByIdAndDelete(id).exec();
     return { message: 'Course deleted successfully' };

@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface User {
  _id: string;
@@ -70,43 +71,43 @@ export default function AdminPage() {
    setEditedUser(null);
    setError(null);
  };
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-   const { name, value } = e.target;
-   if (editedUser) {
-     setEditedUser({ ...editedUser, [name]: value });
-   }
- };
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        if (editedUser) {
+            setEditedUser({ ...editedUser, [name]: value });
+        }
+    };
 
- 
-  const handleUpdateSubmit = async () => {
-   if (!editedUser || !selectedUser) return;
-   const confirmUpdate = window.confirm("Are you sure you wanna update?")
-   if(!confirmUpdate) return
-   setLoading(true);
-   try {
-     const response = await fetch(`http://localhost:5000/users/editProfile/${session?.user_id}`, {
-       method: 'PUT',
-       headers: {
-         'Content-Type': 'application/json',
-         'Authorization': `Bearer ${session?.accessToken}`,
-       },
-       body: JSON.stringify(editedUser),
-     });
-     if (!response.ok) {
-       const errorData = await response.json();
-       throw new Error(errorData.message || 'Failed to update user');
-     }
-     setUsers(users.map(user => user._id === selectedUser._id ? editedUser : user));
-     closeModal();
-     console.log(`User with ID: ${selectedUser._id} updated successfully`);
-     setError(null);
-   } catch (err: any) {
-     setError(err.message || 'Failed to update user');
-     console.error('Error updating user:', err);
-   } finally {
-     setLoading(false);
-   }
- };
+
+    const handleUpdateSubmit = async () => {
+        if (!editedUser || !selectedUser) return;
+        const confirmUpdate = window.confirm("Are you sure you wanna update?");
+        if (!confirmUpdate) return;
+        setLoading(true);
+        try {
+            const response = await fetch(`http://localhost:5000/users/editProfile/${selectedUser._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.accessToken}`,
+                },
+                body: JSON.stringify(editedUser),
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update user');
+            }
+            setUsers(users.map(user => user._id === selectedUser._id ? editedUser : user));
+            closeModal();
+            console.log(`User with ID: ${selectedUser._id} updated successfully`);
+            setError(null);
+        } catch (err: any) {
+            setError(err.message || 'Failed to update user');
+            console.error('Error updating user:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
   const handleDelete = async (userId: string) => {
     const confirmDelete = window.confirm("Are you sure you wanna Delete this user?")
    if(!confirmDelete) return
@@ -133,10 +134,18 @@ export default function AdminPage() {
    }
  };
 
- 
+
   return (
    <main className="p-4">
-     <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+     <div className="flex justify-between items-center mb-6">
+       <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+       <Link
+         href="/admin/auth-logs"
+         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+       >
+         View All Authentication Logs
+       </Link>
+     </div>
      {error && <div className="text-red-500 mb-4">{error}</div>}
      {loading && <div className="text-gray-500 mb-4">Loading...</div>}
      <div className="overflow-x-auto">
@@ -212,6 +221,14 @@ export default function AdminPage() {
                   <label className="block text-gray-700 text-sm font-bold mb-2">created_at:</label>
                   <p className="text-gray-700">{viewedUser.created_at}</p>
                 </div>
+                <div className="mb-4">
+                  <Link
+                    href={`/admin/auth-logs?userId=${viewedUser._id}&userName=${encodeURIComponent(viewedUser.name)}`}
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    View User's Authentication Logs
+                  </Link>
+                </div>
                 <div className="flex justify-end">
                   <button type="button" onClick={closeViewModal} className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded">
                     Close
@@ -240,12 +257,14 @@ export default function AdminPage() {
                </div>
                <div className="mb-4">
                  <label className="block text-gray-700 text-sm font-bold mb-2">Role</label>
-                 <select name="role" value={editedUser.role} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                   <option value="user">User</option>
-                   <option value="admin">Admin</option>
-                 </select>
+                   <select name="role" value={editedUser.role} onChange={handleInputChange}
+                           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                       <option value="user">User</option>
+                       <option value="instructor">Instructor</option>
+                       <option value="admin">Admin</option>
+                   </select>
                </div>
-               <div className="flex justify-end">
+                 <div className="flex justify-end">
                  <button type="button" onClick={closeModal} className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded mr-2">
                    Cancel
                  </button>

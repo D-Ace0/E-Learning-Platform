@@ -37,6 +37,7 @@ const MyCourses = async () => {
 
     const courses: Course[] = await response.json(); // Now the response includes _id, title, and description
 
+  
     return (
       <div className="container mx-auto p-8">
         <h1 className="text-4xl font-bold text-center mb-8">My Enrolled Courses</h1>

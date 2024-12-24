@@ -17,7 +17,7 @@ import { MailModule } from './mail/mail.module'
 import { ChatGateway } from './communication_handler/WebSocket_Gateway';
 import {RoomModule} from './communication_handler/Communication_Modules/room.module';
 import {MessagesModule} from './communication_handler/Communication_Modules/MessagesModule';
-import { BackupModule } from './backup/backup.module';
+import { BackupModule } from './backup/backup.module'
 import { DashboardModule } from './dashboard/dashboard.module'
 import { ResourceAccessGuard } from './guards/resource-access.guard'
 import { RecommendationModule } from './recommendation/recommendation.module';
@@ -25,6 +25,7 @@ import { QuestionModule } from './question/question.module';
 import { ForumsModule } from './forums/forums.module';
 import { PostsModule } from './posts/posts.module';
 import { ThreadsModule } from './threads/threads.module';
+import { FingerPrintModule } from './finger-print/finger-print.module'
 dotenv.config();
 
 @Module({
@@ -39,6 +40,7 @@ dotenv.config();
   ],
   imports: [
     RecommendationModule,
+    FingerPrintModule,
     BackupModule,
     MailModule,
     QuizModule,
@@ -55,7 +57,9 @@ dotenv.config();
     QuestionModule,
     ForumsModule,
     PostsModule,
-    ThreadsModule
+    ThreadsModule,
+    MongooseModule.forRoot(process.env.MONGO_URI),
+    QuestionModule
     // MongooseModule.forRoot(
     //   'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
   ],

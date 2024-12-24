@@ -4,6 +4,7 @@ import { UpdateQuestionDto } from './dto/update-question.dto';
 import { AuthenticationGuard } from 'src/guards/authentication.guard';
 import { AuthorizationGuard } from 'src/guards/authorization.guard';
 import { Roles } from 'src/decorators/roles.decorator';
+import { CreateQuestionDto } from './dto/create-question.dto';
 
 @Controller('question')
 @UseGuards(AuthenticationGuard, AuthorizationGuard)
@@ -24,5 +25,15 @@ export class QuestionController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.questionService.remove(id);
+  }
+
+  @Post()
+  create(@Body() createQuestionDto: CreateQuestionDto) {
+    return this.questionService.create(createQuestionDto);
+  }
+
+  @Get('module/:moduleId')
+  findByModuleId(@Param('moduleId') moduleId: string) {
+    return this.questionService.findByModuleId(moduleId);
   }
 }

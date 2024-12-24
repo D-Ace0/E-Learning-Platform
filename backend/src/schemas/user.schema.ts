@@ -44,6 +44,10 @@ export class User {
 
   @Prop({ required: false, default: false })
   mfa_enabled?: boolean
+
+  @Prop({ required: false,default: null})
+  finger_print?: string
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)

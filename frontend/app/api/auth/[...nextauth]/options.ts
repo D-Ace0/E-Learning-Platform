@@ -18,7 +18,8 @@ export const options: NextAuthOptions = {
       name: 'Credentials',
       credentials: {
         email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        mfaToken: { label: "MFA Token", type: "text" }
       },
       async authorize(credentials) {
         try {
@@ -31,21 +32,28 @@ export const options: NextAuthOptions = {
             credentials: 'include',
           });
 
-          const user = await response.json();
+          const data = await response.json();
 
-          if (response.ok && user) {
+          // If MFA is required, throw an error with status 202
+          if (response.status === 202) {
+            throw new Error('MFA_REQUIRED');
+          }
+
+          if (response.ok && data) {
             const cookies = response.headers.get('set-cookie');
             const authToken = cookies?.split(';').find(c => c.trim().startsWith('auth_token='));
             
             if (authToken) {
-              user.auth_token = authToken.split('=')[1];
+              data.auth_token = authToken.split('=')[1];
             }
             
-            return user;
+            return data;
           }
-          return null;
+
+          // If login failed, throw the error message
+          throw new Error(data.message || 'Authentication failed');
         } catch (error) {
-          return null;
+          throw error;
         }
       }
     })
@@ -58,8 +66,6 @@ export const options: NextAuthOptions = {
         try {
           if (typeof user.auth_token === 'string') {
             const decoded = jwt.decode(user.auth_token) as unknown as { user_id: string; role: string, name: string };
-            //console.log('Decoded token:', decoded);
-            //console.log('Raw token:', user.auth_token);
             token.user_id = decoded.user_id;
             token.role = decoded.role;
             token.name = decoded.name;
@@ -75,7 +81,6 @@ export const options: NextAuthOptions = {
       
       if (token.accessToken) {
         const decoded = jwt.decode(token.accessToken as string) as unknown as { user_id: string; role: string, name: string };
-        console.log('Decoded session token:', decoded); // Debug log
         session.user_id = decoded.user_id;
         session.role = decoded.role;
         session.name = decoded.name;
@@ -87,7 +92,7 @@ export const options: NextAuthOptions = {
   pages: {
     signIn: '/signin',
     signOut: '/signout',
-   // error: '/error'
+    error: '/signin'  // Redirect to signin page on error
   },
   session: {
     strategy: "jwt",
