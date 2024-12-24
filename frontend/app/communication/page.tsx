@@ -143,7 +143,7 @@ const Communication = () => {
                     </button>
                     <div className="border rounded p-4 h-64 overflow-y-scroll bg-gray-100">
                         {messages.map((msg) => (
-                            <div key={msg.id} className="mb-2">
+                            <div key={`${msg.id}-${msg.timestamp}`} className="mb-2">
                                 <span className="font-bold">{msg.sender.name}:</span>{' '}
                                 <span>{msg.content}</span>
                                 <div className="text-sm text-gray-500">{new Date(msg.timestamp).toLocaleString()}</div>
