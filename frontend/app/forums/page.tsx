@@ -31,15 +31,15 @@ export default function ForumsPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:5000/forum?courseId=${courseId}`, {
+      const response = await fetch(`http://localhost:5000/forum/${courseId}`, {
         headers: {
           Authorization: `Bearer ${session?.accessToken}`,
         },
       });
-
+      console.log("fetching all")
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to fetch forums');
+        throw new Error(errorData.message || 'Failed to fetch forums here');
       }
 
       const data = await response.json();
@@ -151,10 +151,11 @@ export default function ForumsPage() {
             <div className="flex gap-4">
               {/* Link to the specific forum's page */}
               <Link
-                href={`/forums/${forum._id}`}
+                href={`/forums/${forum._id}?courseId=${forum.course_id}`}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
               >
-                View Forum
+                View Forum               {/* i want to send the course_id in the forum to use it as parameter in the [forumid] */}
+
               </Link>
               <button
                 onClick={() => handleDeleteForum(forum._id)}

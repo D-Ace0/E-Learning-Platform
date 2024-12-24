@@ -19,7 +19,7 @@ export class ForumsController {
     return await this.forumsService.create(createForumDto, instructorId, courseId, role);
   }
 
-  @Get('course/:courseId')
+  @Get(':courseId')
   @Roles(['instructor', 'student'])
   async findAll(
     @Request() req: any,

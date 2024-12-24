@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation'; // Import useSearchParams
 import { useSession } from 'next-auth/react';
 import Swal from 'sweetalert2';
 import Link from 'next/link';
@@ -15,7 +15,7 @@ interface User {
 interface Thread {
   _id: string;
   title: string;
-  course_id: string; // Reflects the actual field from backend
+  course_id: string;
   createdBy: string;
   EnvolvedUsers_ids: User[];
 }
@@ -24,13 +24,15 @@ interface Forum {
   _id: string;
   title: string;
   course_id: string;
-  createdBy: string;
+  createdby: string;
   instructor_id: string;
 }
 
 export default function ForumDetailsPage() {
   const { data: session } = useSession();
-  const { forumId } = useParams();
+  const { forumId } = useParams(); // Get forumId from the route
+  const searchParams = useSearchParams(); // Get search parameters
+  const course_id = searchParams.get('courseId'); // Extract courseId from query params
 
   const [forum, setForum] = useState<Forum | null>(null);
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -39,21 +41,25 @@ export default function ForumDetailsPage() {
   const [loadingThreads, setLoadingThreads] = useState(false);
 
   const fetchForumDetails = async () => {
+    if (!forumId || !course_id) {
+      Swal.fire('Error', 'Forum ID or Course ID is missing', 'error');
+      return;
+    }
+
     setLoadingForum(true);
     try {
-      const response = await fetch(`http://localhost:5000/forum/${forumId}`, {
+      const response = await fetch(`http://localhost:5000/forum/${course_id}`, {
         headers: {
           Authorization: `Bearer ${session?.accessToken}`,
         },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch forum details');
       }
 
-      const data = await response.json();
-      setForum(data);
+      const data: Forum = await response.json();
+      setForum(data); // Ensure the forum data is correctly set
     } catch (error: any) {
       Swal.fire('Error', error.message, 'error');
     } finally {
@@ -62,6 +68,11 @@ export default function ForumDetailsPage() {
   };
 
   const fetchThreads = async () => {
+    if (!forumId || !course_id) {
+      Swal.fire('Error', 'Forum ID or Course ID is missing', 'error');
+      return;
+    }
+
     setLoadingThreads(true);
     try {
       const response = await fetch(`http://localhost:5000/threads?forumId=${forumId}`, {
@@ -75,7 +86,7 @@ export default function ForumDetailsPage() {
         throw new Error(errorData.message || 'Failed to fetch threads');
       }
 
-      const data = await response.json();
+      const data: Thread[] = await response.json();
       setThreads(data);
     } catch (error: any) {
       Swal.fire('Error', error.message, 'error');
@@ -91,7 +102,7 @@ export default function ForumDetailsPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/threads/course/${forum?.course_id}/${forumId}`, {
+      const response = await fetch(`http://localhost:5000/threads/course/${course_id}/${forumId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +151,7 @@ export default function ForumDetailsPage() {
       fetchForumDetails();
       fetchThreads();
     }
-  }, [session, forumId]);
+  }, [session, forumId, course_id]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -150,7 +161,7 @@ export default function ForumDetailsPage() {
         forum && (
           <>
             <h1 className="text-4xl font-bold text-center mb-8">{forum.title}</h1>
-            <p className="text-center text-gray-600 mb-8">Course ID: {forum.course_id}</p>
+            <p className="text-center text-gray-600 mb-8">Course ID: {course_id}</p>
           </>
         )
       )}
@@ -194,7 +205,10 @@ export default function ForumDetailsPage() {
                 </ul>
               </div>
               <div className="flex gap-2">
-                <Link href={`/forums/${forumId}/${thread._id}`} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                <Link
+                  href={`/forums/${forumId}/${thread._id}?courseId=${course_id}`}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                >
                   View Thread
                 </Link>
                 <button

@@ -36,6 +36,7 @@ export class ForumsService {
     if (role === "student") {
       // Check if the student is enrolled in the course
       const course = await this.courseModel.findById(courseId);
+      console.log(courseId)
       if (!course) throw new NotFoundException("Course not found");
   
       const isEnrolled = course.enrolledStudents.some((s) => s.toString() === userId);
