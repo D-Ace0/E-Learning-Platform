@@ -11,41 +11,32 @@ interface User {
   name: string;
   email: string;
 }
-
 interface Thread {
   _id: string;
   title: string;
-  course_id: string;
+  course_id: string; // Reflects the actual field from backend
   createdBy: string;
   EnvolvedUsers_ids: User[];
 }
-
 interface Forum {
   _id: string;
   title: string;
   course_id: string;
-  createdby: string;
+  createdBy: string;
   instructor_id: string;
 }
-
 export default function ForumDetailsPage() {
   const { data: session } = useSession();
-  const { forumId } = useParams(); // Get forumId from the route
-  const searchParams = useSearchParams(); // Get search parameters
-  const course_id = searchParams.get('courseId'); // Extract courseId from query params
-
+  const { forumId } = useParams();
   const [forum, setForum] = useState<Forum | null>(null);
   const [threads, setThreads] = useState<Thread[]>([]);
   const [newThread, setNewThread] = useState({ title: '' });
   const [loadingForum, setLoadingForum] = useState(false);
   const [loadingThreads, setLoadingThreads] = useState(false);
+  const searchParams = useSearchParams(); // Get search parameters
+  const course_id = searchParams.get('courseId'); // Extract courseId from query params
 
   const fetchForumDetails = async () => {
-    if (!forumId || !course_id) {
-      Swal.fire('Error', 'Forum ID or Course ID is missing', 'error');
-      return;
-    }
-
     setLoadingForum(true);
     try {
       const response = await fetch(`http://localhost:5000/forum/${course_id}`, {
@@ -57,22 +48,15 @@ export default function ForumDetailsPage() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch forum details');
       }
-
-      const data: Forum = await response.json();
-      setForum(data); // Ensure the forum data is correctly set
+      const data = await response.json();
+      setForum(data);
     } catch (error: any) {
       Swal.fire('Error', error.message, 'error');
     } finally {
       setLoadingForum(false);
     }
   };
-
   const fetchThreads = async () => {
-    if (!forumId || !course_id) {
-      Swal.fire('Error', 'Forum ID or Course ID is missing', 'error');
-      return;
-    }
-
     setLoadingThreads(true);
     try {
       const response = await fetch(`http://localhost:5000/threads?forumId=${forumId}`, {
@@ -80,13 +64,11 @@ export default function ForumDetailsPage() {
           Authorization: `Bearer ${session?.accessToken}`,
         },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch threads');
       }
-
-      const data: Thread[] = await response.json();
+      const data = await response.json();
       setThreads(data);
     } catch (error: any) {
       Swal.fire('Error', error.message, 'error');
@@ -94,13 +76,11 @@ export default function ForumDetailsPage() {
       setLoadingThreads(false);
     }
   };
-
   const handleCreateThread = async () => {
     if (!newThread.title.trim()) {
       Swal.fire('Error', 'Thread title cannot be empty', 'error');
       return;
     }
-
     try {
       const response = await fetch(`http://localhost:5000/threads/course/${course_id}/${forumId}`, {
         method: 'POST',
@@ -110,12 +90,10 @@ export default function ForumDetailsPage() {
         },
         body: JSON.stringify(newThread),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to create thread');
       }
-
       const createdThread = await response.json();
       setThreads([...threads, createdThread]);
       setNewThread({ title: '' });
@@ -124,7 +102,6 @@ export default function ForumDetailsPage() {
       Swal.fire('Error', error.message, 'error');
     }
   };
-
   const handleDeleteThread = async (threadId: string) => {
     try {
       const response = await fetch(`http://localhost:5000/threads/${threadId}`, {
@@ -133,26 +110,22 @@ export default function ForumDetailsPage() {
           Authorization: `Bearer ${session?.accessToken}`,
         },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to delete thread');
       }
-
       setThreads(threads.filter((thread) => thread._id !== threadId));
       Swal.fire('Success', 'Thread deleted successfully!', 'success');
     } catch (error: any) {
       Swal.fire('Error', error.message, 'error');
     }
   };
-
   useEffect(() => {
     if (session?.accessToken) {
       fetchForumDetails();
       fetchThreads();
     }
-  }, [session, forumId, course_id]);
-
+  }, [session, forumId]);
   return (
     <div className="container mx-auto px-4 py-8">
       {loadingForum ? (
@@ -165,7 +138,6 @@ export default function ForumDetailsPage() {
           </>
         )
       )}
-
       {/* Create Thread */}
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Create a New Thread</h2>
@@ -185,7 +157,6 @@ export default function ForumDetailsPage() {
           </button>
         </div>
       </div>
-
       {/* Display Threads */}
       {loadingThreads ? (
         <p>Loading threads...</p>
@@ -205,10 +176,7 @@ export default function ForumDetailsPage() {
                 </ul>
               </div>
               <div className="flex gap-2">
-                <Link
-                  href={`/forums/${forumId}/${thread._id}?courseId=${course_id}`}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-                >
+                <Link href={`/forums/${forumId}/${thread._id}`} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
                   View Thread
                 </Link>
                 <button
@@ -222,7 +190,6 @@ export default function ForumDetailsPage() {
           ))}
         </div>
       )}
-
       {!loadingThreads && threads.length === 0 && (
         <p className="text-center text-gray-500 mt-8">No threads available for this forum.</p>
       )}

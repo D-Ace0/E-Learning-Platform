@@ -37,22 +37,26 @@ export class ThreadsService {
     })
     await newThread.save()
     await this.courseModel.findByIdAndUpdate(courseId, {$addToSet: {Thread: newThread._id}})
+    await this.forumModel.findByIdAndUpdate(forumId, {$addToSet: {threads: newThread._id}})
     return newThread
   }
 
   async findAll(userId: string, role: string) {
-    if (role === 'instructor') {
-      const threads = await this.threadModel
-        .find({ instructor_id: userId })
-        .populate('EnvolvedUsers_ids', 'name email');
-      return threads;
-    }
-    if (role === 'student') {
-      const threads = await this.threadModel
-        .find({ EnvolvedUsers_ids: userId })
-        .populate('EnvolvedUsers_ids', 'name email');
-      return threads;
-    }
+    // if (role === 'instructor') {
+    //   const threads = await this.threadModel
+    //     .find({ instructor_id: userId })
+    //     .populate('EnvolvedUsers_ids', 'name email');
+    //   return threads;
+    // }
+    // if (role === 'student') {
+    //   const threads = await this.threadModel
+    //     .find({ EnvolvedUsers_ids: userId })
+    //     .populate('EnvolvedUsers_ids', 'name email');
+    //     console.log("here" + threads)
+    //   return threads;
+    // }
+    const threads = await this.threadModel.find({})
+    return threads
   }
   
 
