@@ -30,11 +30,15 @@ const Header = () => {
                 About
               </Link>
             </li>
-            <li>
-              <Link href="/courses" className="hover:underline">
-                Courses
-              </Link>
-            </li>
+            {
+              session && (
+                <li>
+                <Link href="/courses" className="hover:underline">
+                  Courses
+                </Link>
+              </li>
+              )
+            }
             {session?.role === 'instructor' && (
               <li>
                 <Link href="/instructor-courses" className="hover:underline">
@@ -70,11 +74,15 @@ const Header = () => {
                  
                 </>
             )}
-                  <li>
+            {
+              session && (
+                                  <li>
                     <Link href="/profile" className="hover:underline">
                       Profile
                     </Link>
                   </li>
+              )
+            }
             {session?.role === 'student' && (
               <>
               <li>
@@ -91,7 +99,7 @@ const Header = () => {
             )}
              {session? (
                 <li>
-                  <Link href="/communications" className="hover:underline">
+                  <Link href="/communication" className="hover:underline">
                     Chats
                   </Link>
                 </li>
@@ -104,25 +112,30 @@ const Header = () => {
                   </Link>
                 </li>
             ) : ""}
+            {
+              session && (
+                <li>
+              <Link href="/notes" className="hover:underline">
+                Notes
+              </Link>
+            </li>
+              )
+            }
 
             {!session ? (
                 <li>
                   <Link href="/signin" className="hover:underline">
-                    Sign In
+                    Signin
                   </Link>
                 </li>
             ) : (
                 <li>
                   <button onClick={() => signOut()} className="hover:underline">
-                    Sign Out
+                    Signout
                   </button>
                 </li>
             )}
-            <li>
-              <Link href="/notes" className="hover:underline">
-                Notes
-              </Link>
-            </li>
+
           </ul>
         </nav>
       </div>

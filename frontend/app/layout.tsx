@@ -35,10 +35,18 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider session={session}>
-          <Header />
-          {children}
+          <div className="min-h-screen flex flex-col bg-background">
+            <Header />
+            <main className="flex-grow container mx-auto px-6 py-8">
+              {children}
+            </main>
+            <footer className="py-4 text-center text-muted-foreground">
+              © {new Date().getFullYear()} E-Learning-Platform. All rights reserved.
+            </footer>
+          </div>
         </AuthProvider>
       </body>
     </html>
   );
 }
+
