@@ -100,7 +100,7 @@ export default function ThreadPostsPage() {
   };
 
   const handleCreatePost = async () => {
-    if (!thread || !course_id) {
+    if (!thread || !thread.course_id) {
       Swal.fire("Error", "Course ID or thread details are missing", "error");
       return;
     }
@@ -112,7 +112,7 @@ export default function ThreadPostsPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/posts/thread/${thread_id}/course/${course_id}`,
+        `http://localhost:5000/posts/thread/${thread_id}/course/${thread.course_id}`,
         {
           method: "POST",
           headers: {
