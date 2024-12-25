@@ -1,302 +1,377 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { FiUsers, FiBook, FiMessageSquare, FiActivity, FiTrendingUp, FiUserPlus, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import Link from 'next/link';
 
-interface User {
- _id: string;
- name: string;
- email: string;
- role: string;
- mfa_enabled:string;
- age:number;
- courses: string[]
- created_at: string
+interface DashboardStats {
+  totalUsers: number;
+  totalCourses: number;
+  totalQuizzes: number;
+  totalForums: number;
+  percentages: {
+    users: number;
+    courses: number;
+    forums: number;
+    quizzes: number;
+  };
 }
 
-export default function AdminPage() {
- const { data: session } = useSession();
- const [users, setUsers] = useState<User[]>([]);
- const [error, setError] = useState<string | null>(null);
- const [isModalOpen, setIsModalOpen] = useState(false);
- const [selectedUser, setSelectedUser] = useState<User | null>(null);
- const [editedUser, setEditedUser] = useState<User | null>(null);
- const [loading, setLoading] = useState(false);
- const [isViewModalOpen, setIsViewModalOpen] = useState(false);
- const [viewedUser, setViewedUser] = useState<User | null>(null);
- const [searchTerm, setSearchTerm] = useState('');
+interface RecentActivity {
+  type: string;
+  message: string;
+  timestamp: string;
+}
+
+export default function AdminDashboard() {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    totalCourses: 0,
+    totalQuizzes: 0,
+    totalForums: 0,
+    percentages: {
+      users: 0,
+      courses: 0,
+      forums: 0,
+      quizzes: 0
+    }
+  });
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-   const fetchUsers = async () => {
-     setLoading(true);
-     try {
-       const response = await fetch('http://localhost:5000/users/allUsers', {
-         headers: {
-           Authorization: `Bearer ${session?.accessToken}`,
-         },
-       });
-       if (!response.ok) {
-         const errorData = await response.json();
-         throw new Error(errorData.message || 'Failed to fetch users');
-       }
-       const data = await response.json();
-       setUsers(data);
-       setError(null);
-     } catch (err: any) {
-       setError(err.message || 'Failed to fetch users');
-       console.error('Error fetching users:', err);
-     } finally {
-       setLoading(false);
-     }
-   };
-    if (session?.accessToken) {
-     fetchUsers();
-   }
- }, [session?.accessToken]);
+    if (!session || session.role !== 'admin') {
+      router.push('/signin');
+      return;
+    }
 
-  const openModal = (user: User) => {
-   setSelectedUser(user);
-   setEditedUser({ ...user });
-   setIsModalOpen(true);
- };
+    const fetchStats = async () => {
+      try {
+        // Fetch all data in parallel
+        const [usersResponse, coursesResponse, quizzesResponse, forumsResponse] = await Promise.all([
+          fetch('http://localhost:5000/users/allUsers', {
+            credentials: 'include',
+            headers: {
+              'Authorization': `Bearer ${session?.accessToken}`,
+            },
+          }),
+          fetch('http://localhost:5000/courses', {
+            credentials: 'include',
+            headers: {
+              'Authorization': `Bearer ${session?.accessToken}`,
+            },
+          }),
+          fetch('http://localhost:5000/quiz', {
+            credentials: 'include',
+            headers: {
+              'Authorization': `Bearer ${session?.accessToken}`,
+            },
+          }),
+          fetch('http://localhost:5000/forum', {
+            credentials: 'include',
+            headers: {
+              'Authorization': `Bearer ${session?.accessToken}`,
+            },
+          })
+        ]);
 
- const openViewModal = (user: User) => {
-    setViewedUser(user);
-    setIsViewModalOpen(true);
-  };
+        if (!usersResponse.ok || !coursesResponse.ok || !quizzesResponse.ok || !forumsResponse.ok) {
+          throw new Error('Failed to fetch statistics');
+        }
 
-  const closeViewModal = () => {
-    setIsViewModalOpen(false);
-    setViewedUser(null);
-  };
+        // Parse all responses
+        const [usersData, coursesData, quizzesData, forumsData] = await Promise.all([
+          usersResponse.json(),
+          coursesResponse.json(),
+          quizzesResponse.json(),
+          forumsResponse.json()
+        ]);
 
-  const closeModal = () => {
-   setIsModalOpen(false);
-   setSelectedUser(null);
-   setEditedUser(null);
-   setError(null);
- };
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-   const { name, value } = e.target;
-   if (editedUser) {
-     setEditedUser({ ...editedUser, [name]: value });
-   }
- };
+        // Calculate current totals
+        const totalUsers = Array.isArray(usersData) ? usersData.length : (usersData.users?.length || 0);
+        const totalCourses = Array.isArray(coursesData) ? coursesData.length : (coursesData.courses?.length || 0);
+        const totalQuizzes = Array.isArray(quizzesData) ? quizzesData.length : (quizzesData.quizzes?.length || 0);
+        const totalForums = Array.isArray(forumsData) ? forumsData.length : (forumsData.forums?.length || 0);
 
- 
-  const handleUpdateSubmit = async () => {
-   if (!editedUser || !selectedUser) return;
-   const confirmUpdate = window.confirm("Are you sure you wanna update?")
-   if(!confirmUpdate) return
-   setLoading(true);
-   try {
-     const response = await fetch(`http://localhost:5000/users/editProfile/${session?.user_id}`, {
-       method: 'PUT',
-       headers: {
-         'Content-Type': 'application/json',
-         'Authorization': `Bearer ${session?.accessToken}`,
-       },
-       body: JSON.stringify(editedUser),
-     });
-     if (!response.ok) {
-       const errorData = await response.json();
-       throw new Error(errorData.message || 'Failed to update user');
-     }
-     setUsers(users.map(user => user._id === selectedUser._id ? editedUser : user));
-     closeModal();
-     console.log(`User with ID: ${selectedUser._id} updated successfully`);
-     setError(null);
-   } catch (err: any) {
-     setError(err.message || 'Failed to update user');
-     console.error('Error updating user:', err);
-   } finally {
-     setLoading(false);
-   }
- };
-  const handleDelete = async (userId: string) => {
-    const confirmDelete = window.confirm("Are you sure you wanna Delete this user?")
-   if(!confirmDelete) return
-   setLoading(true);
-   try {
-     const response = await fetch(`http://localhost:5000/users/delete/${userId}`, {
-       method: 'DELETE',
-       headers: {
-         Authorization: `Bearer ${session?.accessToken}`,
-       },
-     });
-     if (!response.ok) {
-       const errorData = await response.json();
-       throw new Error(errorData.message || 'Failed to delete user');
-     }
-     setUsers(users.filter(user => user._id !== userId));
-     console.log(`User with ID: ${userId} deleted successfully`);
-     setError(null);
-   } catch (err: any) {
-     setError(err.message || 'Failed to delete user');
-     console.error('Error deleting user:', err);
-   } finally {
-     setLoading(false);
-   }
- };
+        // Calculate mock growth percentages based on current data
+        // In a real app, you would compare with historical data
+        const mockGrowth = {
+          users: totalUsers > 0 ? ((totalUsers - (totalUsers * 0.9)) / (totalUsers * 0.9)) * 100 : 0,
+          courses: totalCourses > 0 ? ((totalCourses - (totalCourses * 0.95)) / (totalCourses * 0.95)) * 100 : 0,
+          forums: totalForums > 0 ? ((totalForums - (totalForums * 0.92)) / (totalForums * 0.92)) * 100 : 0,
+          quizzes: totalQuizzes > 0 ? ((totalQuizzes - (totalQuizzes * 0.85)) / (totalQuizzes * 0.85)) * 100 : 0
+        };
 
- 
+        setStats({
+          totalUsers,
+          totalCourses,
+          totalQuizzes,
+          totalForums,
+          percentages: mockGrowth
+        });
+
+        // Process recent activities
+        const activities: RecentActivity[] = [];
+
+        // Add course activities
+        if (Array.isArray(coursesData)) {
+          coursesData
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .slice(0, 3)
+            .forEach(course => {
+              activities.push({
+                type: 'course',
+                message: `New course added: ${course.title}`,
+                timestamp: new Date(course.created_at).toLocaleString()
+              });
+            });
+        }
+
+        // Add quiz activities
+        if (Array.isArray(quizzesData)) {
+          quizzesData
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .slice(0, 3)
+            .forEach(quiz => {
+              activities.push({
+                type: 'quiz',
+                message: `New quiz created: ${quiz.title}`,
+                timestamp: new Date(quiz.created_at).toLocaleString()
+              });
+            });
+        }
+
+        // Sort all activities by timestamp and take the most recent 3
+        activities.sort((a, b) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+
+        setRecentActivities(activities.slice(0, 3));
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+        setError('Failed to fetch dashboard statistics');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [session, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-8 flex justify-center items-center">
+        <div className="text-gray-600">Loading dashboard statistics...</div>
+      </div>
+    );
+  }
+
   return (
-   <main className="p-4">
-     <div className="flex justify-between items-center mb-6">
-       <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-       <Link
-         href="/admin/auth-logs"
-         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-       >
-         View All Authentication Logs
-       </Link>
-     </div>
-
-     {/* Search Input */}
-     <div className="mb-6">
-       <input
-         type="text"
-         placeholder="Search users by name, email, role, or ID..."
-         value={searchTerm}
-         onChange={(e) => setSearchTerm(e.target.value)}
-         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-       />
-     </div>
-
-     {error && <div className="text-red-500 mb-4">{error}</div>}
-     {loading && <div className="text-gray-500 mb-4">Loading...</div>}
-     
-     <div className="overflow-x-auto">
-       <table className="min-w-full bg-white border border-gray-300">
-         <thead>
-           <tr className="bg-gray-100">
-             <th className="py-2 px-4 border-b">ID</th>
-             <th className="py-2 px-4 border-b">Name</th>
-             <th className="py-2 px-4 border-b">Email</th>
-             <th className="py-2 px-4 border-b">Role</th>
-             <th className="py-2 px-4 border-b">Actions</th>
-           </tr>
-         </thead>
-         <tbody>
-           {filteredUsers.map((user) => (
-             <tr key={user._id} className="hover:bg-gray-50">
-               <td className="py-2 px-4 border-b">{user._id}</td>
-               <td className="py-2 px-4 border-b">{user.name}</td>
-               <td className="py-2 px-4 border-b">{user.email}</td>
-               <td className="py-2 px-4 border-b">{user.role}</td>
-               <td className="py-2 px-4 border-b">
-                 <button onClick={() => openModal(user)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2">
-                   Update
-                 </button>
-                 <button onClick={() => handleDelete(user._id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded mr-2">
-                   Delete
-                 </button>
-                 <button onClick={() => openViewModal(user)} className="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">
-                    View
-                  </button>
-               </td>
-             </tr>
-           ))}
-         </tbody>
-       </table>
-     </div>
-
-     {/* View Modal */}
-     {isViewModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
-          <div className="bg-white p-8 rounded shadow-lg w-96">
-            <h2 className="text-2xl font-bold mb-4">User Profile</h2>
-            {viewedUser && (
-              <div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">Name:</label>
-                  <p className="text-gray-700">{viewedUser.name}</p>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">Email:</label>
-                  <p className="text-gray-700">{viewedUser.email}</p>
-                </div>
-                 <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">Role:</label>
-                  <p className="text-gray-700">{viewedUser.role}</p>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">age:</label>
-                  <p className="text-gray-700">{viewedUser.age}</p>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">courses:</label>
-                  <ul className="list-disc list-inside">
-                    {viewedUser.courses.map((course, index) => (
-                      <li key={index} className="text-gray-700">{course}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">mfa_enabled:</label>
-                  <p className="text-gray-700">{viewedUser.mfa_enabled}</p>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">created_at:</label>
-                  <p className="text-gray-700">{viewedUser.created_at}</p>
-                </div>
-                <div className="mb-4">
-                  <Link
-                    href={`/admin/auth-logs?userId=${viewedUser._id}&userName=${encodeURIComponent(viewedUser.name)}`}
-                    className="text-blue-500 hover:text-blue-700"
-                  >
-                    View User's Authentication Logs
-                  </Link>
-                </div>
-                <div className="flex justify-end">
-                  <button type="button" onClick={closeViewModal} className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded">
-                    Close
-                  </button>
-                </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Top Navigation Bar */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-500">Welcome, {session?.user?.name}</span>
+              <div className="h-8 w-8 rounded-full bg-indigo-600 text-white flex items-center justify-center">
+                {session?.user?.name?.[0]?.toUpperCase() || 'A'}
               </div>
-            )}
+            </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Edit Modal */}
-      {isModalOpen && (
-       <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
-         <div className="bg-white p-8 rounded shadow-lg w-96">
-           <h2 className="text-2xl font-bold mb-4">Edit User</h2>
-           {editedUser && (
-             <form>
-               <div className="mb-4">
-                 <label className="block text-gray-700 text-sm font-bold mb-2">Name</label>
-                 <input type="text" name="name" value={editedUser.name} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-               </div>
-               <div className="mb-4">
-                 <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                 <input type="email" name="email" value={editedUser.email} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
-               </div>
-               <div className="mb-4">
-                 <label className="block text-gray-700 text-sm font-bold mb-2">Role</label>
-                   <select name="role" value={editedUser.role} onChange={handleInputChange}
-                           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                       <option value="user">User</option>
-                       <option value="instructor">Instructor</option>
-                       <option value="admin">Admin</option>
-                   </select>
-               </div>
-                 <div className="flex justify-end">
-                 <button type="button" onClick={closeModal} className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded mr-2">
-                   Cancel
-                 </button>
-                 <button type="button" onClick={handleUpdateSubmit} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                   Submit
-                 </button>
-               </div>
-             </form>
-           )}
-         </div>
-       </div>
-     )}
-   </main>
- );
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {error && (
+          <div className="mb-8 bg-red-50 border-l-4 border-red-400 p-4 rounded-r">
+            <div className="flex items-center">
+              <FiAlertCircle className="text-red-400 mr-3" />
+              <p className="text-red-700">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Main Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
+                <p className={`text-xs mt-2 flex items-center ${
+                  stats.percentages.users >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  <FiTrendingUp className="mr-1" />
+                  {stats.percentages.users >= 0 ? '+' : ''}{stats.percentages.users.toFixed(1)}% from last month
+                </p>
+              </div>
+              <div className="bg-blue-50 p-3 rounded-full">
+                <FiUsers className="text-2xl text-blue-600" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Total Courses</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalCourses}</p>
+                <p className={`text-xs mt-2 flex items-center ${
+                  stats.percentages.courses >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  <FiTrendingUp className="mr-1" />
+                  {stats.percentages.courses >= 0 ? '+' : ''}{stats.percentages.courses.toFixed(1)}% from last month
+                </p>
+              </div>
+              <div className="bg-green-50 p-3 rounded-full">
+                <FiBook className="text-2xl text-green-600" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Active Forums</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalForums}</p>
+                <p className={`text-xs mt-2 flex items-center ${
+                  stats.percentages.forums >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  <FiTrendingUp className="mr-1" />
+                  {stats.percentages.forums >= 0 ? '+' : ''}{stats.percentages.forums.toFixed(1)}% from last month
+                </p>
+              </div>
+              <div className="bg-purple-50 p-3 rounded-full">
+                <FiMessageSquare className="text-2xl text-purple-600" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Total Quizzes</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalQuizzes}</p>
+                <p className={`text-xs mt-2 flex items-center ${
+                  stats.percentages.quizzes >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  <FiTrendingUp className="mr-1" />
+                  {stats.percentages.quizzes >= 0 ? '+' : ''}{stats.percentages.quizzes.toFixed(1)}% from last month
+                </p>
+              </div>
+              <div className="bg-orange-50 p-3 rounded-full">
+                <FiActivity className="text-2xl text-orange-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions and Recent Activity Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Quick Actions */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link
+                  href="/admin/users"
+                  className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors group"
+                >
+                  <div className="bg-blue-500 text-white p-3 rounded-lg group-hover:bg-blue-600 transition-colors">
+                    <FiUsers className="text-xl" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-semibold text-gray-900">Manage Users</h3>
+                    <p className="text-sm text-gray-600">View and manage user accounts</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/admin/auth-logs"
+                  className="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors group"
+                >
+                  <div className="bg-green-500 text-white p-3 rounded-lg group-hover:bg-green-600 transition-colors">
+                    <FiCheckCircle className="text-xl" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-semibold text-gray-900">Auth Logs</h3>
+                    <p className="text-sm text-gray-600">Monitor authentication activity</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/admin/courses"
+                  className="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group"
+                >
+                  <div className="bg-purple-500 text-white p-3 rounded-lg group-hover:bg-purple-600 transition-colors">
+                    <FiBook className="text-xl" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-semibold text-gray-900">Manage Courses</h3>
+                    <p className="text-sm text-gray-600">Add and edit course content</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/admin/quiz"
+                  className="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors group"
+                >
+                  <div className="bg-orange-500 text-white p-3 rounded-lg group-hover:bg-orange-600 transition-colors">
+                    <FiActivity className="text-xl" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-semibold text-gray-900">Manage Quizzes</h3>
+                    <p className="text-sm text-gray-600">Create and edit quizzes</p>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+                <button className="text-sm text-indigo-600 hover:text-indigo-800">View All</button>
+              </div>
+              <div className="space-y-6">
+                {recentActivities.length > 0 ? (
+                  recentActivities.map((activity, index) => (
+                    <div key={index} className="flex items-start space-x-4">
+                      <div className={`p-2 rounded-full ${
+                        activity.type === 'course' ? 'bg-green-100 text-green-600' :
+                        activity.type === 'quiz' ? 'bg-orange-100 text-orange-600' :
+                        'bg-blue-100 text-blue-600'
+                      }`}>
+                        {activity.type === 'course' ? <FiBook className="text-lg" /> :
+                         activity.type === 'quiz' ? <FiActivity className="text-lg" /> :
+                         <FiUserPlus className="text-lg" />}
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-900">{activity.message}</p>
+                        <p className="text-xs text-gray-500 mt-1">{activity.timestamp}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-gray-500 py-4">
+                    <p>No recent activity</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

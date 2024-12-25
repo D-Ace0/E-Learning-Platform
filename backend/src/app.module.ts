@@ -53,7 +53,7 @@ dotenv.config();
     MessagesModule,
     MfaModule, 
     DashboardModule,
-    MongooseModule.forRoot('mongodb+srv://AhmedKhadrawy:9g3bcGpd2Ay9v0LR@database.r38ac.mongodb.net/E-Learning-Platform'),
+    MongooseModule.forRoot('mongodb://localhost:27017/E-Learning-Platform'),
     QuestionModule,
     ForumsModule,
     PostsModule,

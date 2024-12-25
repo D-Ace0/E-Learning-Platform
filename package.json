@@ -1,6 +1,16 @@
 {
+  "name": "e-learning-platform",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"cd backend && npm run start:dev\" \"cd frontend && npm run dev\"",
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "dev": "npm run start"
+  },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^4.5.1",
     "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
   }
 }
