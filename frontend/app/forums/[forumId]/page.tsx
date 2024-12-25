@@ -35,7 +35,6 @@ export default function ForumDetailsPage() {
   const [loadingThreads, setLoadingThreads] = useState(false);
   const searchParams = useSearchParams(); // Get search parameters
   const course_id = searchParams.get('courseId'); // Extract courseId from query params
-
   const fetchForumDetails = async () => {
     setLoadingForum(true);
     try {
@@ -59,7 +58,7 @@ export default function ForumDetailsPage() {
   const fetchThreads = async () => {
     setLoadingThreads(true);
     try {
-      const response = await fetch(`http://localhost:5000/threads?forumId=${forumId}`, {
+      const response = await fetch(`http://localhost:5000/threads/${course_id}`, {
         headers: {
           Authorization: `Bearer ${session?.accessToken}`,
         },
@@ -176,7 +175,7 @@ export default function ForumDetailsPage() {
                 </ul>
               </div>
               <div className="flex gap-2">
-                <Link href={`/forums/${forumId}/${thread._id}`} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                <Link href={`/forums/${forumId}/${thread._id}?courseId=${course_id}&threadId=${thread._id}`} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
                   View Thread
                 </Link>
                 <button

@@ -41,23 +41,19 @@ export class ThreadsService {
     return newThread
   }
 
-  async findAll(userId: string, role: string) {
-    // if (role === 'instructor') {
-    //   const threads = await this.threadModel
-    //     .find({ instructor_id: userId })
-    //     .populate('EnvolvedUsers_ids', 'name email');
-    //   return threads;
-    // }
-    // if (role === 'student') {
-    //   const threads = await this.threadModel
-    //     .find({ EnvolvedUsers_ids: userId })
-    //     .populate('EnvolvedUsers_ids', 'name email');
-    //     console.log("here" + threads)
-    //   return threads;
-    // }
-    const threads = await this.threadModel.find({})
-    return threads
+  async findAll(courseId: string, userId: string, role: string) {
+    let threads;
+  
+    threads = await this.threadModel
+    .find({ course_id: courseId })
+    .populate('EnvolvedUsers_ids', 'name email');
+  
+    return threads;
   }
+  
+  
+  
+  
   
 
   async findOne(threadId: string, userId: string, role: string) {

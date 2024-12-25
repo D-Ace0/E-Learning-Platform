@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Swal from "sweetalert2";
 
@@ -25,8 +25,11 @@ interface Thread {
 }
 
 export default function ThreadPostsPage() {
-  const { threadId, forumId } = useParams(); // Extract threadId and forumId from URL
+  const searchParams = useSearchParams(); // Extract search parameters
   const { data: session } = useSession();
+
+  const course_id = searchParams.get("courseId"); // Get courseId from query params
+  const thread_id = searchParams.get("threadId"); // Get threadId from query params
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [thread, setThread] = useState<Thread | null>(null);
@@ -35,9 +38,19 @@ export default function ThreadPostsPage() {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    console.log("threadId:", thread_id);
+    console.log("courseId:", course_id);
+  }, [thread_id, course_id]);
+
   const fetchThreadDetails = async () => {
+    if (!course_id) {
+      Swal.fire("Error", "Course ID is missing", "error");
+      return;
+    }
+
     try {
-      const response = await fetch(`http://localhost:5000/threads/${threadId}`, {
+      const response = await fetch(`http://localhost:5000/threads/${course_id}`, {
         headers: {
           Authorization: `Bearer ${session?.accessToken}`,
         },
@@ -56,15 +69,15 @@ export default function ThreadPostsPage() {
   };
 
   const fetchPosts = async () => {
-    if (!thread || !thread.course_id) {
-      Swal.fire("Error", "Course ID or thread details are missing", "error");
+    if (!course_id || !thread_id) {
+      Swal.fire("Error", "Course ID or thread ID is missing", "error");
       return;
     }
 
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/posts/thread/${threadId}/course/${thread.course_id}`,
+        `http://localhost:5000/posts/thread/${thread_id}/course/${course_id}`,
         {
           headers: {
             Authorization: `Bearer ${session?.accessToken}`,
@@ -99,7 +112,7 @@ export default function ThreadPostsPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/posts/thread/${threadId}/course/${thread.course_id}`,
+        `http://localhost:5000/posts/thread/${thread_id}/course/${thread.course_id}`,
         {
           method: "POST",
           headers: {
@@ -180,7 +193,7 @@ export default function ThreadPostsPage() {
     if (session?.accessToken) {
       fetchThreadDetails();
     }
-  }, [session, threadId]);
+  }, [session, course_id]);
 
   useEffect(() => {
     if (thread) {

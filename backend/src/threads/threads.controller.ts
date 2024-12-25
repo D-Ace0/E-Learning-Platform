@@ -19,12 +19,12 @@ export class ThreadsController {
     return await this.threadsService.create(createThreadDto, userId, courseId, role, forumId);
   }
 
-  @Get("")
+  @Get(":courseId")
   @Roles(['instructor', 'student'])
-  findAll(@Request() req: any) {
+  findAll(@Request() req: any, @Param('courseId') courseId: string) {
     const role = req.user.role
     const userId = req.user.user_id
-    return this.threadsService.findAll(userId, role);
+    return this.threadsService.findAll(courseId, userId, role);
   }
 
   @Get(':threadId')

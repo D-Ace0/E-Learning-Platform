@@ -36,7 +36,6 @@ export default function ForumsPage() {
           Authorization: `Bearer ${session?.accessToken}`,
         },
       });
-      console.log("fetching all")
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to fetch forums here');
