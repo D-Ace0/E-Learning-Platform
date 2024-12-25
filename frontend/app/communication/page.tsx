@@ -43,7 +43,7 @@ const Communication = () => {
         fetchRooms();
     }, []);
 
-    const handleJoinRoom = (roomName: string) => {
+    const handleJoinRoom = async (roomName: string) => {
         if (!socket) return;
 
         // Ensure the user is logged in and has a student ID
@@ -53,26 +53,41 @@ const Communication = () => {
             return;
         }
 
-        setSelectedRoom(roomName);
-        setError(null);
+        try {
+            // Step 1: Call the API to add the student to the room in the database
+            const apiResponse = await axios.post('http://localhost:5000/rooms/add-student', {
+                roomName,
+                studentId,
+            });
 
-        // Emit "joinRoom" to WebSocket
-        socket.emit('joinRoom', { roomName, studentId });
+            console.log('Student successfully added to the room:', apiResponse.data);
 
-        // Listen for room events
-        socket.on('roomJoined', (data) => {
-            setMessages(data.messages);
-            console.log(`Joined room ${data.room.name} with messages:`, data.messages);
-        });
+            // Step 2: Emit "joinRoom" event to WebSocket
+            setSelectedRoom(roomName);
+            setError(null);
 
-        socket.on('messageReceived', (data) => {
-            setMessages((prevMessages) => [...prevMessages, data.message]);
-        });
+            socket.emit('joinRoom', { roomName, studentId });
 
-        socket.on('error', (errorMessage) => {
-            setError(errorMessage);
-        });
+            // Listen for room events
+            socket.on('roomJoined', (data) => {
+                setMessages(data.messages);
+                console.log(`Joined room ${data.room.name} with messages:`, data.messages);
+            });
+
+            socket.on('messageReceived', (data) => {
+                setMessages((prevMessages) => [...prevMessages, data.message]);
+            });
+
+            socket.on('error', (errorMessage) => {
+                setError(errorMessage);
+            });
+        } catch (error) {
+            console.error('Failed to add student to room:', error);
+            setError('Failed to add student to the room.');
+        }
     };
+
+
 
     const handleSendMessage = () => {
         if (!socket || !selectedRoom) {

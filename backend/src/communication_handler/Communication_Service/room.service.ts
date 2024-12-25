@@ -20,13 +20,16 @@ export class RoomService {
       throw new NotFoundException(`Room "${roomName}" does not exist`);
     }
 
+    // Convert studentId to an ObjectId if it's not already
     const studentObjectId = new mongoose.Types.ObjectId(studentId);
 
+    // Add the student only if they are not already in the array
     if (!room.joined_students.includes(studentObjectId)) {
-      room.joined_students.push(studentObjectId); // Add the student
-      await room.save(); // Save updated room
+      room.joined_students.push(studentObjectId);
     }
 
+    // Save the updated room document
+    await room.save();
     return room;
   }
   async getAllRooms(): Promise<RoomDocument[]> {

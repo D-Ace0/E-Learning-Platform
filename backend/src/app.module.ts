@@ -26,6 +26,7 @@ import { ForumsModule } from './forums/forums.module';
 import { PostsModule } from './posts/posts.module';
 import { ThreadsModule } from './threads/threads.module';
 import { FingerPrintModule } from './finger-print/finger-print.module'
+import {NotificationModule} from'./communication_handler/Communication_Modules/NotificationModule'
 dotenv.config();
 
 @Module({
@@ -53,12 +54,13 @@ dotenv.config();
     MessagesModule,
     MfaModule, 
     DashboardModule,
-    MongooseModule.forRoot('mongodb+srv://AhmedKhadrawy:9g3bcGpd2Ay9v0LR@database.r38ac.mongodb.net/E-Learning-Platform'),
+    MongooseModule.forRoot('mongodb://127.0.0.1:27017/E-Learning-Platform'),
     QuestionModule,
     ForumsModule,
     PostsModule,
+    NotificationModule,
     ThreadsModule,
-    MongooseModule.forRoot(process.env.MONGO_URI),
+    MongooseModule.forRoot('mongodb://127.0.0.1:27017/E-Learning-Platform'),
     QuestionModule
     // MongooseModule.forRoot(
     //   'mongodb+srv://abdelrahmanahmed75a:PO0kY6HyPet6zamr@e-learning.sdk3y.mongodb.net/', {}),
