@@ -29,4 +29,7 @@ export class RoomService {
 
     return room;
   }
+  async getAllRooms(): Promise<RoomDocument[]> {
+    return this.roomModel.find().exec();
+  }
 }

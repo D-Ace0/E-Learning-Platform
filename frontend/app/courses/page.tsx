@@ -30,9 +30,9 @@ export default function Courses() {
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
     const categories = ['History', 'Science', 'Engineering', 'Art', 'Computer Science','Mathematics', 'Literature'];
-
+    
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(event.target.value);
+        setSearchTerm(event.target.value.toLowerCase());
     };
 
     const handleCategoryChange = (category: string) => {
@@ -189,12 +189,50 @@ export default function Courses() {
             }
         };
         fetchCourses();
-    }, [session, searchTerm, selectedCategories]);
+    }, [session]);
+    const filteredCourses = courses.filter((course) => {
+        const matchesSearchTerm =
+            course.title.toLowerCase().includes(searchTerm) ||
+            course.description.toLowerCase().includes(searchTerm);
+        const matchesCategory = selectedCategories.length
+            ? selectedCategories.includes(course.category)
+            : true;
+        return matchesSearchTerm && matchesCategory;
+    });
 
     if (status === 'loading') {
         return <p>Loading...</p>;
     }
-
+    const handleDeleteCourse = async (courseId: string) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'You wont be able to revert this!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!',
+        });
+        if (result.isConfirmed) {
+            try {
+                console.log('Deleting course:', courseId);
+                const response = await fetch(`http://localhost:5000/courses/${courseId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${session?.accessToken}`,
+                    },
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to delete course');
+                }
+                Swal.fire('Deleted!', 'Course has been deleted.', 'success');
+                setCourses(courses.filter(course => course._id !== courseId));
+            } catch (error) {
+                console.error('Error deleting course:', error);
+                Swal.fire('Error!', 'Failed to delete course.', 'error');
+            }
+        }
+    };
     return (
         <div className="container mx-auto p-8">
             <h1 className="text-4xl font-bold text-center mb-8">Course List</h1>
@@ -224,10 +262,14 @@ export default function Courses() {
                 </div>
             )}
             {error && <p className="text-red-500 text-center mb-4">Error: {error}</p>}
+            {filteredCourses.length === 0 && !loading && (
+                <p className="text-gray-500 text-center mb-4">No courses found.</p>
+            )}
+            
             {notFound && <p className="text-gray-500 text-center mb-4">No courses found.</p>}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                 {session ? (
-                    courses.map((course) => (
+                    filteredCourses.map((course) => (
                         (session.role !== 'student' || !course.isOutdated) && (
                             <div key={course._id} className="bg-white shadow-md rounded-lg p-6 text-center">
                                 <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
@@ -245,7 +287,7 @@ export default function Courses() {
                                 </button>
                                 {session.role === 'student' && (
                                     <>
-                                        <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
+                                        {/* <Link href={`/courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link> */}
                                         <button
                                             onClick={() => enrollCourse(course._id)}
                                             className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
@@ -253,6 +295,12 @@ export default function Courses() {
                                             Enroll Course
                                         </button>
                                     </>
+                                )}
+                                {session.role === 'admin'  &&(
+                                   <button onClick={() => handleDeleteCourse(course._id)} style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#f44336', color: 'white' }}>Delete</button> 
+                                )}
+                                 {session.role === 'instructor'  &&(
+                                   <button onClick={() => handleDeleteCourse(course._id)} style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#f44336', color: 'white' }}>Delete</button> 
                                 )}
                             </div>
                         )

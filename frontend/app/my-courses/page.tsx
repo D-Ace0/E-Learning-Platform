@@ -9,11 +9,6 @@ interface Course {
   description: string;
 }
 
-interface MyCoursesProps {
-  courses: Course[];
-  error: string | null;
-}
-
 const MyCourses = async () => {
   const session = await getServerSession(options);
 
@@ -42,6 +37,7 @@ const MyCourses = async () => {
 
     const courses: Course[] = await response.json(); // Now the response includes _id, title, and description
 
+  
     return (
       <div className="container mx-auto p-8">
         <h1 className="text-4xl font-bold text-center mb-8">My Enrolled Courses</h1>
@@ -53,7 +49,22 @@ const MyCourses = async () => {
               <div key={course._id} className="bg-white shadow-md rounded-lg p-6 text-center">
                 <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
                 <p className="text-gray-700 mb-4">{course.description}</p>
-                <Link href={`../courses/modules?courseId=${course._id}`} className="text-blue-600 hover:underline">Modules</Link>
+                <div className="flex justify-center space-x-4">
+                  {/* Link to Modules */}
+                  <Link
+                    href={`../courses/modules?courseId=${course._id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Modules
+                  </Link>
+                  {/* Link to Forums */}
+                  <Link
+                    href={`../forums?courseId=${course._id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Forums
+                  </Link>
+                </div>
               </div>
             ))}
           </div>

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose from "mongoose";
 import { User } from "./user.schema";
 import { Thread } from "./thread.schema";
+import { Course } from "./course.schema";
 
 
 enum PostType {
@@ -23,7 +24,10 @@ export class Post {
     content: string
 
     @Prop({type: mongoose.Schema.Types.ObjectId, ref: () => Thread})
-    thread: mongoose.Schema.Types.ObjectId;
+    thread_id: mongoose.Schema.Types.ObjectId;
+
+    @Prop({type: mongoose.Schema.Types.ObjectId, ref: () => Course})
+    course_id: mongoose.Schema.Types.ObjectId;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post)

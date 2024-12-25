@@ -22,6 +22,10 @@ import { DashboardModule } from './dashboard/dashboard.module'
 import { ResourceAccessGuard } from './guards/resource-access.guard'
 import { RecommendationModule } from './recommendation/recommendation.module';
 import { QuestionModule } from './question/question.module';
+import { ForumsModule } from './forums/forums.module';
+import { PostsModule } from './posts/posts.module';
+import { ThreadsModule } from './threads/threads.module';
+import { FingerPrintModule } from './finger-print/finger-print.module'
 dotenv.config();
 
 @Module({
@@ -31,11 +35,12 @@ dotenv.config();
       useClass: JwtService,  // You might want to use the actual AuthGuard or AuthorizationGuard here
     },
     Logger,
-    ChatGateway,
+     ChatGateway,
     ResourceAccessGuard
   ],
   imports: [
     RecommendationModule,
+    FingerPrintModule,
     BackupModule,
     MailModule,
     QuizModule,
@@ -48,6 +53,11 @@ dotenv.config();
     MessagesModule,
     MfaModule, 
     DashboardModule,
+    MongooseModule.forRoot('mongodb+srv://AhmedKhadrawy:9g3bcGpd2Ay9v0LR@database.r38ac.mongodb.net/E-Learning-Platform'),
+    QuestionModule,
+    ForumsModule,
+    PostsModule,
+    ThreadsModule,
     MongooseModule.forRoot(process.env.MONGO_URI),
     QuestionModule
     // MongooseModule.forRoot(

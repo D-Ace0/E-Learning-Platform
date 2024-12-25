@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { RoomController } from '../Communication_Controllers/room.controller';
 import { RoomService } from '../Communication_Service/room.service';
-import { RoomSchema } from '../Communication_schemas/room.schema';
-import { MessagesModule } from './MessagesModule'; // Import MessagesModule
+import { MongooseModule } from '@nestjs/mongoose';
+import { Room, RoomSchema } from '../Communication_schemas/room.schema';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: 'Room', schema: RoomSchema }]),
-    MessagesModule, // Include MessagesModule
-  ],
+  imports: [MongooseModule.forFeature([{ name: Room.name, schema: RoomSchema }])],
+  controllers: [RoomController],
   providers: [RoomService],
   exports: [RoomService],
 })

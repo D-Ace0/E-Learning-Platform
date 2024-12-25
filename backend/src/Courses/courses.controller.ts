@@ -56,7 +56,7 @@ export class CoursesController {
   }
 
   @Delete(':id')
-  @Roles(['instructor'])
+  @Roles(['instructor', 'admin'])
   async delete(@Param('id') id: string, @Request() req: any) {
     const userId = req.user.user_id;
     return this.coursesService.deleteCourse(id, userId);

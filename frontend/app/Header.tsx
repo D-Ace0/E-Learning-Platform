@@ -18,18 +18,13 @@ const Header = () => {
                 Home
               </Link>
             </li>
-            {session?.role === 'admin' && (
-             <li>
-               <Link href="/admin" className="hover:underline">
-                 Admin
-               </Link>
-             </li>
-            )}
+            {session?.role === 'student' || session?.role === 'instructor' && (
             <li>
               <Link href="/users" className="hover:underline">
                 Users
               </Link>
             </li>
+            )}
             <li>
               <Link href="/about" className="hover:underline">
                 About
@@ -54,7 +49,7 @@ const Header = () => {
                 </Link>
               </li>
             )}
-            {session?.role === 'student' && (
+            {session && (
                 <>
                   <li>
                     <Link
@@ -94,8 +89,15 @@ const Header = () => {
               </li>
               </>
             )}
+             {session? (
+                <li>
+                  <Link href="/communications" className="hover:underline">
+                    Chats
+                  </Link>
+                </li>
+            ) : ""}
 
-            {session ? (
+            {session? (
                 <li>
                   <Link href="/quiz" className="hover:underline">
                     Quizzes
@@ -116,6 +118,11 @@ const Header = () => {
                   </button>
                 </li>
             )}
+            <li>
+              <Link href="/notes" className="hover:underline">
+                Notes
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>

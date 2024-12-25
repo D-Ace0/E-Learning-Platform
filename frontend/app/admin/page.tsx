@@ -77,7 +77,6 @@ export default function AdminPage() {
    setEditedUser(null);
    setError(null);
  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
    const { name, value } = e.target;
    if (editedUser) {
@@ -85,6 +84,7 @@ export default function AdminPage() {
    }
  };
 
+ 
   const handleUpdateSubmit = async () => {
    if (!editedUser || !selectedUser) return;
    const confirmUpdate = window.confirm("Are you sure you wanna update?")
@@ -114,7 +114,6 @@ export default function AdminPage() {
      setLoading(false);
    }
  };
-
   const handleDelete = async (userId: string) => {
     const confirmDelete = window.confirm("Are you sure you wanna Delete this user?")
    if(!confirmDelete) return
@@ -141,22 +140,13 @@ export default function AdminPage() {
    }
  };
 
- const filteredUsers = users.filter(user => {
-   const searchLower = searchTerm.toLowerCase();
-   return (
-     user.name.toLowerCase().includes(searchLower) ||
-     user.email.toLowerCase().includes(searchLower) ||
-     user.role.toLowerCase().includes(searchLower) ||
-     user._id.toLowerCase().includes(searchLower)
-   );
- });
-
+ 
   return (
    <main className="p-4">
      <div className="flex justify-between items-center mb-6">
        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-       <Link 
-         href="/admin/auth-logs" 
+       <Link
+         href="/admin/auth-logs"
          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
        >
          View All Authentication Logs
@@ -252,8 +242,8 @@ export default function AdminPage() {
                   <p className="text-gray-700">{viewedUser.created_at}</p>
                 </div>
                 <div className="mb-4">
-                  <Link 
-                    href={`/admin/auth-logs?userId=${viewedUser._id}&userName=${encodeURIComponent(viewedUser.name)}`} 
+                  <Link
+                    href={`/admin/auth-logs?userId=${viewedUser._id}&userName=${encodeURIComponent(viewedUser.name)}`}
                     className="text-blue-500 hover:text-blue-700"
                   >
                     View User's Authentication Logs
@@ -287,12 +277,14 @@ export default function AdminPage() {
                </div>
                <div className="mb-4">
                  <label className="block text-gray-700 text-sm font-bold mb-2">Role</label>
-                 <select name="role" value={editedUser.role} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                   <option value="user">User</option>
-                   <option value="admin">Admin</option>
-                 </select>
+                   <select name="role" value={editedUser.role} onChange={handleInputChange}
+                           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                       <option value="user">User</option>
+                       <option value="instructor">Instructor</option>
+                       <option value="admin">Admin</option>
+                   </select>
                </div>
-               <div className="flex justify-end">
+                 <div className="flex justify-end">
                  <button type="button" onClick={closeModal} className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded mr-2">
                    Cancel
                  </button>

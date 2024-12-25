@@ -121,51 +121,60 @@ export default function Courses() {
      }
    }
  };
-  const handleUpdateCourse = async (course: Course) => {
-   const { value: formValues } = await Swal.fire({
-     title: 'Update Course',
-     html:
-       `<p>Title</p><input id="swal-input1" class="swal2-input" placeholder="Title" value="${course.title}" />` +
-       `<p>Description</p><input id="swal-input2" class="swal2-input" placeholder="Description" value="${course.description}" />` +
-       `<p>Category</p><input id="swal-input3" class="swal2-input" placeholder="Category" value="${course.category}" />` +
-       `<p>Difficulty(beginner, intermediate, advanced)</p><input id="swal-input4" class="swal2-input" placeholder="Difficulty Level" value="${course.difficulty_level}" />` +
-       `<p>Video</p><input id="swal-input5" class="swal2-input" placeholder="Video URL" value="${course.video}" />` +
-       `<p>PDF</p><input id="swal-input6" class="swal2-input" placeholder="PDF URL" value="${course.pdf}" />`,
-     focusConfirm: false,
-     preConfirm: () => {
-       return [
-         (document.getElementById('swal-input1') as HTMLInputElement).value,
-         (document.getElementById('swal-input2') as HTMLInputElement).value,
-         (document.getElementById('swal-input3') as HTMLInputElement).value,
-         (document.getElementById('swal-input4') as HTMLInputElement).value,
-         (document.getElementById('swal-input5') as HTMLInputElement).value,
-         (document.getElementById('swal-input6') as HTMLInputElement).value,
-       ];
-     },
-   });
-   if (formValues) {
-     const [title, description, category, difficulty_level, video, pdf] = formValues;
-     try {
-       const response = await fetch(`http://localhost:5000/courses/${course._id}`, {
-         method: 'PUT',
-         headers: {
-           'Content-Type': 'application/json',
-           Authorization: `Bearer ${session?.accessToken}`,
-         },
-         body: JSON.stringify({ title, description, category, difficulty_level, video, pdf }),
-       });
-       if (!response.ok) {
-         const errorData = await response.json();
-         throw new Error(errorData.message || 'Failed to update course');
-       }
-       Swal.fire('Updated!', 'Course has been updated.', 'success');
-       setCourses(courses.map(c => (c._id === course._id ? { ...c, title, description, category, difficulty_level, video, pdf, isOutdated: isCourseOutdated(c.created_at) } : c)));
-     } catch (error) {
-       console.error('Error updating course:', error);
-       Swal.fire('Error!', 'Failed to update course.', 'error');
-     }
-   }
- };
+    const handleUpdateCourse = async (course: Course) => {
+        const { value: formValues } = await Swal.fire({
+            title: 'Update Course',
+            html:
+                `<p>Title</p><input id="swal-input1" class="swal2-input" placeholder="Title" value="${course.title}" />` +
+                `<p>Description</p><input id="swal-input2" class="swal2-input" placeholder="Description" value="${course.description}" />` +
+                `<p>Category</p><input id="swal-input3" class="swal2-input" placeholder="Category" value="${course.category}" />` +
+                `<p>Difficulty(beginner, intermediate, advanced)</p><input id="swal-input4" class="swal2-input" placeholder="Difficulty Level" value="${course.difficulty_level}" />` +
+                `<p>Video</p><input id="swal-input5" class="swal2-input" placeholder="Video URL" value="${course.video}" />` +
+                `<p>PDF</p><input id="swal-input6" class="swal2-input" placeholder="PDF URL" value="${course.pdf}" />`,
+            focusConfirm: false,
+            preConfirm: () => {
+                return [
+                    (document.getElementById('swal-input1') as HTMLInputElement).value,
+                    (document.getElementById('swal-input2') as HTMLInputElement).value,
+                    (document.getElementById('swal-input3') as HTMLInputElement).value,
+                    (document.getElementById('swal-input4') as HTMLInputElement).value,
+                    (document.getElementById('swal-input5') as HTMLInputElement).value,
+                    (document.getElementById('swal-input6') as HTMLInputElement).value,
+                ];
+            },
+        });
+        if (formValues) {
+            const [title, description, category, difficulty_level, video, pdf] = formValues;
+            const updatedCourse = {
+                title,
+                description,
+                category,
+                difficulty_level,
+                video,
+                pdf,
+                created_at: new Date().toLocaleDateString('en-CA'), // Set created_at to today's date in YYYY-MM-DD format
+            };
+            try {
+                const response = await fetch(`http://localhost:5000/courses/${course._id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${session?.accessToken}`,
+                    },
+                    body: JSON.stringify(updatedCourse),
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to update course');
+                }
+                Swal.fire('Updated!', 'Course has been updated.', 'success');
+                setCourses(courses.map(c => (c._id === course._id ? { ...c, ...updatedCourse, isOutdated: false } : c)));
+            } catch (error) {
+                console.error('Error updating course:', error);
+                Swal.fire('Error!', 'Failed to update course.', 'error');
+            }
+        }
+    };
   const handleDeleteCourse = async (courseId: string) => {
    const result = await Swal.fire({
      title: 'Are you sure?',
