@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Body } from '@nestjs/common';
+import {Controller, Get, Param, Post, Body, Delete, HttpException, HttpStatus} from '@nestjs/common';
 import { NotificationService } from '../Communication_Service/notification.service';
 
 @Controller('notifications') // Route is '/notifications'
@@ -21,5 +21,27 @@ export class NotificationController {
             roomName: notification.room['name'], // Assuming the `room` is populated
 
         }));
+    }
+
+
+
+    @Delete(':notificationId')
+    async deleteNotification(@Param('notificationId') notificationId: string): Promise<{ message: string }> {
+        try {
+            await this.notificationService.deleteNotification(notificationId);
+            return { message: 'Notification deleted successfully.' };
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Delete('user/:userId')
+    async deleteAllNotifications(@Param('userId') userId: string): Promise<{ message: string }> {
+        try {
+            await this.notificationService.deleteAllNotifications(userId);
+            return { message: 'All notifications deleted successfully.' };
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+        }
     }
 }

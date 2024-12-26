@@ -25,4 +25,14 @@ export class NotificationService {
             .populate('room', 'name') // Populate the room field to get its name
             .exec();
     }
+    async deleteNotification(notificationId: string): Promise<void> {
+        const result = await this.notificationModel.findByIdAndDelete(notificationId).exec();
+        if (!result) {
+            throw new Error('Notification not found.');
+        }
+    }
+
+    async deleteAllNotifications(userId: string): Promise<void> {
+        await this.notificationModel.deleteMany({ user: userId }).exec();
+    }
 }
