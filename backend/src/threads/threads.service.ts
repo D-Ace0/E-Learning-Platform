@@ -85,11 +85,9 @@ export class ThreadsService {
   
     if (role === 'instructor') {
       // Allow instructor to update if they are associated with the thread
-      if (
-        thread.instructor_id.toString() !== userId &&
-        thread.createdBy.toString() !== userId
-      ) {
-        throw new ForbiddenException('You are not authorized to update this thread');
+      if(thread.createdBy.toString() !== userId) {
+        const isInvolved= thread.EnvolvedUsers_ids.map((i) => i.toString() === userId)
+        if(!isInvolved) throw new ForbiddenException('You are not authorized to delete this thread');
       }
     } else if (role === 'student') {
       // Allow students to update if they are involved in the thread
@@ -117,12 +115,10 @@ export class ThreadsService {
     if (!thread) throw new NotFoundException('Thread not found');
   
     if (role === 'instructor') {
-      // Allow instructor to delete if they are associated with the thread
-      if (
-        thread.instructor_id.toString() !== userId &&
-        thread.createdBy.toString() !== userId
-      ) {
-        throw new ForbiddenException('You are not authorized to delete this thread');
+      // Allow instructor to update if they are associated with the thread
+      if(thread.createdBy.toString() !== userId) {
+        const isInvolved= thread.EnvolvedUsers_ids.map((i) => i.toString() === userId)
+        if(!isInvolved) throw new ForbiddenException('You are not authorized to delete this thread');
       }
     } else if (role === 'student') {
       // Allow students to delete only if they created the thread
