@@ -94,7 +94,7 @@ export class ForumsService {
     }
 
     if(role === "instructor"){
-      if(forum.instructor_id.toString() !== userId) throw new ForbiddenException('You are not authorized to delete this forum')
+      if(forum.instructor_id.toString() === userId) throw new ForbiddenException('You are not authorized to delete this forum')
       
       await this.forumsModel.findByIdAndDelete(id)
     }
