@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, Mongoose } from 'mongoose';
 import { Quiz } from 'src/schemas/quiz.schema';
@@ -37,38 +37,42 @@ export class QuizService {
 
 
   async create(quizData: createQuizDto, instructorId: string): Promise<Quiz> {
-    const module = await this.moduleModel.findById(quizData.module_id);
-    if (!module) {
-      throw new ForbiddenException('Module not found');
+    try {
+      const module = await this.moduleModel.findById(quizData.module_id);
+      if (!module) {
+        throw new ForbiddenException('Module not found');
+      }
+    
+      const course = await this.courseModel.findById(module.course_id);
+      if (!course) {
+        throw new ForbiddenException('Course not found for this module');
+      }
+    
+      if (course.created_by.toString() !== instructorId) {
+        throw new ForbiddenException('You are not authorized to create a quiz for this module');
+      }
+    
+      // Fetch questions based on type and count
+      const { questionCount, questionType } = quizData;
+      const questions = await this.questionModel.find({ type: questionType }).limit(questionCount);
+    
+      if (questions.length < questionCount) {
+        throw new Error('Not enough questions available of the specified type');
+      }
+    
+      // Create new quiz
+      const newQuiz = new this.quizModel({
+        module_id: quizData.module_id,
+        questions: questions.map((q) => q._id),
+        questionCount,
+        questionType,
+        created_at: new Date(),
+      });
+    
+      return await newQuiz.save();
+    } catch (error) {
+      throw new BadRequestException(error)
     }
-  
-    const course = await this.courseModel.findById(module.course_id);
-    if (!course) {
-      throw new ForbiddenException('Course not found for this module');
-    }
-  
-    if (course.created_by.toString() !== instructorId) {
-      throw new ForbiddenException('You are not authorized to create a quiz for this module');
-    }
-  
-    // Fetch questions based on type and count
-    const { questionCount, questionType } = quizData;
-    const questions = await this.questionModel.find({ type: questionType }).limit(questionCount);
-  
-    if (questions.length < questionCount) {
-      throw new Error('Not enough questions available of the specified type');
-    }
-  
-    // Create new quiz
-    const newQuiz = new this.quizModel({
-      module_id: quizData.module_id,
-      questions: questions.map((q) => q._id),
-      questionCount,
-      questionType,
-      created_at: new Date(),
-    });
-  
-    return await newQuiz.save();
   }
   
   
@@ -252,7 +256,6 @@ async getQuizQuestions(quizId: string, student_id: string) {
     quiz_id: quizId,
     student_id,
   });
-
   let difficultyLevel: string | null = null;
   if (lastPerformance) {
     const score = lastPerformance.score;
@@ -260,7 +263,8 @@ async getQuizQuestions(quizId: string, student_id: string) {
     else if (score >= 50 && score < 74) difficultyLevel = 'medium';
     else difficultyLevel = 'hard';
   }
-
+  if(lastPerformance) await this.performanceModel.findByIdAndDelete(lastPerformance._id);
+  
   const { questionCount, questionType } = quiz;
   console.log(`Fetching questions with type: ${questionType}, difficulty: ${difficultyLevel}, ${questionCount}`);
 

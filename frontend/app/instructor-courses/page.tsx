@@ -233,6 +233,13 @@ export default function Courses() {
                   View Module
             </Link>
             <br></br>
+            <Link
+                    href={`../forums?courseId=${course._id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Forums
+            </Link>
+            <br></br>
            <button onClick={() => handleUpdateCourse(course)} style={{ marginRight: '10px', padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#4CAF50', color: 'white' }}>Update</button>
            <button onClick={() => handleDeleteCourse(course._id)} style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer', backgroundColor: '#f44336', color: 'white' }}>Delete</button>
          </li>

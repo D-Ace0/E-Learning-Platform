@@ -1,6 +1,7 @@
 import { Prop, PropOptions, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Module } from './module.schema'
 import mongoose from 'mongoose'
+import { User } from './user.schema'
 
 export type QuestionDocument = Question & Document
 
@@ -28,6 +29,9 @@ export class Question {
 
     @Prop({ type: String, required: true, enum: DifficultyLevel })
     difficulty: DifficultyLevel;
+
+    @Prop({type: mongoose.Schema.Types.ObjectId, ref: () => User})
+    created_by: mongoose.Schema.Types.ObjectId;
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question)
